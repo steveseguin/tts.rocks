@@ -151,11 +151,14 @@ class WaveformPlayer {
         const container = this.waveformCanvas.parentElement;
         const rect = container.getBoundingClientRect();
         
-        // Set canvas dimensions
-        this.waveformCanvas.width = rect.width;
+        // Set canvas dimensions - ensure minimum width
+        const width = Math.max(rect.width || 600, 300);
+        this.waveformCanvas.width = width;
         this.waveformCanvas.height = 100;
-        this.progressCanvas.width = rect.width;
+        this.progressCanvas.width = width;
         this.progressCanvas.height = 100;
+        
+        console.log('Canvas resized to:', width, 'x 100');
         
         // Redraw if we have data
         if (this.peaks && this.peaks.length > 0) {
@@ -166,6 +169,8 @@ class WaveformPlayer {
 
     async loadAudio(audioData) {
         try {
+            console.log('Loading audio data into waveform player:', audioData);
+            
             // Initialize audio context if needed
             if (!this.audioContext) {
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -177,20 +182,30 @@ class WaveformPlayer {
             
             // Decode audio data
             if (audioData instanceof ArrayBuffer) {
+                console.log('Decoding ArrayBuffer, size:', audioData.byteLength);
                 this.audioBuffer = await this.audioContext.decodeAudioData(audioData.slice(0));
             } else if (audioData instanceof Blob) {
+                console.log('Decoding Blob, size:', audioData.size);
                 const arrayBuffer = await audioData.arrayBuffer();
                 this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
             } else if (audioData instanceof AudioBuffer) {
+                console.log('Using existing AudioBuffer');
                 this.audioBuffer = audioData;
             }
             
+            console.log('Audio buffer created, duration:', this.audioBuffer.duration, 'seconds');
             this.duration = this.audioBuffer.duration;
             this.totalTimeEl.textContent = this.formatTime(this.duration);
             
+            // Ensure canvas is sized before drawing
+            this.resizeCanvases();
+            
             // Generate waveform
             this.generateWaveform();
+            console.log('Waveform generated with', this.peaks.length, 'peaks');
+            
             this.drawWaveform();
+            console.log('Waveform drawn');
             
             // Enable play button
             this.playPauseBtn.disabled = false;
@@ -225,8 +240,14 @@ class WaveformPlayer {
         const height = this.waveformCanvas.height;
         const centerY = height / 2;
         
+        console.log('Drawing waveform - canvas size:', width, 'x', height, 'peaks:', this.peaks.length);
+        
         // Clear canvas
         this.waveformCtx.clearRect(0, 0, width, height);
+        
+        // Draw background for debugging
+        this.waveformCtx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        this.waveformCtx.fillRect(0, 0, width, height);
         
         // Set up gradient
         const gradient = this.waveformCtx.createLinearGradient(0, 0, 0, height);
@@ -246,6 +267,8 @@ class WaveformPlayer {
             
             this.waveformCtx.fillRect(x, minY, 1, peakHeight || 1);
         }
+        
+        console.log('Waveform drawing complete');
     }
 
     drawProgress() {
