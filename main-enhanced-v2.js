@@ -22,10 +22,12 @@ class TTSApp {
             writer: null
         };
         this.waveformPlayer = null;
+        this.cacheManager = null;
         
         this.initializeElements();
         this.attachEventListeners();
         this.initializeWaveformPlayer();
+        this.initializeCacheManager();
         this.initializeBrowserTTS();
         this.restoreState();
         this.initializeChromeAI();
@@ -67,6 +69,25 @@ class TTSApp {
         // Audio & UI elements
         this.audioPlayer = document.getElementById('audioPlayer');
         this.audioSection = document.getElementById('audioSection');
+        // FORCE audio player to stay hidden - no exceptions
+        if (this.audioPlayer) {
+            this.audioPlayer.removeAttribute('controls');
+            this.audioPlayer.style.display = 'none !important';
+            this.audioPlayer.style.visibility = 'hidden';
+            this.audioPlayer.style.position = 'absolute';
+            this.audioPlayer.style.left = '-9999px';
+            
+            // Use MutationObserver to prevent any changes
+            const observer = new MutationObserver(() => {
+                this.audioPlayer.removeAttribute('controls');
+                this.audioPlayer.style.display = 'none !important';
+                this.audioPlayer.style.visibility = 'hidden';
+            });
+            observer.observe(this.audioPlayer, { 
+                attributes: true, 
+                attributeFilter: ['controls', 'style'] 
+            });
+        }
         this.waveformContainer = document.getElementById('waveformPlayerContainer');
         this.statusMessage = document.getElementById('statusMessage');
         this.progressOverlay = document.getElementById('progressOverlay');
@@ -140,7 +161,23 @@ class TTSApp {
 
     initializeWaveformPlayer() {
         if (this.waveformContainer && window.WaveformPlayer) {
+            console.log('Initializing waveform player...');
             this.waveformPlayer = new window.WaveformPlayer(this.waveformContainer);
+            console.log('Waveform player initialized:', this.waveformPlayer);
+        } else {
+            console.warn('Waveform player not initialized - container or WaveformPlayer class missing');
+        }
+    }
+
+    async initializeCacheManager() {
+        if (window.ModelCacheManager) {
+            this.cacheManager = new window.ModelCacheManager();
+            // Clean up old models (older than 30 days)
+            await this.cacheManager.cleanupOldModels();
+            
+            // Log cache info
+            const cacheInfo = await this.cacheManager.getCacheInfo();
+            console.log('Cache info:', cacheInfo);
         }
     }
 
@@ -196,13 +233,8 @@ class TTSApp {
             if (!modelData || modelData.length === 0) {
                 console.error('Invalid model data, re-downloading...');
                 // Clear cache first
-                try {
-                    const db = await this.openDB();
-                    const transaction = db.transaction('models', 'readwrite');
-                    const store = transaction.objectStore('models');
-                    await store.delete('kokoro-82M');
-                } catch (e) {
-                    console.error('Error clearing cache:', e);
+                if (this.cacheManager) {
+                    await this.cacheManager.deleteModel('kokoro-82M');
                 }
                 modelData = await this.downloadAndCacheModel();
             }
@@ -728,10 +760,7 @@ class TTSApp {
             this.audioSection.style.display = 'block';
             this.downloadBtn.disabled = false;
             
-            // Load audio into waveform player if available
-            if (this.waveformPlayer && this.audioBlob) {
-                await this.waveformPlayer.loadAudio(this.audioBlob);
-            }
+            // Waveform player loading is handled in individual generate methods
             
         } catch (error) {
             console.error('Generation failed:', error);
@@ -789,9 +818,21 @@ class TTSApp {
                     throw new Error('Unknown audio format from Kokoro');
                 }
                 
-                this.audioPlayer.src = URL.createObjectURL(this.audioBlob);
-                this.audioPlayer.style.display = 'block';
-                await this.audioPlayer.play();
+                // DO NOT use the audio element AT ALL - use waveform player only
+                
+                // Make sure audio section is visible
+                this.audioSection.style.display = 'block';
+                
+                // Load into waveform player ONLY - no fallback to audio element
+                if (this.waveformPlayer && this.audioBlob) {
+                    console.log('Loading audio into waveform player...');
+                    await this.waveformPlayer.loadAudio(this.audioBlob);
+                    console.log('Audio loaded, auto-playing...');
+                    // Auto-play the waveform player
+                    this.waveformPlayer.play();
+                } else {
+                    throw new Error('Waveform player not available');
+                }
             } else {
                 throw new Error('No audio generated');
             }
@@ -1029,19 +1070,11 @@ class TTSApp {
     }
 
     async getCachedModel(modelKey) {
-        try {
-            const db = await this.openDB();
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction('models', 'readonly');
-                const store = transaction.objectStore('models');
-                const request = store.get(modelKey);
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => resolve(request.result);
-            });
-        } catch (error) {
-            console.error('Error getting cached model:', error);
+        if (!this.cacheManager) {
+            console.warn('Cache manager not initialized');
             return null;
         }
+        return await this.cacheManager.getModel(modelKey);
     }
 
     async downloadAndCacheModel() {
@@ -1090,18 +1123,16 @@ class TTSApp {
     }
 
     async cacheModel(modelKey, modelData) {
-        try {
-            const db = await this.openDB();
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction('models', 'readwrite');
-                const store = transaction.objectStore('models');
-                const request = store.put(modelData, modelKey);
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => resolve();
-            });
-        } catch (error) {
-            console.error('Error caching model:', error);
+        if (!this.cacheManager) {
+            console.warn('Cache manager not initialized');
+            return;
         }
+        const metadata = {
+            engine: 'kokoro',
+            version: '82M-v1.0',
+            downloadDate: Date.now()
+        };
+        await this.cacheManager.saveModel(modelKey, modelData, metadata);
     }
 
     async openDB() {

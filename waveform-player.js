@@ -92,6 +92,10 @@ class WaveformPlayer {
     }
 
     attachEventListeners() {
+        // Set up canvas dimensions
+        this.resizeCanvases();
+        window.addEventListener('resize', () => this.resizeCanvases());
+        
         this.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
         
         this.volumeSlider.addEventListener('input', (e) => {
@@ -141,6 +145,23 @@ class WaveformPlayer {
         
         // Resize handling
         window.addEventListener('resize', () => this.resizeCanvases());
+    }
+
+    resizeCanvases() {
+        const container = this.waveformCanvas.parentElement;
+        const rect = container.getBoundingClientRect();
+        
+        // Set canvas dimensions
+        this.waveformCanvas.width = rect.width;
+        this.waveformCanvas.height = 100;
+        this.progressCanvas.width = rect.width;
+        this.progressCanvas.height = 100;
+        
+        // Redraw if we have data
+        if (this.peaks && this.peaks.length > 0) {
+            this.drawWaveform();
+            this.drawProgress();
+        }
     }
 
     async loadAudio(audioData) {

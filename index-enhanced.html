@@ -543,6 +543,18 @@
             color: var(--text-secondary);
         }
 
+        /* FORCE HIDE AUDIO ELEMENT */
+        #audioPlayer {
+            display: none !important;
+            visibility: hidden !important;
+            position: absolute !important;
+            left: -9999px !important;
+            pointer-events: none !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+        }
+
         /* Waveform Player Styles */
         .waveform-player {
             background: var(--bg-tertiary);
@@ -914,7 +926,8 @@
                     Audio Output
                 </div>
                 <div id="waveformPlayerContainer"></div>
-                <audio id="audioPlayer" controls style="display:none" aria-label="Fallback audio player"></audio>
+                <!-- Hidden audio element - NEVER used for playback -->
+                <audio id="audioPlayer" style="display:none !important; visibility:hidden !important; position:absolute !important; left:-9999px !important;" aria-hidden="true"></audio>
             </div>
 
             <!-- Status Messages -->
@@ -943,6 +956,7 @@
     <script src="tts.js"></script>
     <!-- Waveform Player -->
     <script src="waveform-player.js"></script>
+    <script src="model-cache-manager.js"></script>
     <!-- Main application script -->
     <script type="module" src="main-enhanced-v2.js"></script>
 </body>
