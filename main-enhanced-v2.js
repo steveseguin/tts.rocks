@@ -937,63 +937,54 @@ class TTSApp {
             await new Promise(resolve => setTimeout(resolve, 10));
         }
         
-        // Generate speech (but don't auto-play for engines we handle manually)
-        if (engine === 'kitten' || engine === 'piper' || engine === 'espeak') {
-            // We'll handle playback through waveform player
-            window.TTS.speak(text, false); // false = don't auto-play
-        } else {
-            window.TTS.speak(text, true);
-        }
+        // Generate speech
+        window.TTS.speak(text, true);
         
         // For Kitten TTS, we need to wait for audio and load it into waveform
         if (engine === 'kitten') {
-            // Poll for audio availability
+            // Wait for audio to be generated
             let attempts = 0;
             const maxAttempts = 60; // 30 seconds max wait
-            const checkInterval = 500; // Check every 500ms
             
-            await new Promise((resolve) => {
-                const checkAudio = setInterval(async () => {
-                    attempts++;
+            // Keep showing progress message
+            const progressInterval = setInterval(() => {
+                attempts++;
+                const dots = '.'.repeat((attempts % 4) + 1);
+                this.showInlineProgress(`Generating speech with Kitten TTS${dots}`);
+            }, 500);
+            
+            // Wait a reasonable time for Kitten TTS to generate
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // Clear progress
+            clearInterval(progressInterval);
+            this.hideInlineProgress();
+            
+            // Check if audio was generated
+            if (window.TTS.audio && window.TTS.audio.src) {
+                try {
+                    // Fetch the audio blob from the audio element src
+                    const response = await fetch(window.TTS.audio.src);
+                    const blob = await response.blob();
                     
-                    // Update progress message
-                    const dots = '.'.repeat((attempts % 4) + 1);
-                    this.showInlineProgress(`Generating speech with Kitten TTS${dots}`);
+                    // Store blob for download
+                    this.audioBlob = blob;
                     
-                    // Check if audio is ready
-                    if (window.TTS.audio && window.TTS.audio.src) {
-                        clearInterval(checkAudio);
-                        this.hideInlineProgress();
-                        
-                        try {
-                            // Fetch the audio blob from the audio element src
-                            const response = await fetch(window.TTS.audio.src);
-                            const blob = await response.blob();
-                            
-                            // Store blob for download
-                            this.audioBlob = blob;
-                            
-                            // Load into waveform player
-                            if (this.waveformPlayer) {
-                                await this.waveformPlayer.loadAudio(blob);
-                                this.waveformPlayer.play();
-                            }
-                            
-                            // Show audio section
-                            this.audioSection.style.display = 'block';
-                        } catch (err) {
-                            console.error('Error loading Kitten TTS audio into waveform:', err);
-                        }
-                        
-                        resolve();
-                    } else if (attempts >= maxAttempts) {
-                        clearInterval(checkAudio);
-                        this.hideInlineProgress();
-                        this.showStatus('Kitten TTS generation timed out', 'error');
-                        resolve();
+                    // Load into waveform player
+                    if (this.waveformPlayer) {
+                        await this.waveformPlayer.loadAudio(blob);
+                        // Don't auto-play - let user click play
                     }
-                }, checkInterval);
-            });
+                    
+                    // Show audio section
+                    this.audioSection.style.display = 'block';
+                } catch (err) {
+                    console.error('Error loading Kitten TTS audio into waveform:', err);
+                    this.showStatus('Failed to load audio into player', 'error');
+                }
+            } else {
+                this.showStatus('Kitten TTS generation failed', 'error');
+            }
         } else if (engine === 'piper' || engine === 'espeak') {
             // Handle Piper and eSpeak audio similarly
             this.hideInlineProgress();

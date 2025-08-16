@@ -236,12 +236,18 @@ class WaveformPlayer {
     }
 
     generateWaveform() {
+        // Ensure canvas has width before generating
+        if (this.waveformCanvas.width === 0) {
+            this.resizeCanvases();
+        }
+        
         const channelData = this.audioBuffer.getChannelData(0);
-        const samplesPerPeak = Math.floor(channelData.length / this.waveformCanvas.width);
+        const canvasWidth = this.waveformCanvas.width || 600;
+        const samplesPerPeak = Math.floor(channelData.length / canvasWidth);
         
         this.peaks = [];
         
-        for (let i = 0; i < this.waveformCanvas.width; i++) {
+        for (let i = 0; i < canvasWidth; i++) {
             let min = 1.0;
             let max = -1.0;
             
