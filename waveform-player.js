@@ -152,7 +152,19 @@ class WaveformPlayer {
         const rect = container.getBoundingClientRect();
         
         // Set canvas dimensions - ensure minimum width
-        const width = Math.max(rect.width || 600, 300);
+        let width = rect.width;
+        
+        // If width is 0, try to get the parent container width
+        if (!width || width === 0) {
+            const playerContainer = this.container.querySelector('.waveform-player');
+            if (playerContainer) {
+                width = playerContainer.offsetWidth;
+            }
+        }
+        
+        // Fallback to a reasonable default if still 0
+        width = Math.max(width || 600, 300);
+        
         this.waveformCanvas.width = width;
         this.waveformCanvas.height = 100;
         this.progressCanvas.width = width;
@@ -206,6 +218,14 @@ class WaveformPlayer {
             
             this.drawWaveform();
             console.log('Waveform drawn');
+            
+            // Also resize again after a short delay in case container wasn't ready
+            setTimeout(() => {
+                this.resizeCanvases();
+                if (this.peaks && this.peaks.length > 0) {
+                    this.drawWaveform();
+                }
+            }, 100);
             
             // Enable play button
             this.playPauseBtn.disabled = false;

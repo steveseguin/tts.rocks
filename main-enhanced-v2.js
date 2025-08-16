@@ -932,10 +932,18 @@ class TTSApp {
             this.showInlineProgress('Initializing Kitten TTS (this may take a moment)...');
             await window.TTS.initKitten();
             this.showInlineProgress('Generating speech with Kitten TTS...');
+            
+            // Give UI time to update before intensive generation
+            await new Promise(resolve => setTimeout(resolve, 10));
         }
         
-        // Generate speech
-        window.TTS.speak(text, true);
+        // Generate speech (but don't auto-play for engines we handle manually)
+        if (engine === 'kitten' || engine === 'piper' || engine === 'espeak') {
+            // We'll handle playback through waveform player
+            window.TTS.speak(text, false); // false = don't auto-play
+        } else {
+            window.TTS.speak(text, true);
+        }
         
         // For Kitten TTS, we need to wait for audio and load it into waveform
         if (engine === 'kitten') {
