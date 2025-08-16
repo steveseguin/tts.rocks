@@ -14,10 +14,12 @@ class TTSApp {
             detector: null,
             writer: null
         };
+        this.waveformPlayer = null;
         
         this.initializeElements();
         this.attachEventListeners();
         this.initializeTTS();
+        this.initializeWaveformPlayer();
         this.restoreState();
         this.initializeChromeAI();
     }
@@ -57,6 +59,7 @@ class TTSApp {
         // Audio & UI elements
         this.audioPlayer = document.getElementById('audioPlayer');
         this.audioSection = document.getElementById('audioSection');
+        this.waveformContainer = document.getElementById('waveformPlayerContainer');
         this.statusMessage = document.getElementById('statusMessage');
         this.progressOverlay = document.getElementById('progressOverlay');
         this.progressFill = document.getElementById('progressFill');
@@ -125,6 +128,12 @@ class TTSApp {
         
         clickedTab.classList.add('active');
         document.getElementById(`${tabName}-tab`).classList.add('active');
+    }
+
+    initializeWaveformPlayer() {
+        if (this.waveformContainer && window.WaveformPlayer) {
+            this.waveformPlayer = new window.WaveformPlayer(this.waveformContainer);
+        }
     }
 
     async initializeTTS() {
@@ -586,6 +595,11 @@ class TTSApp {
             
             this.audioSection.style.display = 'block';
             this.downloadBtn.disabled = false;
+            
+            // Load audio into waveform player if available
+            if (this.waveformPlayer && this.audioBlob) {
+                await this.waveformPlayer.loadAudio(this.audioBlob);
+            }
             
         } catch (error) {
             console.error('Generation failed:', error);
