@@ -14,6 +14,7 @@ class TTSApp {
             espeak: false,
             kitten: false
         };
+        this.computeMode = null; // Track compute mode for display
         this.settings = this.loadSettings();
         this.chromeAI = {
             summarizer: null,
@@ -215,8 +216,18 @@ class TTSApp {
         }, 30000); // 30 second timeout
         
         try {
-            const device = (await detectWebGPU()) ? "webgpu" : "wasm";
-            console.log('Using device:', device);
+            const hasWebGPU = await detectWebGPU();
+            const device = hasWebGPU ? "webgpu" : "wasm";
+            this.computeMode = hasWebGPU ? "WebGPU (GPU Accelerated)" : "WASM (CPU)";
+            console.log('Using device:', device, '- Compute mode:', this.computeMode);
+            
+            // Show compute mode in progress message
+            this.showInlineProgress(`Initializing Kokoro TTS (${this.computeMode})...`);
+            
+            // Update UI to show compute mode if Kokoro is selected
+            if (this.currentEngine === 'kokoro') {
+                this.updateComputeModeDisplay();
+            }
             
             let modelData = await this.getCachedModel('kokoro-82M');
             
@@ -522,6 +533,9 @@ class TTSApp {
                 break;
         }
         
+        // Update compute mode display for the new engine
+        this.updateComputeModeDisplay();
+        
         this.updateGenerateButtonState();
         this.saveSettings();
     }
@@ -670,6 +684,36 @@ class TTSApp {
         }
         
         this.saveSettings();
+    }
+    
+    updateComputeModeDisplay() {
+        // Find or create compute mode display element
+        let computeModeEl = document.getElementById('computeModeDisplay');
+        if (!computeModeEl) {
+            // Create it if it doesn't exist
+            const voiceGroup = this.voiceSelect.parentElement;
+            computeModeEl = document.createElement('div');
+            computeModeEl.id = 'computeModeDisplay';
+            computeModeEl.style.cssText = 'margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);';
+            voiceGroup.appendChild(computeModeEl);
+        }
+        
+        // Update display based on current engine
+        if (this.currentEngine === 'kokoro' && this.computeMode) {
+            computeModeEl.innerHTML = `<span style="color: var(--accent);">⚡</span> ${this.computeMode}`;
+            computeModeEl.style.display = 'block';
+        } else if (this.currentEngine === 'kitten') {
+            computeModeEl.innerHTML = `<span style="color: var(--accent);">🔧</span> WASM (CPU-based)`;
+            computeModeEl.style.display = 'block';
+        } else if (this.currentEngine === 'piper') {
+            computeModeEl.innerHTML = `<span style="color: var(--accent);">🔧</span> WASM (CPU-based)`;
+            computeModeEl.style.display = 'block';
+        } else if (this.currentEngine === 'espeak') {
+            computeModeEl.innerHTML = `<span style="color: var(--accent);">🔧</span> WASM (CPU-based)`;
+            computeModeEl.style.display = 'block';
+        } else {
+            computeModeEl.style.display = 'none';
+        }
     }
 
     updateCharCount() {
@@ -875,17 +919,99 @@ class TTSApp {
         window.TTS.pitch = parseFloat(this.pitchSlider.value);
         
         if (engine === 'piper') {
+            this.showInlineProgress('Initializing Piper TTS...');
             window.TTS.piperVoice = this.voiceSelect.value;
             await window.TTS.initPiper();
+            this.showInlineProgress('Generating speech with Piper...');
         } else if (engine === 'espeak') {
+            this.showInlineProgress('Initializing eSpeak TTS...');
             window.TTS.espeakSettings.voice = this.voiceSelect.value;
             await window.TTS.initEspeak();
+            this.showInlineProgress('Generating speech with eSpeak...');
         } else if (engine === 'kitten') {
+            this.showInlineProgress('Initializing Kitten TTS (this may take a moment)...');
             await window.TTS.initKitten();
+            this.showInlineProgress('Generating speech with Kitten TTS...');
         }
         
         // Generate speech
         window.TTS.speak(text, true);
+        
+        // For Kitten TTS, we need to wait for audio and load it into waveform
+        if (engine === 'kitten') {
+            // Poll for audio availability
+            let attempts = 0;
+            const maxAttempts = 60; // 30 seconds max wait
+            const checkInterval = 500; // Check every 500ms
+            
+            await new Promise((resolve) => {
+                const checkAudio = setInterval(async () => {
+                    attempts++;
+                    
+                    // Update progress message
+                    const dots = '.'.repeat((attempts % 4) + 1);
+                    this.showInlineProgress(`Generating speech with Kitten TTS${dots}`);
+                    
+                    // Check if audio is ready
+                    if (window.TTS.audio && window.TTS.audio.src) {
+                        clearInterval(checkAudio);
+                        this.hideInlineProgress();
+                        
+                        try {
+                            // Fetch the audio blob from the audio element src
+                            const response = await fetch(window.TTS.audio.src);
+                            const blob = await response.blob();
+                            
+                            // Store blob for download
+                            this.audioBlob = blob;
+                            
+                            // Load into waveform player
+                            if (this.waveformPlayer) {
+                                await this.waveformPlayer.loadAudio(blob);
+                                this.waveformPlayer.play();
+                            }
+                            
+                            // Show audio section
+                            this.audioSection.style.display = 'block';
+                        } catch (err) {
+                            console.error('Error loading Kitten TTS audio into waveform:', err);
+                        }
+                        
+                        resolve();
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(checkAudio);
+                        this.hideInlineProgress();
+                        this.showStatus('Kitten TTS generation timed out', 'error');
+                        resolve();
+                    }
+                }, checkInterval);
+            });
+        } else if (engine === 'piper' || engine === 'espeak') {
+            // Handle Piper and eSpeak audio similarly
+            this.hideInlineProgress();
+            
+            // Wait a bit for audio to be generated
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            if (window.TTS.audio && window.TTS.audio.src) {
+                try {
+                    const response = await fetch(window.TTS.audio.src);
+                    const blob = await response.blob();
+                    this.audioBlob = blob;
+                    
+                    if (this.waveformPlayer) {
+                        await this.waveformPlayer.loadAudio(blob);
+                        this.waveformPlayer.play();
+                    }
+                    
+                    this.audioSection.style.display = 'block';
+                } catch (err) {
+                    console.error(`Error loading ${engine} audio into waveform:`, err);
+                }
+            }
+        } else {
+            this.hideInlineProgress();
+        }
     }
 
     async generateWithAPI(engine, text) {
