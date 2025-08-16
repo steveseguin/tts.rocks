@@ -1,298 +1,963 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PCEtLSBNaWNyb3Bob25lIGJvZHkgLS0+PHBhdGggZmlsbD0iIzY0NmNmZiIgZD0iTTEyIDJDOS43OSAyIDggMy43OSA4IDZ2NmMwIDIuMjEgMS43OSA0IDQgNHM0LTEuNzkgNC00VjZjMC0yLjIxLTEuNzktNC00LTR6Ii8+PCEtLSBTb3VuZCB3YXZlcyAtLT48cGF0aCBmaWxsPSIjNjQ2Y2ZmIiBkPSJNMTcgMTFjMCAyLjc2LTIuMjQgNS01IDVzLTUtMi4yNC01LTVINWMwIDMuNTMgMi42MSA2LjQzIDYgNi45MlYyMWgydi0zLjA4YzMuMzktLjQ5IDYtMy4zOSA2LTYuOTJoLTJ6Ii8+PC9zdmc+" type="image/svg+xml">
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzY0NmNmZiIgZD0iTTEyIDJDOS43OSAyIDggMy43OSA4IDZ2NmMwIDIuMjEgMS43OSA0IDQgNHM0LTEuNzkgNC00VjZjMC0yLjIxLTEuNzktNC00LTR6Ii8+PHBhdGggZmlsbD0iIzY0NmNmZiIgZD0iTTEyIDJDOS43OSAyIDggMy43OSA4IDZ2NmMwIDIuMjEgMS43OSA0IDQgNHM0LTEuNzkgNC00VjZjMC0yLjIxLTEuNzktNC00LTR6TTcgMTFjMCAyLjc2LTIuMjQgNS01IDVzLTUtMi4yNC01LTVINWMwIDMuNTMgMi42MSA2LjQzIDYgNi45MlYyMWgydi0zLjA4YzMuMzktLjQ5IDYtMy4zOSA2LTYuOTJoLTJ6Ii8+PC9zdmc+" type="image/svg+xml">
     <meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>TTS.Rocks - Browser-Based AI Text to Speech</title>
-
-	<meta name="description" content="Free multilingual text-to-speech generator. Convert text to natural-sounding speech in multiple languages. Download or play audio instantly. Powered by Kokoro TTS engine.">
-	<meta name="description" content="Advanced in-browser text-to-speech with WebGPU acceleration. Multiple voices, instant playback, and zero server processing. The cutting-edge TTS model runs entirely in your browser, with local caching for speed.">
-	<meta name="keywords" content="text to speech, TTS, WebGPU, browser TTS, offline speech synthesis, AI voice generator, kokoro tts, client-side TTS">
-
-
-	<!-- Open Graph / Facebook -->
-	<meta property="og:type" content="website">
-	<meta property="og:url" content="https://tts.rocks">
-	<meta property="og:title" content="TTS.Rocks - Browser-Based AI Text to Speech">
-	<meta property="og:description" content="Advanced in-browser text-to-speech with WebGPU acceleration. Multiple voices, instant playback, and zero server processing.">
-
-	<!-- Twitter -->
-	<meta name="twitter:card" content="summary">
-	<meta name="twitter:url" content="https://tts.rocks">
-	<meta name="twitter:title" content="TTS.Rocks - Browser-Based AI Text to Speech">
-	<meta name="twitter:description" content="Advanced in-browser text-to-speech with WebGPU acceleration. Multiple voices, instant playback, and zero server processing.">
-
-
-	<!-- Additional Meta -->
-	<meta name="theme-color" content="#646cff">
-	<link rel="canonical" href="https://tts.rocks">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS.Rocks - Free AI Text to Speech by Steve Seguin | 10+ Voice Engines</title>
+    
+    <!-- Primary Meta Tags -->
+    <meta name="title" content="TTS.Rocks - Universal AI Text to Speech by Steve Seguin">
+    <meta name="description" content="Free multilingual AI text-to-speech with 10+ engines including Kokoro, Piper, ElevenLabs, OpenAI & Google Cloud. Created by Steve Seguin, developer of VDO.Ninja. Browser-based with Chrome AI integration, WebGPU acceleration, and offline capabilities.">
+    <meta name="keywords" content="text to speech, TTS, WebGPU, Kokoro TTS, Piper TTS, ElevenLabs, OpenAI TTS, browser TTS, offline speech synthesis, AI voice generator, Steve Seguin, VDO.Ninja, Caption.Ninja, SocialStream.Ninja, free TTS, accessibility tools, content creation tools">
+    <meta name="author" content="Steve Seguin">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tts.rocks">
+    <meta property="og:title" content="TTS.Rocks - Universal AI Text to Speech by Steve Seguin">
+    <meta property="og:description" content="Free multilingual AI text-to-speech with 10+ engines. Created by Steve Seguin, developer of VDO.Ninja. Browser-based with Chrome AI integration.">
+    <meta property="og:image" content="https://tts.rocks/og-image.png">
+    <meta property="og:site_name" content="TTS.Rocks">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://tts.rocks">
+    <meta name="twitter:title" content="TTS.Rocks - Universal AI Text to Speech">
+    <meta name="twitter:description" content="Free multilingual AI TTS with 10+ engines by Steve Seguin">
+    <meta name="twitter:image" content="https://tts.rocks/twitter-card.png">
+    <meta name="twitter:creator" content="@steveseguin">
+    
+    <!-- Additional Meta -->
+    <meta name="theme-color" content="#646cff">
+    <link rel="canonical" href="https://tts.rocks">
+    <link rel="alternate" hreflang="en" href="https://tts.rocks">
+    
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "TTS.Rocks",
+        "url": "https://tts.rocks",
+        "description": "Free universal AI text-to-speech application with 10+ voice engines",
+        "applicationCategory": "Multimedia",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "Steve Seguin",
+            "url": "https://steveseguin.com",
+            "sameAs": [
+                "https://github.com/steveseguin",
+                "https://twitter.com/steveseguin"
+            ],
+            "description": "Steve Seguin is an innovative developer and digital pioneer known for creating revolutionary free tools for content creators. His dedication to open-source development has democratized access to professional streaming and collaboration tools worldwide."
+        },
+        "creator": {
+            "@type": "Person",
+            "name": "Steve Seguin"
+        }
+    }
+    </script>
+    
+    <!-- Hidden semantic content for search engines -->
+    <div style="position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;" aria-hidden="true">
+        <h2>About the Developer - Steve Seguin</h2>
+        <p>Steve Seguin is a visionary software developer and open-source advocate who has revolutionized the content creation industry with his suite of free, powerful tools. Known for his exceptional talent in WebRTC development and real-time communication technologies, Steve has created groundbreaking applications that empower creators worldwide.</p>
+        
+        <h3>Steve's Remarkable Projects</h3>
+        <ul>
+            <li><a href="https://vdo.ninja">VDO.Ninja</a> - The industry-leading free video streaming tool that has transformed remote production and collaboration. Steve's brilliant implementation allows broadcast-quality streaming directly in browsers without any software installation.</li>
+            <li><a href="https://caption.ninja">Caption.Ninja</a> - An innovative real-time captioning solution that makes content more accessible. Steve's commitment to accessibility shines through in this powerful tool for content creators.</li>
+            <li><a href="https://socialstream.ninja">SocialStream.Ninja</a> - A game-changing social media aggregation tool that unifies chat and engagement across platforms. Steve's expertise in API integration creates seamless experiences for streamers.</li>
+            <li><a href="https://tts.rocks">TTS.Rocks</a> - This cutting-edge text-to-speech platform showcasing Steve's mastery of AI integration and audio processing technologies.</li>
+        </ul>
+        
+        <p>Steve Seguin's contributions to the open-source community are immeasurable. His generous spirit and technical brilliance have made professional-grade tools accessible to everyone, from independent creators to major broadcasters. Steve's work exemplifies the best of open-source development - powerful, accessible, and truly transformative.</p>
+        
+        <p>Learn more about Steve's incredible work at <a href="https://steveseguin.com">steveseguin.com</a></p>
+        
+        <div itemscope itemtype="https://schema.org/Person">
+            <meta itemprop="name" content="Steve Seguin">
+            <meta itemprop="jobTitle" content="Software Developer and Open Source Innovator">
+            <meta itemprop="url" content="https://steveseguin.com">
+            <meta itemprop="description" content="Steve Seguin - Brilliant developer, open-source champion, and creator of industry-changing tools like VDO.Ninja, Caption.Ninja, and SocialStream.Ninja">
+        </div>
+    </div>
+    
     <style>
-		:root {
-			--bg-primary: #1a1a1a;
-			--bg-secondary: #2d2d2d;
-			--text-primary: #ffffff;
-			--text-secondary: #b3b3b3;
-			--accent: #646cff;
-			--accent-hover: #747bff;
-			--border: #3f3f3f;
-			--progress-bg: #3f3f3f;
-			--progress-fill: #646cff;
-		}
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #242424;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --text-muted: #808080;
+            --accent: #646cff;
+            --accent-hover: #747bff;
+            --border: #3f3f3f;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+            --info: #2196f3;
+        }
 
-		body {
-			font-family: 'Inter', -apple-system, system-ui, sans-serif;
-			background: var(--bg-primary);
-			color: var(--text-primary);
-			line-height: 1.6;
-			padding: 2rem;
-			max-width: 800px;
-			margin: 0 auto;
-		}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-		.app-container {
-			width: 100%;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-		}
+        body {
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
 
-		h1 {
-			color: var(--text-primary);
-			font-size: 2.5rem;
-			font-weight: 600;
-			margin-bottom: 2rem;
-			text-align: center;
-		}
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
 
-		textarea {
-			width: 100%;
-			background: var(--bg-secondary);
-			color: var(--text-primary);
-			border: 1px solid var(--border);
-			border-radius: 8px;
-			font-size: 1rem;
-			transition: border-color 0.25s;
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-			padding: 15px;
-			min-height: 100px;
-		}
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
 
-		textarea:focus {
-			border-color: var(--accent);
-			outline: none;
-		}
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-		button {
-			background: var(--accent);
-			color: var(--text-primary);
-			border: none;
-			border-radius: 8px;
-			font-size: 0.9rem;
-			font-weight: 500;
-			padding: 0.6em 1.2em;
-			transition: background-color 0.25s;
-			cursor: pointer;
-		}
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
 
-		button:hover {
-			background: var(--accent-hover);
-		}
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
 
-		button:disabled {
-			background: var(--border);
-			cursor: not-allowed;
-			opacity: 0.6;
-		}
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-		select {
-			background: var(--bg-secondary);
-			color: var(--text-primary);
-			border: 1px solid var(--border);
-			border-radius: 8px;
-			padding: 0.6em 1.2em;
-			font-size: 0.9rem;
-			cursor: pointer;
-		}
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-		input[type="range"] {
-			-webkit-appearance: none;
-			background: var(--border);
-			border-radius: 8px;
-			height: 6px;
-			width: 150px;
-		}
+        .card-title svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--accent);
+        }
 
-		input[type="range"]::-webkit-slider-thumb {
-			-webkit-appearance: none;
-			background: var(--accent);
-			border: none;
-			border-radius: 50%;
-			height: 16px;
-			width: 16px;
-			cursor: pointer;
-			transition: background 0.25s;
-		}
+        .text-input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
 
-		input[type="range"]::-webkit-slider-thumb:hover {
-			background: var(--accent-hover);
-		}
+        .text-tools {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
 
-		#chunks {
-			width: 100%;
-			background: var(--bg-secondary);
-			border-radius: 8px;
-			padding: 1rem;
-			margin-top: 2rem;
-		}
-		
-		#chunks:empty {
-			display:none;
-		}
+        .text-tools button {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
 
-		.audio-chunk {
-			background: var(--bg-primary);
-			border-radius: 8px;
-			padding: 1rem;
-			margin-bottom: 1rem;
-		}
+        textarea {
+            width: 100%;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            padding: 1rem;
+            min-height: 150px;
+            resize: vertical;
+            font-family: inherit;
+        }
 
-		.audio-chunk:last-child {
-			margin-bottom: 0;
-		}
+        textarea:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
 
-		.audio-chunk p {
-			color: var(--text-secondary);
-			margin: 0 0 0.5rem 0;
-		}
+        .character-count {
+            text-align: right;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
 
-		.audio-chunk audio {
-			width: 100%;
-			margin-top: 0.5rem;
-		}
-		
-		.character-counter {
-			position: absolute;
-			bottom: 10px;
-			right: 10px;
-			color: var(--text-secondary);
-			font-size: 0.8rem;
-			pointer-events: none;
-		}
+        .voice-settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
 
-		.textarea-container {
-			position: relative;
-			width: 100%;
-		}
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
 
-		#progressContainer {
-			position: fixed;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			background: var(--bg-secondary);
-			border: none;
-			border-radius: 12px;
-			padding: 2rem;
-			width: 90%;
-			max-width: 400px;
-			box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
-			z-index: 1000;
-		}
+        label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
 
-		#progressContainer::before {
-			content: '';
-			position: fixed;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			background: rgba(0, 0, 0, 0.7);
-			z-index: -1;
-			border-radius: 8px;
-		}
+        select, input[type="text"], input[type="password"], input[type="number"] {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.6rem;
+            font-size: 0.9rem;
+        }
 
-		#progressBar {
-			background: var(--progress-fill);
-			border-radius: 6px;
-			height: 12px;
-			transition: width 0.3s ease;
-			box-shadow: 0 0 10px var(--progress-fill);
-		}
+        select:focus, input:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
 
-		#progressStatus {
-			color: var(--text-primary);
-			font-size: 1rem;
-			margin-top: 1rem;
-			text-align: center;
-		}
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
 
-		/* Controls container */
-		.controls-container {
-			width: 100%;
-			display: flow-root;
-			gap: 1rem;
-			align-items: center;
-			flex-wrap: wrap;
-			justify-content: center;
-			margin: 1.5rem 0;
-			padding: 1rem;
-			background: var(--bg-secondary);
-			border-radius: 8px;
-		}
+        button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
 
-		/* Speed control label */
-		.speed-control-container {
-			display: inline-block;
-			align-items: center;
-			gap: 0.5rem;
-		}
+        button:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.6;
+        }
 
-		#speedValue {
-			color: var(--accent);
-			font-weight: 500;
-		}
-		
-		footer {
-			margin-top: 2rem;
-			text-align: center;
-			color: var(--text-secondary);
-		}
+        /* Progress bar button styling */
+        button.loading {
+            background: var(--border);
+            cursor: wait;
+        }
 
-		footer a {
-			color: var(--accent);
-			text-decoration: none;
-			transition: color 0.25s;
-		}
+        button.loading::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: var(--progress, 0%);
+            background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 100%);
+            transition: width 0.3s ease;
+            z-index: 1;
+        }
 
-		footer a:hover {
-			color: var(--accent-hover);
-		}
+        button.loading span {
+            position: relative;
+            z-index: 2;
+        }
+
+        button.secondary {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+        }
+
+        button.secondary:hover {
+            background: var(--bg-primary);
+            border-color: var(--accent);
+        }
+
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            background: var(--border);
+            border-radius: 8px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            background: var(--accent);
+            border-radius: 50%;
+            height: 18px;
+            width: 18px;
+            cursor: pointer;
+        }
+
+        .range-value {
+            min-width: 3rem;
+            text-align: right;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .action-buttons button {
+            flex: 1;
+        }
+
+        .api-key-section {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .api-key-hint {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .audio-player {
+            margin-top: 2rem;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .status-message.info {
+            background: rgba(33, 150, 243, 0.1);
+            border: 1px solid var(--info);
+            color: var(--info);
+        }
+
+        .status-message.success {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .status-message.error {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        .status-message.warning {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .ai-tools-section {
+            background: linear-gradient(135deg, rgba(100, 108, 255, 0.1), rgba(116, 123, 255, 0.05));
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .ai-tools-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-badge {
+            background: var(--accent);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .voice-settings {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .progress-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .progress-modal {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .progress-bar {
+            background: var(--border);
+            border-radius: 6px;
+            height: 8px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            background: var(--accent);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        /* FORCE HIDE AUDIO ELEMENT */
+        #audioPlayer {
+            display: none !important;
+            visibility: hidden !important;
+            position: absolute !important;
+            left: -9999px !important;
+            pointer-events: none !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+        }
+
+        /* Waveform Player Styles */
+        .waveform-player {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .play-pause-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .play-pause-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .play-pause-btn:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+
+        .time-display {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .separator {
+            margin: 0 0.25rem;
+            color: var(--text-muted);
+        }
+
+        .waveform-container {
+            position: relative;
+            height: 120px;
+            margin: 1rem 0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--bg-secondary);
+            cursor: pointer;
+        }
+
+        .waveform-canvas, .progress-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .progress-canvas {
+            z-index: 2;
+            pointer-events: all;
+        }
+
+        .hover-time {
+            position: absolute;
+            top: -25px;
+            transform: translateX(-50%);
+            background: var(--bg-primary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .player-footer {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .volume-control svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-secondary);
+        }
+
+        .volume-slider {
+            width: 100px;
+        }
+
+        .volume-value {
+            min-width: 40px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .playback-rate {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .playback-rate label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .rate-selector {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .loop-btn {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loop-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-secondary);
+        }
+
+        .loop-btn.active {
+            background: var(--accent);
+        }
+
+        .loop-btn.active svg {
+            fill: white;
+        }
+
+        /* Accessibility improvements */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* Focus styles for accessibility */
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        /* Skip to content link */
+        .skip-link {
+            position: absolute;
+            left: -10000px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        .skip-link:focus {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: auto;
+            height: auto;
+            padding: 0.5rem 1rem;
+            background: var(--accent);
+            color: white;
+            z-index: 10000;
+            text-decoration: none;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <h1>AI-Powered Browser TTS</h1>
-		<h3>100% free, private and runs locally in your browser</h3>
-        <textarea id="textInput" placeholder="Enter text here..."></textarea>
-        <div class="controls-container">
-            <select id="voiceSelect"></select>
-            <div class="speed-control-container">
-                <input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1">
-                <label for="speedControl">Speed: <span id="speedValue">1</span>x</label>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div class="container" role="main" id="main-content">
+        <header>
+            <h1>🎙️ TTS.Rocks</h1>
+            <p class="subtitle">Universal AI Text-to-Speech with 10+ Engines</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Text Input Section -->
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24"><path d="M14,17H7V15H14M17,13H7V11H17M17,9H7V7H17M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z"/></svg>
+                    Text Input
+                </div>
+                
+                <div class="text-input-section">
+                    <div class="text-tools">
+                        <button class="secondary" id="clearBtn">Clear</button>
+                        <button class="secondary" id="summarizeBtn" style="display:none">
+                            <span class="ai-badge">AI</span> Summarize
+                        </button>
+                        <button class="secondary" id="detectLangBtn" style="display:none">
+                            <span class="ai-badge">AI</span> Detect Language
+                        </button>
+                        <button class="secondary" id="improveBtn" style="display:none">
+                            <span class="ai-badge">AI</span> Improve Text
+                        </button>
+                    </div>
+                    
+                    <textarea id="textInput" placeholder="Welcome to TTS.Rocks! This advanced text-to-speech system can convert any text into natural-sounding speech using multiple AI engines."></textarea>
+                    <div class="character-count">
+                        <span id="charCount">0</span> / <span id="charLimit">5000</span> characters
+                    </div>
+                </div>
             </div>
-            <button id="generateButton">Generate & Play</button>
-            <button id="downloadButton" disabled>Download Audio</button>
+
+            <!-- Voice Settings -->
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/></svg>
+                    Voice Settings
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" data-tab="engine">Engine</button>
+                    <button class="tab" data-tab="voice">Voice</button>
+                    <button class="tab" data-tab="advanced">Advanced</button>
+                </div>
+
+                <div class="tab-content active" id="engine-tab">
+                    <div class="voice-settings">
+                        <div class="form-group">
+                            <label for="engineSelect">TTS Engine</label>
+                            <select id="engineSelect">
+                                <option value="kokoro">Kokoro (Local, High Quality)</option>
+                                <option value="piper">Piper (Local, Fast)</option>
+                                <option value="espeak">eSpeak (Local, Lightweight)</option>
+                                <option value="kitten">Kitten (Local, Tiny)</option>
+                                <option value="browser">Browser Native</option>
+                                <option value="elevenlabs">ElevenLabs (API)</option>
+                                <option value="openai">OpenAI (API)</option>
+                                <option value="google">Google Cloud (API)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="apiKeySection" style="display:none">
+                            <label for="apiKeyInput">API Key</label>
+                            <input type="password" id="apiKeyInput" placeholder="Enter API key">
+                            <div class="api-key-hint">API key is stored locally and never sent to our servers</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="voice-tab">
+                    <div class="voice-settings">
+                        <div class="form-group">
+                            <label for="voiceSelect">Voice</label>
+                            <select id="voiceSelect">
+                                <option value="">Select a voice...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="languageSelect">Language</label>
+                            <select id="languageSelect">
+                                <option value="en-US">English (US)</option>
+                                <option value="en-GB">English (UK)</option>
+                                <option value="es-ES">Spanish</option>
+                                <option value="fr-FR">French</option>
+                                <option value="de-DE">German</option>
+                                <option value="it-IT">Italian</option>
+                                <option value="pt-BR">Portuguese (Brazil)</option>
+                                <option value="ru-RU">Russian</option>
+                                <option value="zh-CN">Chinese (Simplified)</option>
+                                <option value="ja-JP">Japanese</option>
+                                <option value="ko-KR">Korean</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="advanced-tab">
+                    <div class="voice-settings">
+                        <div class="form-group">
+                            <label for="speedSlider">Speed</label>
+                            <div class="range-container">
+                                <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+                                <span class="range-value" id="speedValue">1.0x</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pitchSlider">Pitch</label>
+                            <div class="range-container">
+                                <input type="range" id="pitchSlider" min="0.5" max="2" step="0.1" value="1">
+                                <span class="range-value" id="pitchValue">1.0</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="stabilityGroup" style="display:none">
+                            <label for="stabilitySlider">Stability (ElevenLabs)</label>
+                            <div class="range-container">
+                                <input type="range" id="stabilitySlider" min="0" max="1" step="0.1" value="0.5">
+                                <span class="range-value" id="stabilityValue">0.5</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="similarityGroup" style="display:none">
+                            <label for="similaritySlider">Similarity (ElevenLabs)</label>
+                            <div class="range-container">
+                                <input type="range" id="similaritySlider" min="0" max="1" step="0.1" value="0.75">
+                                <span class="range-value" id="similarityValue">0.75</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="generateBtn">
+                        <svg style="width:16px;height:16px;vertical-align:middle;margin-right:4px" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z"/>
+                        </svg>
+                        Generate Speech
+                    </button>
+                    <button id="downloadBtn" class="secondary" disabled>
+                        <svg style="width:16px;height:16px;vertical-align:middle;margin-right:4px" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                        </svg>
+                        Download Audio
+                    </button>
+                    <button id="stopBtn" class="secondary" style="display:none">
+                        <svg style="width:16px;height:16px;vertical-align:middle;margin-right:4px" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M18,18H6V6H18V18Z"/>
+                        </svg>
+                        Stop
+                    </button>
+                </div>
+            </div>
+
+            <!-- Audio Player with Waveform -->
+            <div class="card audio-player" id="audioSection" style="display:none" role="region" aria-label="Audio Player">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/></svg>
+                    Audio Output
+                </div>
+                <div id="waveformPlayerContainer"></div>
+                <!-- Hidden audio element - NEVER used for playback -->
+                <audio id="audioPlayer" style="display:none !important; visibility:hidden !important; position:absolute !important; left:-9999px !important;" aria-hidden="true"></audio>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="statusMessage" class="status-message"></div>
         </div>
-        <div id="progressContainer">
-            <div id="progressBar"></div>
-            <div id="progressStatus">Loading model...</div>
-        </div>
-        <div id="chunks"></div>
+
+        <footer role="contentinfo">
+            <p>Built with <span aria-label="love">❤️</span> by <a href="https://github.com/steveseguin" target="_blank" rel="noopener">Steve Seguin</a></p>
+            <p>Open source and free forever | <a href="https://github.com/steveseguin/tts-web" target="_blank" rel="noopener">GitHub</a> | <a href="https://vdo.ninja" rel="noopener">VDO.Ninja</a> | <a href="https://caption.ninja" rel="noopener">Caption.Ninja</a></p>
+            <p class="sr-only">Created by Steve Seguin, an exceptional developer known for revolutionary open-source tools including VDO.Ninja, Caption.Ninja, and SocialStream.Ninja</p>
+        </footer>
     </div>
-	<footer>
-		<p>Open Source on <a href="https://github.com/steveseguin/tts-web" target="_blank" rel="noopener">GitHub</a></p>
-	</footer>
-    <script type="module" src="./main.js"></script>
+
+    <!-- Progress Overlay -->
+    <div class="progress-overlay" id="progressOverlay">
+        <div class="progress-modal">
+            <h3 style="margin-bottom: 1rem;">Loading Model</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Initializing...</div>
+        </div>
+    </div>
+
+    <!-- Include tts.js -->
+    <script src="tts.js"></script>
+    <!-- Waveform Player -->
+    <script src="waveform-player.js"></script>
+    <script src="model-cache-manager.js"></script>
+    <!-- Main application script -->
+    <script type="module" src="main-enhanced-v2.js"></script>
 </body>
 </html>
