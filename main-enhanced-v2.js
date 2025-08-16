@@ -148,19 +148,34 @@ class TTSApp {
         // Initialize browser TTS voices
         this.loadBrowserVoices();
         
-        // Set up TTS.js integration if available
-        if (window.TTS) {
-            window.TTS.initAudioContext();
-        }
+        // Don't initialize audio context until user interaction
+        // It will be initialized on first generate button click
     }
 
     async initializeKokoro() {
-        if (this.kokoroTTS || this.isInitializing) {
-            return; // Already initialized or initializing
+        if (this.kokoroTTS) {
+            console.log('Kokoro already initialized');
+            return; // Already initialized
+        }
+        
+        if (this.isInitializing) {
+            console.log('Kokoro initialization already in progress');
+            return; // Already initializing
         }
         
         this.isInitializing = true;
+        this.updateGenerateButtonState();
         this.showInlineProgress('Initializing Kokoro TTS...');
+        
+        // Add timeout for initialization
+        const timeout = setTimeout(() => {
+            if (this.isInitializing) {
+                console.error('Kokoro initialization timed out');
+                this.isInitializing = false;
+                this.updateGenerateButtonState();
+                this.showStatus('Kokoro initialization timed out. Please try again.', 'error');
+            }
+        }, 30000); // 30 second timeout
         
         try {
             const device = (await detectWebGPU()) ? "webgpu" : "wasm";
@@ -173,33 +188,65 @@ class TTSApp {
                 this.showInlineProgress('Downloading Kokoro model (82MB)...');
                 modelData = await this.downloadAndCacheModel();
             } else {
-                console.log('Using cached model');
+                console.log('Using cached model, size:', modelData ? modelData.length : 0);
                 this.showInlineProgress('Loading cached model...');
             }
             
-            // Use a simpler initialization approach
+            // Ensure we have valid model data
+            if (!modelData || modelData.length === 0) {
+                console.error('Invalid model data, re-downloading...');
+                // Clear cache first
+                try {
+                    const db = await this.openDB();
+                    const transaction = db.transaction('models', 'readwrite');
+                    const store = transaction.objectStore('models');
+                    await store.delete('kokoro-82M');
+                } catch (e) {
+                    console.error('Error clearing cache:', e);
+                }
+                modelData = await this.downloadAndCacheModel();
+            }
+            
+            const customLoadFn = async () => {
+                console.log('Load function called, returning model data of size:', modelData.length);
+                return modelData;
+            };
+            
+            // Use the correct initialization parameters
             this.kokoroTTS = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
-                dtype: "q8", // Use quantized model for better compatibility
-                device: "wasm", // Force WASM for now to avoid WebGPU issues
-                model_file: modelData,
-                load_fn: async () => modelData
+                dtype: device === "wasm" ? "q8" : "fp32",
+                device: device,
+                load_fn: customLoadFn
             });
             
-            console.log('Kokoro TTS initialized successfully');
+            clearTimeout(timeout);
+            console.log('Kokoro TTS initialized successfully with voices:', this.kokoroTTS.voices);
             this.engineInitStatus.kokoro = true;
+            this.isInitializing = false;
             this.hideInlineProgress();
             this.populateKokoroVoices();
             this.updateGenerateButtonState();
             
         } catch (error) {
+            clearTimeout(timeout);
             console.error('Failed to initialize Kokoro:', error);
             this.showStatus('Failed to initialize Kokoro TTS: ' + error.message, 'error');
             this.hideInlineProgress();
             this.isInitializing = false;
+            this.kokoroTTS = null;
             this.updateGenerateButtonState();
+            
+            // Try to clear cache if initialization failed
+            try {
+                const db = await this.openDB();
+                const transaction = db.transaction('models', 'readwrite');
+                const store = transaction.objectStore('models');
+                await store.delete('kokoro-82M');
+                console.log('Cleared cached model due to initialization failure');
+            } catch (e) {
+                console.error('Error clearing cache:', e);
+            }
         }
-        
-        this.isInitializing = false;
     }
 
     async initializeChromeAI() {
@@ -614,7 +661,12 @@ class TTSApp {
     }
 
     async generateSpeech() {
-        if (this.isGenerating || this.isInitializing) return;
+        if (this.isGenerating) return;
+        
+        // Initialize audio context on first user interaction
+        if (window.TTS && !window.TTS.audioContext) {
+            window.TTS.initAudioContext();
+        }
         
         // Use placeholder text if nothing entered
         const text = this.textInput.value.trim() || 
@@ -634,10 +686,14 @@ class TTSApp {
         try {
             switch (this.currentEngine) {
                 case 'kokoro':
-                    if (!this.kokoroTTS) {
+                    if (!this.kokoroTTS && !this.isInitializing) {
                         await this.initializeKokoro();
                     }
-                    await this.generateKokoro(text);
+                    if (this.kokoroTTS) {
+                        await this.generateKokoro(text);
+                    } else {
+                        throw new Error('Kokoro TTS failed to initialize');
+                    }
                     break;
                     
                 case 'browser':
