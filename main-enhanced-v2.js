@@ -3,7 +3,7 @@ import { KokoroTTS, TextSplitterStream, detectWebGPU } from './dist/lib/kokoro-b
 
 class TTSApp {
     constructor() {
-        this.currentEngine = 'browser'; // Start with browser by default
+        this.currentEngine = 'kokoro'; // Start with kokoro by default
         this.kokoroTTS = null;
         this.audioBlob = null;
         this.isGenerating = false;
@@ -453,23 +453,42 @@ class TTSApp {
         // Check if engine is ready
         let isReady = true;
         let buttonText = 'Generate Speech';
+        let buttonHTML = '<span>Generate Speech</span>';
         
         if (engine === 'kokoro') {
             if (this.isInitializing) {
                 isReady = false;
-                buttonText = 'Loading Model...';
-            } else if (!this.kokoroTTS) {
-                buttonText = 'Generate Speech (will download model)';
+                this.generateBtn.classList.add('loading');
+                buttonHTML = '<span>Loading Model...</span>';
+            } else {
+                this.generateBtn.classList.remove('loading');
+                if (!this.kokoroTTS) {
+                    buttonHTML = '<span>Generate Speech (will download model)</span>';
+                } else {
+                    buttonHTML = '<span>Generate Speech</span>';
+                }
             }
         } else if (['elevenlabs', 'openai', 'google'].includes(engine)) {
+            this.generateBtn.classList.remove('loading');
             const savedKey = localStorage.getItem(`tts_${engine}_key`);
             if (!savedKey && !this.apiKeyInput.value) {
-                buttonText = 'Generate Speech (API key required)';
+                buttonHTML = '<span>Generate Speech (API key required)</span>';
             }
+        } else {
+            this.generateBtn.classList.remove('loading');
         }
         
-        this.generateBtn.textContent = buttonText;
+        this.generateBtn.innerHTML = buttonHTML;
         this.generateBtn.disabled = this.isInitializing;
+    }
+    
+    setButtonProgress(percent) {
+        this.generateBtn.style.setProperty('--progress', percent + '%');
+        if (percent > 0 && percent < 100) {
+            this.generateBtn.classList.add('loading');
+        } else {
+            this.generateBtn.classList.remove('loading');
+        }
     }
 
     populatePiperVoices() {
@@ -597,7 +616,10 @@ class TTSApp {
     async generateSpeech() {
         if (this.isGenerating || this.isInitializing) return;
         
-        const text = this.textInput.value.trim() || "This is a test of the text-to-speech system.";
+        // Use placeholder text if nothing entered
+        const text = this.textInput.value.trim() || 
+                    this.textInput.placeholder || 
+                    "Welcome to TTS.Rocks! This advanced text-to-speech system can convert any text into natural-sounding speech using multiple AI engines.";
         
         if (text.length > 5000) {
             this.showStatus('Text is too long. Please limit to 5000 characters.', 'error');
@@ -875,15 +897,13 @@ class TTSApp {
     }
 
     restoreState() {
-        // Don't auto-load Kokoro on page load
-        if (this.settings.engine && this.settings.engine !== 'kokoro') {
+        // Restore saved engine or default to kokoro
+        if (this.settings.engine) {
             this.engineSelect.value = this.settings.engine;
-            this.onEngineChange();
         } else {
-            // Default to browser TTS
-            this.engineSelect.value = 'browser';
-            this.onEngineChange();
+            this.engineSelect.value = 'kokoro';
         }
+        this.onEngineChange();
         
         if (this.settings.voice) {
             setTimeout(() => {
@@ -991,6 +1011,8 @@ class TTSApp {
                 loaded += value.length;
                 
                 const percent = (loaded / total) * 100;
+                this.setButtonProgress(percent);
+                this.generateBtn.innerHTML = `<span>Downloading: ${percent.toFixed(0)}%</span>`;
                 this.showInlineProgress(`Downloading model: ${percent.toFixed(1)}%`);
             }
             
@@ -1002,9 +1024,11 @@ class TTSApp {
             // Cache the model
             await this.cacheModel('kokoro-82M', modelData);
             
+            this.setButtonProgress(100);
             return modelData;
         } catch (error) {
             console.error('Error downloading model:', error);
+            this.setButtonProgress(0);
             throw error;
         }
     }

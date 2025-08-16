@@ -258,6 +258,8 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
         }
 
         button:hover {
@@ -270,6 +272,29 @@
             cursor: not-allowed;
             transform: none;
             opacity: 0.6;
+        }
+
+        /* Progress bar button styling */
+        button.loading {
+            background: var(--border);
+            cursor: wait;
+        }
+
+        button.loading::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: var(--progress, 0%);
+            background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 100%);
+            transition: width 0.3s ease;
+            z-index: 1;
+        }
+
+        button.loading span {
+            position: relative;
+            z-index: 2;
         }
 
         button.secondary {
@@ -752,7 +777,7 @@
                         </button>
                     </div>
                     
-                    <textarea id="textInput" placeholder="Enter text to convert to speech..."></textarea>
+                    <textarea id="textInput" placeholder="Welcome to TTS.Rocks! This advanced text-to-speech system can convert any text into natural-sounding speech using multiple AI engines."></textarea>
                     <div class="character-count">
                         <span id="charCount">0</span> / <span id="charLimit">5000</span> characters
                     </div>
