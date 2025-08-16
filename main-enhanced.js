@@ -156,13 +156,18 @@ class TTSApp {
             this.showProgress('Initializing Kokoro TTS...');
             
             const device = (await detectWebGPU()) ? "webgpu" : "wasm";
-            const cachedModel = await this.getCachedModel('kokoro-82M');
+            console.log('Using device:', device);
             
-            if (!cachedModel) {
-                await this.downloadAndCacheModel();
+            let modelData = await this.getCachedModel('kokoro-82M');
+            
+            if (!modelData) {
+                console.log('Model not cached, downloading...');
+                modelData = await this.downloadAndCacheModel();
+            } else {
+                console.log('Using cached model');
             }
             
-            const customLoadFn = async () => cachedModel || await this.getCachedModel('kokoro-82M');
+            const customLoadFn = async () => modelData;
             
             this.kokoroTTS = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
                 dtype: device === "wasm" ? "q8" : "fp32",
@@ -170,12 +175,13 @@ class TTSApp {
                 load_fn: customLoadFn
             });
             
+            console.log('Kokoro TTS initialized successfully');
             this.hideProgress();
             this.populateKokoroVoices();
             
         } catch (error) {
             console.error('Failed to initialize Kokoro:', error);
-            this.showStatus('Failed to initialize Kokoro TTS', 'error');
+            this.showStatus('Failed to initialize Kokoro TTS: ' + error.message, 'error');
             this.hideProgress();
         }
     }
@@ -616,22 +622,46 @@ class TTSApp {
             await this.initializeKokoro();
         }
         
-        const streamer = new TextSplitterStream();
-        streamer.push(text);
-        streamer.close();
-        
-        const stream = this.kokoroTTS.stream(streamer, {
-            voice: this.voiceSelect.value || 'af_aoede',
-            speed: parseFloat(this.speedSlider.value),
-            streamAudio: false
-        });
-        
-        for await (const { audio } of stream) {
-            if (!audio) continue;
+        try {
+            const voice = this.voiceSelect.value || 'af_aoede';
+            console.log('Generating with Kokoro voice:', voice);
             
-            this.audioBlob = audio.toBlob();
-            this.audioPlayer.src = URL.createObjectURL(this.audioBlob);
-            await this.audioPlayer.play();
+            // Generate audio directly without streaming for better compatibility
+            const audio = await this.kokoroTTS.generate(text, {
+                voice: voice,
+                speed: parseFloat(this.speedSlider.value)
+            });
+            
+            if (audio) {
+                this.audioBlob = audio.toBlob();
+                this.audioPlayer.src = URL.createObjectURL(this.audioBlob);
+                
+                // Show the fallback audio player as well
+                this.audioPlayer.style.display = 'block';
+                await this.audioPlayer.play();
+            }
+        } catch (error) {
+            console.error('Kokoro generation error:', error);
+            
+            // Try with streaming as fallback
+            const streamer = new TextSplitterStream();
+            streamer.push(text);
+            streamer.close();
+            
+            const stream = this.kokoroTTS.stream(streamer, {
+                voice: this.voiceSelect.value || 'af_aoede',
+                speed: parseFloat(this.speedSlider.value),
+                streamAudio: false
+            });
+            
+            for await (const { audio } of stream) {
+                if (!audio) continue;
+                
+                this.audioBlob = audio.toBlob();
+                this.audioPlayer.src = URL.createObjectURL(this.audioBlob);
+                this.audioPlayer.style.display = 'block';
+                await this.audioPlayer.play();
+            }
         }
     }
 
@@ -866,35 +896,47 @@ class TTSApp {
     }
 
     async downloadAndCacheModel() {
-        this.showProgress('Downloading Kokoro model...');
-        
-        const modelUrl = 'https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model.onnx';
-        const response = await fetch(modelUrl);
-        const total = +response.headers.get('Content-Length');
-        let loaded = 0;
-        
-        const reader = response.body.getReader();
-        const chunks = [];
-        
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+        try {
+            this.showProgress('Downloading Kokoro model...');
             
-            chunks.push(value);
-            loaded += value.length;
+            const modelUrl = 'https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model.onnx';
+            const response = await fetch(modelUrl);
             
-            const percent = (loaded / total) * 100;
-            this.setProgress(percent);
-            this.progressText.textContent = `Downloading model: ${percent.toFixed(1)}%`;
+            if (!response.ok) {
+                throw new Error(`Failed to download model: ${response.status}`);
+            }
+            
+            const total = +response.headers.get('Content-Length');
+            let loaded = 0;
+            
+            const reader = response.body.getReader();
+            const chunks = [];
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                chunks.push(value);
+                loaded += value.length;
+                
+                const percent = (loaded / total) * 100;
+                this.setProgress(percent);
+                this.progressText.textContent = `Downloading model: ${percent.toFixed(1)}%`;
+            }
+            
+            const modelBlob = new Blob(chunks);
+            const modelData = new Uint8Array(await modelBlob.arrayBuffer());
+            
+            console.log('Model downloaded, size:', modelData.length);
+            
+            // Cache the model
+            await this.cacheModel('kokoro-82M', modelData);
+            
+            return modelData;
+        } catch (error) {
+            console.error('Error downloading model:', error);
+            throw error;
         }
-        
-        const modelBlob = new Blob(chunks);
-        const modelData = new Uint8Array(await modelBlob.arrayBuffer());
-        
-        // Cache the model
-        await this.cacheModel('kokoro-82M', modelData);
-        
-        return modelData;
     }
 
     async cacheModel(modelKey, modelData) {
