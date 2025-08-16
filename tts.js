@@ -2185,6 +2185,9 @@ TTS.kittenTTS = async function(text) {
             TTS.kittenSettings.speed || 1.0
         );
         
+        // Store the blob for waveform player access
+        TTS.lastGeneratedBlob = audioBlob;
+        
         // Send to NeuroSync if enabled
         if (TTS.neuroSyncEnabled) {
             TTS.sendToNeuroSync(audioBlob).then(result => {
@@ -2215,11 +2218,18 @@ TTS.kittenTTS = async function(text) {
             await TTS.audioContext.resume();
         }
         
-        // Play the audio
-        TTS.audio.play().catch(err => {
-            console.error("Audio play failed, user interaction required", err);
+        // Don't auto-play when waveform player is being used
+        // The main app will handle playback through waveform player
+        if (!window.useWaveformPlayer) {
+            // Play the audio (backward compatibility)
+            TTS.audio.play().catch(err => {
+                console.error("Audio play failed, user interaction required", err);
+                TTS.finishedAudio();
+            });
+        } else {
+            // Just signal that audio is ready without playing
             TTS.finishedAudio();
-        });
+        }
         
     } catch (e) {
         console.error('Kitten TTS error:', e);

@@ -1088,6 +1088,11 @@ class TTSApp {
         window.TTS.rate = parseFloat(this.speedSlider.value);
         window.TTS.pitch = parseFloat(this.pitchSlider.value);
         
+        // Enable waveform player mode for Kitten TTS
+        if (engine === 'kitten') {
+            window.useWaveformPlayer = true;
+        }
+        
         if (engine === 'piper') {
             this.showInlineProgress('Initializing Piper TTS...');
             window.TTS.piperVoice = this.voiceSelect.value;
@@ -1123,38 +1128,40 @@ class TTSApp {
                 this.showInlineProgress(`Generating speech with Kitten TTS${dots}`);
             }, 500);
             
-            // Wait a reasonable time for Kitten TTS to generate
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            
-            // Clear progress
-            clearInterval(progressInterval);
-            this.hideInlineProgress();
-            
-            // Check if audio was generated
-            if (window.TTS.audio && window.TTS.audio.src) {
-                try {
-                    // Fetch the audio blob from the audio element src
-                    const response = await fetch(window.TTS.audio.src);
-                    const blob = await response.blob();
+            // Wait for generation to complete - check for the stored blob
+            let checkInterval = setInterval(() => {
+                if (window.TTS.lastGeneratedBlob) {
+                    clearInterval(checkInterval);
+                    clearInterval(progressInterval);
+                    this.hideInlineProgress();
                     
-                    // Store blob for download
-                    this.audioBlob = blob;
+                    // Use the blob directly from TTS
+                    this.audioBlob = window.TTS.lastGeneratedBlob;
                     
-                    // Load into waveform player
+                    // Load into waveform player and auto-play like Kokoro
                     if (this.waveformPlayer) {
-                        await this.waveformPlayer.loadAudio(blob);
-                        // Don't auto-play - let user click play
+                        this.waveformPlayer.loadAudio(this.audioBlob).then(() => {
+                            console.log('Kitten TTS audio loaded, auto-playing...');
+                            // Auto-play the waveform player
+                            this.waveformPlayer.play();
+                        });
                     }
                     
                     // Show audio section
                     this.audioSection.style.display = 'block';
-                } catch (err) {
-                    console.error('Error loading Kitten TTS audio into waveform:', err);
-                    this.showStatus('Failed to load audio into player', 'error');
+                    
+                    // Clean up
+                    window.TTS.lastGeneratedBlob = null;
+                    window.useWaveformPlayer = false;
                 }
-            } else {
-                this.showStatus('Kitten TTS generation failed', 'error');
-            }
+                attempts++;
+                if (attempts > maxAttempts) {
+                    clearInterval(checkInterval);
+                    clearInterval(progressInterval);
+                    this.hideInlineProgress();
+                    this.showStatus('Kitten TTS generation timeout', 'error');
+                }
+            }, 100);
         } else if (engine === 'piper' || engine === 'espeak') {
             // Handle Piper and eSpeak audio similarly
             this.hideInlineProgress();
