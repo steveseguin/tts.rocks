@@ -236,11 +236,7 @@ class WaveformPlayer {
     }
 
     generateWaveform() {
-        // Ensure canvas has width before generating
-        if (this.waveformCanvas.width === 0) {
-            this.resizeCanvases();
-        }
-        
+        // Don't resize here - it causes infinite recursion
         const channelData = this.audioBuffer.getChannelData(0);
         const canvasWidth = this.waveformCanvas.width || 600;
         const samplesPerPeak = Math.floor(channelData.length / canvasWidth);
