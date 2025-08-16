@@ -616,27 +616,97 @@ class TTSApp {
     }
 
     populateElevenLabsVoices() {
+        // Create model selection dropdown
+        let modelSelectHTML = '';
+        const modelSelectEl = document.getElementById('elevenlabsModel');
+        if (!modelSelectEl) {
+            // Create model selector if it doesn't exist
+            const voiceGroup = this.voiceSelect.parentElement;
+            const modelDiv = document.createElement('div');
+            const savedModel = localStorage.getItem('tts_elevenlabs_model') || 'eleven_turbo_v2_5';
+            modelDiv.innerHTML = `
+                <label for="elevenlabsModel" style="display: block; margin-top: 1rem; margin-bottom: 0.5rem;">Model:</label>
+                <select id="elevenlabsModel" style="width: 100%; padding: 0.5rem; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px;">
+                    <option value="eleven_monolingual_v1" ${savedModel === 'eleven_monolingual_v1' ? 'selected' : ''}>Eleven Monolingual v1 (English)</option>
+                    <option value="eleven_multilingual_v2" ${savedModel === 'eleven_multilingual_v2' ? 'selected' : ''}>Eleven Multilingual v2 (29 languages)</option>
+                    <option value="eleven_turbo_v2" ${savedModel === 'eleven_turbo_v2' ? 'selected' : ''}>Eleven Turbo v2 (Fast)</option>
+                    <option value="eleven_turbo_v2_5" ${savedModel === 'eleven_turbo_v2_5' ? 'selected' : ''}>Eleven Turbo v2.5 (Fastest)</option>
+                </select>
+            `;
+            voiceGroup.appendChild(modelDiv);
+            
+            // Add change listener to save selection
+            const newModelSelect = document.getElementById('elevenlabsModel');
+            if (newModelSelect) {
+                newModelSelect.addEventListener('change', (e) => {
+                    localStorage.setItem('tts_elevenlabs_model', e.target.value);
+                });
+            }
+        }
+        
+        // More comprehensive voice list
         this.voiceSelect.innerHTML = `
-            <option value="21m00Tcm4TlvDq8ikWAM">Rachel</option>
-            <option value="AZnzlk1XvdvUeBnXmlld">Domi</option>
-            <option value="EXAVITQu4vr4xnSDxMaL">Bella</option>
-            <option value="ErXwobaYiN019PkySvjV">Antoni</option>
-            <option value="MF3mGyEYCl7XYWbV9V6O">Elli</option>
-            <option value="TxGEqnHWrfWFTfGW9XjX">Josh</option>
-            <option value="VR6AewLTigWG4xSOukaG">Arnold</option>
-            <option value="pNInz6obpgDQGcFmaJgB">Adam</option>
-            <option value="yoZ06aMxZJJ28mfd3POQ">Sam</option>
+            <optgroup label="Female Voices">
+                <option value="21m00Tcm4TlvDq8ikWAM">Rachel - Calm</option>
+                <option value="AZnzlk1XvdvUeBnXmlld">Domi - Strong</option>
+                <option value="EXAVITQu4vr4xnSDxMaL">Bella - Soft</option>
+                <option value="MF3mGyEYCl7XYWbV9V6O">Elli - Childish</option>
+                <option value="XB0fDUnXU5powFXDhCwa">Charlotte - English-Swedish</option>
+                <option value="XrExE9yKIg1WjnnlVkGX">Lily - English-British</option>
+                <option value="pFZP5JQG7iQjIQuC4Bku">Serena - American</option>
+                <option value="nPczCjzI2devNBz1zQrb">Dorothy - British</option>
+            </optgroup>
+            <optgroup label="Male Voices">
+                <option value="ErXwobaYiN019PkySvjV">Antoni - Well-rounded</option>
+                <option value="TxGEqnHWrfWFTfGW9XjX">Josh - Narrative</option>
+                <option value="VR6AewLTigWG4xSOukaG">Arnold - Crisp</option>
+                <option value="pNInz6obpgDQGcFmaJgB">Adam - Deep</option>
+                <option value="yoZ06aMxZJJ28mfd3POQ">Sam - Raspy</option>
+                <option value="2EiwWnXFnvU5JabPnv8n">Clyde - War Veteran</option>
+                <option value="CYw3kZ02Hs0563khs1Fj">Dave - English-Essex</option>
+                <option value="D38z5RcWu1voky8WS1ja">Fin - Irish</option>
+            </optgroup>
+            <optgroup label="American Accents">
+                <option value="IKne3meq5aSn9XLyUdCD">Charlie - Australian</option>
+                <option value="TX3LPaxmHKxFdv7VOQHJ">Liam - American</option>
+                <option value="SOYHLrjzK2X1ezoPC6cr">Harry - Anxious</option>
+            </optgroup>
         `;
     }
 
     populateOpenAIVoices() {
+        // Create model selection dropdown
+        const modelSelectEl = document.getElementById('openaiModel');
+        if (!modelSelectEl) {
+            // Create model selector if it doesn't exist
+            const voiceGroup = this.voiceSelect.parentElement;
+            const modelDiv = document.createElement('div');
+            const savedModel = localStorage.getItem('tts_openai_model') || 'tts-1-hd';
+            modelDiv.innerHTML = `
+                <label for="openaiModel" style="display: block; margin-top: 1rem; margin-bottom: 0.5rem;">Model:</label>
+                <select id="openaiModel" style="width: 100%; padding: 0.5rem; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px;">
+                    <option value="tts-1" ${savedModel === 'tts-1' ? 'selected' : ''}>TTS-1 (Optimized for speed)</option>
+                    <option value="tts-1-hd" ${savedModel === 'tts-1-hd' ? 'selected' : ''}>TTS-1-HD (Optimized for quality)</option>
+                </select>
+            `;
+            voiceGroup.appendChild(modelDiv);
+            
+            // Add change listener to save selection
+            const newModelSelect = document.getElementById('openaiModel');
+            if (newModelSelect) {
+                newModelSelect.addEventListener('change', (e) => {
+                    localStorage.setItem('tts_openai_model', e.target.value);
+                });
+            }
+        }
+        
         this.voiceSelect.innerHTML = `
-            <option value="alloy">Alloy</option>
-            <option value="echo">Echo</option>
-            <option value="fable">Fable</option>
-            <option value="onyx">Onyx</option>
-            <option value="nova">Nova</option>
-            <option value="shimmer">Shimmer</option>
+            <option value="alloy">Alloy (Neutral)</option>
+            <option value="echo">Echo (Male)</option>
+            <option value="fable">Fable (British Male)</option>
+            <option value="onyx">Onyx (Deep Male)</option>
+            <option value="nova">Nova (Female)</option>
+            <option value="shimmer">Shimmer (Female)</option>
         `;
     }
 
@@ -650,24 +720,124 @@ class TTSApp {
                 { value: 'en-US-Standard-B', text: 'Standard B (Male)' },
                 { value: 'en-US-Standard-C', text: 'Standard C (Female)' },
                 { value: 'en-US-Standard-D', text: 'Standard D (Male)' },
+                { value: 'en-US-Standard-E', text: 'Standard E (Female)' },
+                { value: 'en-US-Standard-F', text: 'Standard F (Female)' },
+                { value: 'en-US-Standard-G', text: 'Standard G (Female)' },
+                { value: 'en-US-Standard-H', text: 'Standard H (Female)' },
+                { value: 'en-US-Standard-I', text: 'Standard I (Male)' },
+                { value: 'en-US-Standard-J', text: 'Standard J (Male)' },
                 { value: 'en-US-Wavenet-A', text: 'WaveNet A (Female)' },
-                { value: 'en-US-Wavenet-B', text: 'WaveNet B (Male)' }
+                { value: 'en-US-Wavenet-B', text: 'WaveNet B (Male)' },
+                { value: 'en-US-Wavenet-C', text: 'WaveNet C (Female)' },
+                { value: 'en-US-Wavenet-D', text: 'WaveNet D (Male)' },
+                { value: 'en-US-Wavenet-E', text: 'WaveNet E (Female)' },
+                { value: 'en-US-Wavenet-F', text: 'WaveNet F (Female)' },
+                { value: 'en-US-Neural2-A', text: 'Neural2 A (Female)' },
+                { value: 'en-US-Neural2-C', text: 'Neural2 C (Female)' },
+                { value: 'en-US-Neural2-D', text: 'Neural2 D (Male)' },
+                { value: 'en-US-Neural2-E', text: 'Neural2 E (Female)' },
+                { value: 'en-US-Neural2-F', text: 'Neural2 F (Female)' },
+                { value: 'en-US-Neural2-G', text: 'Neural2 G (Female)' },
+                { value: 'en-US-Neural2-H', text: 'Neural2 H (Female)' },
+                { value: 'en-US-Neural2-I', text: 'Neural2 I (Male)' },
+                { value: 'en-US-Neural2-J', text: 'Neural2 J (Male)' },
+                { value: 'en-US-Studio-M', text: 'Studio M (Male)' },
+                { value: 'en-US-Studio-O', text: 'Studio O (Female)' }
             ],
             'es': [
                 { value: 'es-ES-Standard-A', text: 'Standard A (Female)' },
-                { value: 'es-ES-Standard-B', text: 'Standard B (Male)' }
+                { value: 'es-ES-Standard-B', text: 'Standard B (Male)' },
+                { value: 'es-ES-Standard-C', text: 'Standard C (Female)' },
+                { value: 'es-ES-Standard-D', text: 'Standard D (Female)' },
+                { value: 'es-ES-Wavenet-B', text: 'WaveNet B (Male)' },
+                { value: 'es-ES-Wavenet-C', text: 'WaveNet C (Female)' },
+                { value: 'es-ES-Neural2-A', text: 'Neural2 A (Female)' },
+                { value: 'es-ES-Neural2-B', text: 'Neural2 B (Male)' },
+                { value: 'es-ES-Neural2-C', text: 'Neural2 C (Female)' },
+                { value: 'es-ES-Neural2-D', text: 'Neural2 D (Female)' },
+                { value: 'es-ES-Neural2-E', text: 'Neural2 E (Female)' },
+                { value: 'es-ES-Neural2-F', text: 'Neural2 F (Male)' }
+            ],
+            'fr': [
+                { value: 'fr-FR-Standard-A', text: 'Standard A (Female)' },
+                { value: 'fr-FR-Standard-B', text: 'Standard B (Male)' },
+                { value: 'fr-FR-Standard-C', text: 'Standard C (Female)' },
+                { value: 'fr-FR-Standard-D', text: 'Standard D (Male)' },
+                { value: 'fr-FR-Wavenet-A', text: 'WaveNet A (Female)' },
+                { value: 'fr-FR-Wavenet-B', text: 'WaveNet B (Male)' },
+                { value: 'fr-FR-Neural2-A', text: 'Neural2 A (Female)' },
+                { value: 'fr-FR-Neural2-B', text: 'Neural2 B (Male)' }
+            ],
+            'de': [
+                { value: 'de-DE-Standard-A', text: 'Standard A (Female)' },
+                { value: 'de-DE-Standard-B', text: 'Standard B (Male)' },
+                { value: 'de-DE-Standard-C', text: 'Standard C (Female)' },
+                { value: 'de-DE-Standard-D', text: 'Standard D (Male)' },
+                { value: 'de-DE-Wavenet-A', text: 'WaveNet A (Female)' },
+                { value: 'de-DE-Wavenet-B', text: 'WaveNet B (Male)' },
+                { value: 'de-DE-Neural2-A', text: 'Neural2 A (Female)' },
+                { value: 'de-DE-Neural2-B', text: 'Neural2 B (Male)' }
             ]
         };
         
         const voices = voiceMap[langPrefix] || voiceMap['en'];
+        
+        // Create grouped options
         this.voiceSelect.innerHTML = '';
         
-        voices.forEach(voice => {
-            const option = document.createElement('option');
-            option.value = voice.value;
-            option.textContent = voice.text;
-            this.voiceSelect.appendChild(option);
-        });
+        // Group voices by type
+        const standardVoices = voices.filter(v => v.value.includes('Standard'));
+        const wavenetVoices = voices.filter(v => v.value.includes('Wavenet'));
+        const neural2Voices = voices.filter(v => v.value.includes('Neural2'));
+        const studioVoices = voices.filter(v => v.value.includes('Studio'));
+        
+        if (standardVoices.length > 0) {
+            const group = document.createElement('optgroup');
+            group.label = 'Standard Voices';
+            standardVoices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.value;
+                option.textContent = voice.text;
+                group.appendChild(option);
+            });
+            this.voiceSelect.appendChild(group);
+        }
+        
+        if (wavenetVoices.length > 0) {
+            const group = document.createElement('optgroup');
+            group.label = 'WaveNet Voices (Better Quality)';
+            wavenetVoices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.value;
+                option.textContent = voice.text;
+                group.appendChild(option);
+            });
+            this.voiceSelect.appendChild(group);
+        }
+        
+        if (neural2Voices.length > 0) {
+            const group = document.createElement('optgroup');
+            group.label = 'Neural2 Voices (Best Quality)';
+            neural2Voices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.value;
+                option.textContent = voice.text;
+                group.appendChild(option);
+            });
+            this.voiceSelect.appendChild(group);
+        }
+        
+        if (studioVoices.length > 0) {
+            const group = document.createElement('optgroup');
+            group.label = 'Studio Voices (Premium)';
+            studioVoices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.value;
+                option.textContent = voice.text;
+                group.appendChild(option);
+            });
+            this.voiceSelect.appendChild(group);
+        }
     }
 
     onLanguageChange() {
@@ -1033,12 +1203,30 @@ class TTSApp {
             window.TTS.elevenLabsSettings.speakingRate = parseFloat(this.speedSlider.value);
             window.TTS.elevenLabsSettings.stability = parseFloat(this.stabilitySlider.value);
             window.TTS.elevenLabsSettings.similarity = parseFloat(this.similaritySlider.value);
+            
+            // Use selected model if available
+            const modelSelect = document.getElementById('elevenlabsModel');
+            if (modelSelect) {
+                window.TTS.elevenLabsSettings.model = modelSelect.value;
+                // Save selection
+                localStorage.setItem('tts_elevenlabs_model', modelSelect.value);
+            }
+            
             window.TTS.ElevenLabsTTS(text);
             
         } else if (engine === 'openai') {
             window.TTS.OpenAIAPIKey = apiKey;
             window.TTS.openAISettings.voice = this.voiceSelect.value;
             window.TTS.openAISettings.speed = parseFloat(this.speedSlider.value);
+            
+            // Use selected model if available
+            const modelSelect = document.getElementById('openaiModel');
+            if (modelSelect) {
+                window.TTS.openAISettings.model = modelSelect.value;
+                // Save selection
+                localStorage.setItem('tts_openai_model', modelSelect.value);
+            }
+            
             window.TTS.openAITTS(text);
             
         } else if (engine === 'google') {
