@@ -45,14 +45,18 @@
         // Initialize audio context
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
+        // Determine base path from this script location so assets load from correct folder
+        const scriptSrc = (document.currentScript && document.currentScript.src) || window.location.href;
+        const scriptDir = scriptSrc.substring(0, scriptSrc.lastIndexOf('/'));
+        const baseUrl = scriptDir.replace(/\/thirdparty$/, '');
         // Determine the correct worker path based on the protocol
-        let workerPath = './thirdparty/espeakng.worker.js';
+        let workerPath = baseUrl + '/thirdparty/espeakng.worker.js';
         
         // If we're running from a file:// URL, we need to use a different approach
         if (window.location.protocol === 'file:') {
           console.warn('Running from file:// - eSpeak may have limitations due to CORS');
           // Try to use a relative path that might work
-          workerPath = 'thirdparty/espeakng.worker.js';
+          workerPath = baseUrl + '/thirdparty/espeakng.worker.js';
         }
         
         // Initialize SimpleTTS with proper options
@@ -116,7 +120,10 @@
       
       // Load the SimpleTTS script
       const script = document.createElement('script');
-      script.src = './thirdparty/espeakng-simple.js';
+      const scriptSrcBase = (document.currentScript && document.currentScript.src) || window.location.href;
+      const scriptDir2 = scriptSrcBase.substring(0, scriptSrcBase.lastIndexOf('/'));
+      const baseUrl2 = scriptDir2.replace(/\/thirdparty$/, '');
+      script.src = baseUrl2 + '/thirdparty/espeakng-simple.js';
       
       const loadPromise = new Promise((resolve, reject) => {
         script.onload = resolve;

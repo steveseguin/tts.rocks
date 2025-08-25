@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TTS.Rocks Manual Sender</title>
+  <style>
+    :root {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #2d2d2d;
+      --bg-tertiary: #242424;
+      --text-primary: #ffffff;
+      --text-secondary: #b3b3b3;
+      --text-muted: #808080;
+      --accent: #646cff;
+      --accent-hover: #747bff;
+      --border: #3f3f3f;
+    }
+    body { font-family: 'Inter', -apple-system, system-ui, sans-serif; margin:0; background:var(--bg-primary); color:var(--text-primary); }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+    .card { background:var(--bg-secondary); border:1px solid var(--border); border-radius:12px; padding:16px; margin:16px 0; }
+    .form-group { display:flex; flex-direction:column; gap:6px; }
+    label { color:var(--text-secondary); font-size:0.95rem; }
+    input, textarea { width:100%; background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border); border-radius:8px; padding:10px; }
+    input:focus, textarea:focus { outline:none; border-color:var(--accent); }
+    textarea { min-height: 120px; resize: vertical; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    button { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:10px 14px; cursor:pointer; font-weight:600; }
+    button.secondary { background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border); }
+    button.secondary:hover { background:var(--bg-primary); border-color:var(--accent); }
+    .muted { color:var(--text-muted); font-size:0.9em; }
+    .out { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Manual Text → Caption.Ninja Room</h1>
+    <p class="muted">Type text and send it into a Caption.Ninja room to be displayed by overlays and spoken by TTS (overlay/bridge) if enabled.</p>
+
+    <div class="card">
+      <div class="form-group">
+        <label for="room">Room ID</label>
+        <input id="room" placeholder="abc123" />
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="form-group">
+        <label for="label">Optional Label</label>
+        <input id="label" placeholder="Presenter" />
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="form-group">
+        <label for="text">Message</label>
+        <textarea id="text" placeholder="Type your message here. Press Enter to send."></textarea>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button id="send">Send Final</button>
+        <button id="stream" class="secondary">Send Interim</button>
+        <button id="clear" class="secondary">Clear</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div><strong>Status:</strong> <span id="status">Disconnected</span></div>
+      <div class="out" id="log" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card muted">
+      Tips: open an overlay e.g. <code>https://caption.ninja/overlay?room=YOURROOM&tts=en-US</code> or the bridge <code>../caption-bridge.html?room=YOURROOM&tts=en-US</code> to hear messages.
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const qs = new URLSearchParams(location.search);
+      const roomEl = document.getElementById('room');
+      const labelEl = document.getElementById('label');
+      const textEl = document.getElementById('text');
+      const statusEl = document.getElementById('status');
+      const logEl = document.getElementById('log');
+      const sendBtn = document.getElementById('send');
+      const streamBtn = document.getElementById('stream');
+      const clearBtn = document.getElementById('clear');
+
+      roomEl.value = qs.get('room') || '';
+      if (!roomEl.value) {
+        try {
+          const stored = localStorage.getItem('cn_room_id') || '';
+          if (stored) {
+            roomEl.value = stored;
+          } else {
+            roomEl.value = genRoom(16);
+            try { localStorage.setItem('cn_room_id', roomEl.value); } catch(e){}
+          }
+        } catch (e) {
+          roomEl.value = genRoom(16);
+        }
+      }
+      labelEl.value = qs.get('label') || '';
+
+      let socket = null;
+      let counter = 0;
+      function connect(){
+        if (socket) try { socket.close(); } catch(e){}
+        socket = new WebSocket('wss://api.caption.ninja:443');
+        socket.onopen = function(){ status('Connected'); join(); };
+        socket.onclose = function(){ status('Disconnected — reconnecting…'); setTimeout(connect, 1000);} ;
+        socket.onerror = function(e){ status('Error — reconnecting…'); console.warn(e); try{socket.close();}catch(_){} };
+      }
+      function status(s){ statusEl.textContent = s; }
+      function join(){
+        const room = roomEl.value.trim();
+        if (!room){ status('Enter a room to join'); return; }
+        socket.send(JSON.stringify({ join: room }));
+        status('Joined room: ' + room);
+      }
+      function send(kind){
+        const room = roomEl.value.trim(); if (!room) return;
+        try { localStorage.setItem('cn_room_id', room); } catch (e) {}
+        const txt = textEl.value; if (!txt) return;
+        counter += 1;
+        const payload = { msg:true, id: counter };
+        if (labelEl.value) payload.label = labelEl.value;
+        if (kind==='final') payload.final = txt; else payload.interm = txt;
+        try{ socket.send(JSON.stringify(payload)); log('→ ' + (kind==='final'?'FINAL: ':'INTERM: ') + txt); if (kind==='final') textEl.value=''; }catch(e){ console.warn(e); }
+      }
+      function log(s){ logEl.textContent = (s + '\n' + logEl.textContent).slice(0,4000); }
+
+      sendBtn.onclick = function(){ send('final'); };
+      streamBtn.onclick = function(){ send('interm'); };
+      clearBtn.onclick = function(){ textEl.value=''; };
+      textEl.addEventListener('keydown', function(e){ if (e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send('final'); }});
+
+      function genRoom(len){
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let out=''; for (let i=0;i<len;i++){ out+=chars.charAt(Math.floor(Math.random()*chars.length)); }
+        return out;
+      }
+
+      connect();
+    })();
+  </script>
+</body>
+</html>

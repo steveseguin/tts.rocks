@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Caption.Ninja → TTS Bridge</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 16px; background: #121212; color: #e6e6e6; }
+    .wrap { max-width: 820px; margin: 0 auto; }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .card { background: #1d1d1d; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 16px; margin: 10px 0; }
+    .muted { color: #a0a0a0; font-size: 0.9em; }
+    button { background: #2e7df6; color: #fff; border: none; border-radius: 6px; padding: 8px 14px; cursor: pointer; font-weight: 600; }
+    button.secondary { background: #383838; color: #e6e6e6; }
+    input, select { background: #202020; color: #e6e6e6; border: 1px solid #333; border-radius: 6px; padding: 6px 10px; }
+    code { background: #202020; border: 1px solid #333; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Caption.Ninja → TTS Bridge</h1>
+    <div class="card">
+      <div class="row" style="justify-content: space-between;">
+        <div>
+          <div><strong>Room:</strong> <code id="room">(none)</code></div>
+          <div class="muted">Joins the Caption.Ninja room and speaks final messages using the selected TTS provider.</div>
+        </div>
+        <div class="row">
+          <button id="toggle">Start TTS</button>
+          <button id="skip" class="secondary" title="Skip current">Skip</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div><strong>Status:</strong> <span id="status">Idle</span></div>
+      <div><strong>Last message:</strong> <span id="last">—</span></div>
+    </div>
+
+    <div class="card muted">
+      Tips: pass <code>&tts=en-US</code> to auto-start; use <code>&ttsprovider=kokoro|piper|google|elevenlabs|openai|system</code> and provider params (e.g., <code>&elevenlabskey=...&voice11=...</code>).
+    </div>
+  </div>
+
+  <script src="./tts.js"></script>
+  <script>
+    (function() {
+      const qs = new URLSearchParams(location.search);
+      let room = qs.get('room');
+      const ttsExplicit = qs.has('tts') || qs.has('speech') || qs.has('speak');
+      const langFromParam = qs.get('tts') || qs.get('speech') || qs.get('speak') || null;
+      const statusEl = document.getElementById('status');
+      const lastEl = document.getElementById('last');
+      const roomEl = document.getElementById('room');
+      const toggleBtn = document.getElementById('toggle');
+      const skipBtn = document.getElementById('skip');
+
+      roomEl.textContent = room || '(none)';
+
+      if (!room) {
+        try {
+          const stored = localStorage.getItem('cn_room_id') || '';
+          if (stored && /^[A-Za-z0-9]{12,}$/.test(stored)) {
+            room = stored;
+            const params = new URLSearchParams(location.search);
+            params.set('room', room);
+            history.replaceState({}, '', location.pathname + '?' + params.toString());
+          } else {
+            room = genRoom(16);
+            try { localStorage.setItem('cn_room_id', room); } catch(e){}
+            const params = new URLSearchParams(location.search);
+            params.set('room', room);
+            history.replaceState({}, '', location.pathname + '?' + params.toString());
+          }
+        } catch (e) {
+          room = genRoom(16);
+        }
+      }
+
+      // Configure the library with existing params if available
+      if (window.TTS && typeof window.TTS.configure === 'function') {
+        window.TTS.configure(qs);
+      } else {
+        window.TTS = window.TTS || {};
+      }
+
+      // If no explicit speech language set, adopt the incoming ln (language) when messages arrive
+      let allowLnUpdates = !langFromParam;
+
+      // Default TTS state: on if any tts param is present, otherwise off until user toggles
+      window.TTS.speech = !!ttsExplicit;
+      syncButton();
+
+      toggleBtn.onclick = function() {
+        window.TTS.speech = !window.TTS.speech;
+        syncButton();
+      };
+
+      skipBtn.onclick = function() {
+        try {
+          if (window.TTS && typeof window.TTS.skipCurrent === 'function') {
+            window.TTS.skipCurrent();
+          }
+        } catch(e) { console.warn(e); }
+      };
+
+      function syncButton() {
+        toggleBtn.textContent = window.TTS.speech ? 'Stop TTS' : 'Start TTS';
+        statusEl.textContent = window.TTS.speech ? 'TTS enabled' : 'TTS disabled';
+      }
+
+      // Basic WebSocket subscriber similar to overlay
+      let socket;
+      function connect() {
+        if (socket) {
+          try { socket.close(); } catch(e) {}
+          socket = null;
+        }
+        socket = new WebSocket('wss://api.caption.ninja:443');
+        socket.onopen = function() {
+          statusEl.textContent = 'Connected — joining room…';
+          socket.send(JSON.stringify({ join: room }));
+        };
+        socket.onclose = function() {
+          statusEl.textContent = 'Disconnected — reconnecting…';
+          setTimeout(connect, 1000);
+        };
+        socket.onerror = function(e) {
+          console.warn(e);
+        };
+        socket.onmessage = function(ev) {
+          try {
+            const data = JSON.parse(ev.data);
+            if (data.ln && allowLnUpdates) {
+              // Track source language if none explicitly set
+              try { window.TTS.speechLang = data.ln; } catch (e) {}
+            }
+            if (data.final) {
+              lastEl.textContent = data.final;
+              if (window.TTS && typeof window.TTS.speak === 'function') {
+                window.TTS.speak(data.final);
+              }
+            }
+          } catch (e) {
+            console.warn(e);
+          }
+        };
+      }
+      connect();
+
+      function genRoom(len){
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let out=''; for (let i=0;i<len;i++){ out+=chars.charAt(Math.floor(Math.random()*chars.length)); }
+        return out;
+      }
+    })();
+  </script>
+</body>
+</html>

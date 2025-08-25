@@ -15,7 +15,10 @@
       this.synthesisQueue = [];
       this.isProcessingQueue = false;
       this.voiceId = voiceId;
-      const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+      // Derive base URL from this script's location so relative assets work when embedded on other pages
+      const scriptSrc = (document.currentScript && document.currentScript.src) || window.location.href;
+      const scriptDir = scriptSrc.substring(0, scriptSrc.lastIndexOf('/'));
+      const baseUrl = scriptDir.replace(/\/thirdparty\/piper$/,'');
       this.voiceModelPath = baseUrl + `/thirdparty/piper/piper-voices/${voiceId}.onnx`;
       this.voiceConfigPath = baseUrl + `/thirdparty/piper/piper-voices/${voiceId}.onnx.json`;
       this.baseUrl = baseUrl;

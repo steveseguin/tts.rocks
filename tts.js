@@ -4,6 +4,28 @@
 // Create global TTS namespace
 window.TTS = {};
 
+// Determine asset base (directory containing this script) so relative resources resolve
+(function(){
+  try {
+    if (!window.TTS_ASSET_BASE) {
+      var scripts = document.getElementsByTagName('script');
+      var src = '';
+      for (var i = scripts.length - 1; i >= 0; i--) {
+        if (scripts[i] && scripts[i].src && scripts[i].src.indexOf('tts.js') !== -1) { src = scripts[i].src; break; }
+      }
+      if (src) {
+        window.TTS_ASSET_BASE = src.substring(0, src.lastIndexOf('/'));
+      } else {
+        // Fallback to tts.rocks folder at same origin
+        window.TTS_ASSET_BASE = (location.origin + '/tts.rocks');
+      }
+    }
+  } catch (e) {
+    // best effort
+    if (!window.TTS_ASSET_BASE) { window.TTS_ASSET_BASE = (location.origin + '/tts.rocks'); }
+  }
+})();
+
 // Initialize variables
 TTS.speechLang = "en-US";
 TTS.speech = false;
@@ -1394,8 +1416,8 @@ TTS.initKokoro = async function() {
         
         // Import the module using the same path pattern as the working version
         const relativePath = window.location.href.startsWith("chrome-extension://") 
-            ? './thirdparty/kokoro-bundle.es.ext.js'
-            : './thirdparty/kokoro-bundle.es.js'; // Changed to match working version path
+            ? (window.TTS_ASSET_BASE + '/thirdparty/kokoro-bundle.es.ext.js')
+            : (window.TTS_ASSET_BASE + '/thirdparty/kokoro-bundle.es.js');
         
         const module = await import(relativePath);
         
@@ -1897,7 +1919,7 @@ TTS.initEspeak = async function() {
         // Load real eSpeak-NG implementation
         await new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = './thirdparty/espeak-ng-real.js';
+            script.src = window.TTS_ASSET_BASE + '/thirdparty/espeak-ng-real.js';
             script.onload = resolve;
             script.onerror = reject;
             document.head.appendChild(script);
@@ -2018,8 +2040,8 @@ TTS.initPiper = async function() {
         
         // Load dependencies in order
         const scripts = [
-            './thirdparty/ort.min.js',
-            './thirdparty/piper/piper-tts-proper.js'
+            window.TTS_ASSET_BASE + '/thirdparty/ort.min.js',
+            window.TTS_ASSET_BASE + '/thirdparty/piper/piper-tts-proper.js'
         ];
         
         for (const src of scripts) {
@@ -2106,7 +2128,7 @@ TTS.initKitten = async function() {
         if (typeof ort === 'undefined') {
             await new Promise((resolve, reject) => {
                 const ortScript = document.createElement('script');
-                ortScript.src = './thirdparty/ort.min.js';
+                ortScript.src = window.TTS_ASSET_BASE + '/thirdparty/ort.min.js';
                 ortScript.onload = resolve;
                 ortScript.onerror = reject;
                 document.head.appendChild(ortScript);
@@ -2114,7 +2136,7 @@ TTS.initKitten = async function() {
             
             // Configure WASM paths after loading ONNX Runtime
             if (typeof ort !== 'undefined' && ort.env && ort.env.wasm) {
-                ort.env.wasm.wasmPaths = './thirdparty/';
+                ort.env.wasm.wasmPaths = window.TTS_ASSET_BASE + '/thirdparty/';
                 ort.env.wasm.numThreads = 1;
                 ort.env.wasm.simd = false;
                 console.log("Configured ONNX Runtime WASM paths for TTS");
@@ -2122,7 +2144,7 @@ TTS.initKitten = async function() {
         }
         
         // Load Kitten TTS module - use absolute URL to avoid CORS issues
-        const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+        const baseUrl = window.TTS_ASSET_BASE;
         const moduleUrl = baseUrl + '/thirdparty/kitten-tts/kitten-tts-lib.js';
         
         const { KittenTTS } = await import(moduleUrl);

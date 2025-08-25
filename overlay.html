@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TTS.Rocks Overlay Options for Caption.Ninja</title>
+  <style>
+    :root {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #2d2d2d;
+      --bg-tertiary: #242424;
+      --text-primary: #ffffff;
+      --text-secondary: #b3b3b3;
+      --text-muted: #808080;
+      --accent: #646cff;
+      --accent-hover: #747bff;
+      --border: #3f3f3f;
+    }
+    body { font-family: 'Inter', -apple-system, system-ui, sans-serif; margin:0; background:var(--bg-primary); color:var(--text-primary); }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 18px; }
+    .card { background:var(--bg-secondary); border:1px solid var(--border); border-radius:12px; padding:16px; margin:16px 0; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    label { color:var(--text-secondary); display:block; margin-bottom:6px; }
+    input { width:100%; background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border); border-radius:8px; padding:10px; }
+    input:focus { outline:none; border-color:var(--accent); }
+    button { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:10px 14px; cursor:pointer; font-weight:600; }
+    button.secondary { background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border); }
+    button.secondary:hover { background:var(--bg-primary); border-color:var(--accent); }
+    code { background:var(--bg-tertiary); border:1px solid var(--border); padding:2px 6px; border-radius:4px; }
+    .muted { color:var(--text-muted); font-size:0.92em; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Overlay Options for Caption.Ninja</h1>
+    <p class="muted">Generate ready‑to‑use links for displaying captions and enabling TTS. Any query parameters you pass to this page (provider, keys, voice, rates) are forwarded.</p>
+
+    <div class="card">
+      <div class="form-group">
+        <label for="room">Room ID</label>
+        <div class="row">
+          <input id="room" placeholder="abc123" />
+          <button id="refresh" class="secondary">Refresh Links</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Links</h3>
+      <div style="margin-top:8px">
+        <div><strong>Overlay:</strong></div>
+        <div class="row"><input id="uOverlay" readonly /><button data-id="uOverlay" class="secondary">Copy</button><a id="aOverlay" class="secondary" target="_blank" rel="noopener">Open</a></div>
+      </div>
+      <div style="margin-top:12px">
+        <div><strong>Capture:</strong></div>
+        <div class="row"><input id="uCapture" readonly /><button data-id="uCapture" class="secondary">Copy</button><a id="aCapture" class="secondary" target="_blank" rel="noopener">Open</a></div>
+      </div>
+      <div style="margin-top:12px">
+        <div><strong>Manual:</strong></div>
+        <div class="row"><input id="uManual" readonly /><button data-id="uManual" class="secondary">Copy</button><a id="aManual" class="secondary" target="_blank" rel="noopener">Open</a></div>
+      </div>
+      <div style="margin-top:12px">
+        <div><strong>TTS Bridge (this site):</strong></div>
+        <div class="row"><input id="uBridge" readonly /><button data-id="uBridge" class="secondary">Copy</button><a id="aBridge" class="secondary" target="_blank" rel="noopener">Open</a></div>
+      </div>
+      <div class="muted" style="margin-top:12px">Include <code>&tts=en-US</code> and provider params (e.g., <code>&ttsprovider=kokoro</code>, <code>&elevenlabskey=...</code>) in this page URL to forward them automatically.</div>
+    </div>
+
+    <div class="card muted">
+      Need a manual sender hosted here? See <a href="./manual-sender.html" target="_blank" rel="noopener">manual-sender.html</a>.
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const qs = new URLSearchParams(location.search);
+      const roomEl = document.getElementById('room');
+      roomEl.value = qs.get('room') || '';
+      if (!roomEl.value) {
+        try {
+          const stored = localStorage.getItem('cn_room_id') || '';
+          if (stored) {
+            roomEl.value = stored;
+          } else {
+            const newId = genRoom(16);
+            roomEl.value = newId;
+            try { localStorage.setItem('cn_room_id', newId); } catch(e){}
+          }
+        } catch(e){
+          roomEl.value = genRoom(16);
+        }
+      }
+      function build(){
+        const out = {};
+        for (const [k,v] of qs.entries()){
+          if (k!=='room') out[k]=v;
+        }
+        const param = new URLSearchParams(out).toString();
+        const room = encodeURIComponent(roomEl.value||'');
+        const cn = 'https://caption.ninja';
+        const base = location.origin + location.pathname.replace(/\/[^^/]*$/, '');
+        set('uOverlay', cn + '/overlay?room='+room + (param?('&'+param):''));
+        set('uCapture', cn + '/?room='+room + (param?('&'+param):''));
+        set('uManual',  cn + '/manual.html?room='+room + (param?('&'+param):''));
+        set('uBridge',  base + '/caption-bridge.html?room='+room + (param?('&'+param):''));
+      }
+      function set(id, url){
+        document.getElementById(id).value = url;
+        const aId = 'a' + id.substring(1);
+        document.getElementById(aId).href = url;
+      }
+      document.getElementById('refresh').onclick = build;
+      roomEl.addEventListener('input', function(){ try { localStorage.setItem('cn_room_id', roomEl.value||''); } catch(e){} });
+      document.querySelectorAll('button[data-id]').forEach(btn=>{
+        btn.onclick = function(){ const id = this.getAttribute('data-id'); navigator.clipboard.writeText(document.getElementById(id).value); };
+      });
+      function genRoom(len){
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let out=''; for (let i=0;i<len;i++){ out+=chars.charAt(Math.floor(Math.random()*chars.length)); }
+        return out;
+      }
+      build();
+    })();
+  </script>
+</body>
+</html>

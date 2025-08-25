@@ -221,6 +221,18 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1rem;
         }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
 
         .form-group {
             display: flex;
@@ -345,6 +357,22 @@
 
         .action-buttons button {
             flex: 1;
+        }
+        /* Make anchor actions look like buttons and improve contrast */
+        .action-buttons a.btnlike {
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        .action-buttons a.btnlike:hover {
+            background: var(--bg-primary);
+            border-color: var(--accent);
+            color: var(--text-primary);
         }
 
         .api-key-section {
@@ -934,6 +962,57 @@
             <div id="statusMessage" class="status-message"></div>
         </div>
 
+        <!-- Use with Caption.Ninja (collapsed, lightweight) -->
+        <div class="card" id="cnPanel" role="region" aria-label="Use with Caption.Ninja" style="margin-top:2rem">
+          <details>
+            <summary style="cursor:pointer;list-style:none">
+              <div class="card-title" style="margin:0">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v2H3V3m0 4h18v2H3V7m0 4h12v2H3v-2m0 4h8v2H3v-2z"/></svg>
+                Use with Caption.Ninja — remote input, translation, transcription, and overlay support
+              </div>
+            </summary>
+            <div class="voice-settings" style="margin-top:1rem">
+                <div class="form-group">
+                    <label for="cnRoom">Room ID</label>
+                    <input id="cnRoom" placeholder="abc123" />
+                </div>
+                <div class="form-group">
+                    <label for="cnTarget">Target</label>
+                    <select id="cnTarget">
+                        <option value="overlay" selected>Overlay (recommended)</option>
+                        <option value="capture">Speech Input (microphone)</option>
+                        <option value="manual">Manual Input (typing)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Param Source</label>
+                    <div class="row" style="gap:.5rem;flex-wrap:wrap">
+                        <button id="cnFromTTS" class="secondary">Use current TTS settings</button>
+                        <button id="cnFromURL" class="secondary">Use current URL params</button>
+                    </div>
+                </div>
+                <div class="form-group" style="grid-column:1/-1">
+                    <label for="cnParams">Overlay URL</label>
+                    <input id="cnParams" readonly placeholder="https://caption.ninja/overlay?room=abc123&tts=en-US..." />
+                </div>
+            </div>
+            <div class="action-buttons" style="margin-top:1rem;gap:.75rem">
+                <a id="cnOpenPrimary" class="btnlike secondary" href="#" target="_blank" rel="noopener">Open Overlay</a>
+                <a id="cnOpenCapture" class="btnlike secondary" href="#" target="_blank" rel="noopener" title="Microphone speech-to-text input">Open Speech Input</a>
+                <a id="cnOpenManual" class="btnlike secondary" href="#" target="_blank" rel="noopener" title="Type to send text">Open Manual Input</a>
+            </div>
+            <div class="api-key-hint" style="margin-top:.5rem">Tip: configure engines and voices above; then click “Use current TTS settings”. Keys are embedded in the generated URL.</div>
+
+            <details style="margin-top:.75rem">
+              <summary style="cursor:pointer;color:var(--text-secondary)">Advanced: Speaker Window</summary>
+              <div class="api-key-hint" style="margin-top:.5rem">Opens a small window that joins your room and speaks incoming captions using your selected TTS settings (no capture UI).</div>
+              <div class="action-buttons" style="margin-top:.5rem;gap:.75rem">
+                <a id="cnSpeaker" class="btnlike secondary" href="#" target="_blank" rel="noopener">Open Speaker Window</a>
+              </div>
+            </details>
+          </details>
+        </div>
+
         <footer role="contentinfo">
             <p>Built with <span aria-label="love">❤️</span> by <a href="https://github.com/steveseguin" target="_blank" rel="noopener">Steve Seguin</a></p>
             <p>Open source and free forever | <a href="https://github.com/steveseguin/tts-web" target="_blank" rel="noopener">GitHub</a> | <a href="https://vdo.ninja" rel="noopener">VDO.Ninja</a> | <a href="https://caption.ninja" rel="noopener">Caption.Ninja</a></p>
@@ -959,5 +1038,155 @@
     <script src="model-cache-manager.js"></script>
     <!-- Main application script -->
     <script type="module" src="main-enhanced-v2.js"></script>
+    <script>
+    // Build Caption.Ninja links using current settings or URL params
+    (function(){
+        const roomEl = document.getElementById('cnRoom');
+        const paramsEl = document.getElementById('cnParams');
+        const targetEl = document.getElementById('cnTarget');
+        const aOpenPrimary = document.getElementById('cnOpenPrimary');
+        const aOpenCapture = document.getElementById('cnOpenCapture');
+        const aOpenManual  = document.getElementById('cnOpenManual');
+        const aSpeaker     = document.getElementById('cnSpeaker');
+
+        function toQS(obj){
+            const p = new URLSearchParams();
+            Object.entries(obj).forEach(([k,v])=>{ if (v!==false && v!=null && v!=='') p.set(k,String(v)); });
+            return p.toString();
+        }
+
+        function paramsFromTTS(){
+            const T = window.TTS || {};
+            const qs = {};
+            // Read current UI selections first (more accurate than TTS object before generation)
+            const engineEl = document.getElementById('engineSelect');
+            const voiceEl  = document.getElementById('voiceSelect');
+            const langEl   = document.getElementById('languageSelect');
+            const speedEl  = document.getElementById('speedSlider');
+            const pitchEl  = document.getElementById('pitchSlider');
+
+            let engine = engineEl ? engineEl.value : (T.TTSProvider || 'system');
+            if (engine === 'browser') engine = 'system';
+
+            // Language + common tunables
+            qs.tts = (langEl && langEl.value) || T.speechLang || 'en-US';
+            if (speedEl) qs.rate = parseFloat(speedEl.value);
+            if (pitchEl) qs.pitch = parseFloat(pitchEl.value);
+            if (T.volume!==undefined) qs.volume = T.volume;
+
+            // Provider + params
+            qs.ttsprovider = engine;
+
+            // Local engines use the tts.rocks library in overlay via &ttslib=rocks
+            if (['kokoro','piper','espeak','kitten'].includes(engine)) {
+                qs.ttslib = 'rocks';
+                const voiceVal = voiceEl && voiceEl.value || '';
+                if (engine==='kokoro') {
+                    if (voiceVal) qs.voicekokoro = voiceVal;
+                    if (speedEl) qs.korospeed = parseFloat(speedEl.value) || 1.0;
+                } else if (engine==='piper') {
+                    if (voiceVal) qs.pipervoice = voiceVal;
+                    if (speedEl) qs.piperspeed = parseFloat(speedEl.value) || 1.0;
+                } else if (engine==='espeak') {
+                    if (voiceVal) qs.espeakvoice = voiceVal;
+                    if (speedEl) qs.espeakspeed = Math.round(parseFloat(speedEl.value) * 140) || 140;
+                    if (pitchEl) qs.espeakpitch = Math.round(parseFloat(pitchEl.value) * 50) || 50;
+                } else if (engine==='kitten') {
+                    if (voiceVal) qs.kittenvoice = voiceVal;
+                    if (speedEl) qs.kittenspeed = parseFloat(speedEl.value) || 1.0;
+                }
+                return qs;
+            }
+
+            // API engines — use key in memory or read from localStorage
+            if (engine==='google') {
+                const key = T.GoogleAPIKey || localStorage.getItem('tts_google_key') || '';
+                if (key) qs.ttskey = key;
+                if (voiceEl && voiceEl.value) qs.voicegoogle = voiceEl.value;
+                if (langEl && langEl.value) qs.googlelang = langEl.value;
+                // googlerate/googlepitch are often separate from system rate/pitch; still pass common ones
+            } else if (engine==='elevenlabs') {
+                const key = T.ElevenLabsKey || localStorage.getItem('tts_elevenlabs_key') || '';
+                if (key) qs.elevenlabskey = key;
+                if (voiceEl && voiceEl.value) qs.voice11 = voiceEl.value;
+            } else if (engine==='openai') {
+                const key = T.OpenAIAPIKey || localStorage.getItem('tts_openai_key') || '';
+                if (key) qs.openaikey = key;
+                if (voiceEl && voiceEl.value) qs.voiceopenai = voiceEl.value;
+            }
+
+            return qs;
+        }
+
+        function paramsFromURL(){
+            const url = new URL(location.href);
+            const keep = ['tts','ttsprovider','rate','pitch','volume','voice','voicegoogle','voice11','voicespeechify','pipervoice','voicekokoro','korospeed','googlerate','googlepitch','googlelang','elevenstability','elevensimilarity','elevenrate','elevenlabsmodel','speechifyspeed','speechifymodel','openaimodel','voiceopenai','openaispeed','ttskey','googlettskey','elevenlabskey','speechifykey','openaikey','ttsstream','ttslib'];
+            const qs = new URLSearchParams();
+            url.searchParams.forEach((v,k)=>{ if (keep.includes(k)) qs.set(k,v); });
+            // default language if none present
+            if (!qs.has('tts')) qs.set('tts','en-US');
+            return Object.fromEntries(qs.entries());
+        }
+
+        function apply(obj){
+            const qs = toQS(obj);
+            const room = roomEl.value || '';
+            const base = baseFor(targetEl.value);
+            const cnUrl = 'https://caption.ninja' + base + '?room=' + encodeURIComponent(room) + (qs?('&'+qs):'');
+            paramsEl.value = cnUrl;
+            updateLinks(qs);
+        }
+        function updateLinks(qs){
+            const room = roomEl.value || '';
+            const base = location.origin + location.pathname.replace(/\/[^^/]*$/, '');
+            const cn = 'https://caption.ninja';
+            aOpenPrimary.href = cn + baseFor(targetEl.value) + '?room=' + encodeURIComponent(room) + (qs?('&'+qs):'');
+            aOpenPrimary.textContent = targetEl.value==='overlay' ? 'Open Overlay' : (targetEl.value==='capture' ? 'Open Speech Input' : 'Open Manual Input');
+            // Always provide the other two options as secondary
+            aOpenCapture.href = cn + '/?room=' + encodeURIComponent(room) + (qs?('&'+qs):'');
+            aOpenManual.href  = cn + '/manual.html?room=' + encodeURIComponent(room) + (qs?('&'+qs):'');
+            aSpeaker.href     = base + '/caption-bridge.html?room=' + encodeURIComponent(room) + (qs?('&'+qs):'');
+        }
+
+        function baseFor(target){
+            if (target==='overlay') return '/overlay';
+            if (target==='manual') return '/manual.html';
+            return '/'; // capture (speech input)
+        }
+
+        document.getElementById('cnFromTTS').onclick = function(){ apply(paramsFromTTS()); };
+        document.getElementById('cnFromURL').onclick = function(){ apply(paramsFromURL()); };
+        roomEl.addEventListener('input', function(){ try { localStorage.setItem('cn_room_id', roomEl.value||''); } catch(e){} updateLinks(paramsEl.value); });
+        targetEl.addEventListener('change', function(){ updateLinks(paramsEl.value); // update main field label
+            const url = new URL(paramsEl.value, location.origin);
+            const qs = url.search.replace(/^\?/, '');
+            const room = roomEl.value || '';
+            paramsEl.previousElementSibling.textContent = targetEl.value==='overlay' ? 'Overlay URL' : (targetEl.value==='capture' ? 'Speech Input URL' : 'Manual Input URL');
+            paramsEl.value = 'https://caption.ninja' + baseFor(targetEl.value) + '?room=' + encodeURIComponent(room) + (qs?('&'+qs):'');
+        });
+
+        // Prefill room from URL then localStorage; otherwise generate & persist
+        try {
+            if (!roomEl.value) {
+                const stored = localStorage.getItem('cn_room_id') || '';
+                if (stored) {
+                    roomEl.value = stored;
+                } else {
+                    const newId = genRoom(16);
+                    roomEl.value = newId;
+                    try { localStorage.setItem('cn_room_id', newId); } catch(e){}
+                }
+            }
+        } catch (e) {
+            if (!roomEl.value){
+                const fallback = genRoom(16);
+                roomEl.value = fallback;
+            }
+        }
+
+        // Init with URL params
+        apply(paramsFromURL());
+    })();
+    </script>
 </body>
 </html>
