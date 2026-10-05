@@ -352,8 +352,9 @@ class WaveformPlayer {
         this.source.playbackRate.value = parseFloat(this.rateSelector.value);
         
         // Set up ended handler
-        this.source.onended = () => {
-            if (!this.isLooping) {
+        const source = this.source;
+        source.onended = () => {
+            if (this.source === source && !this.isLooping) {
                 this.stop();
             }
         };
@@ -375,8 +376,10 @@ class WaveformPlayer {
         if (!this.source) return;
         
         this.pauseTime = this.getCurrentTime();
-        this.source.stop();
+        const source = this.source;
         this.source = null;
+        source.onended = null;
+        source.stop();
         
         this.isPlaying = false;
         this.playIcon.style.display = 'block';
@@ -385,8 +388,10 @@ class WaveformPlayer {
 
     stop() {
         if (this.source) {
-            this.source.stop();
+            const source = this.source;
             this.source = null;
+            source.onended = null;
+            source.stop();
         }
         
         this.isPlaying = false;
