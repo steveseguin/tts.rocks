@@ -275,8 +275,16 @@ TTS.checkKokoroAcceleration = function() {
  */
 TTS.finishedAudio = function(e) {
     TTS.premiumQueueActive = false;
-    if (TTS.premiumQueueTTS.length) {
-        TTS.speak(TTS.premiumQueueTTS.shift()); // play next
+    while (TTS.premiumQueueTTS.length) {
+        const next = TTS.premiumQueueTTS.shift();
+        // Older integrations may still add plain strings; those are not forced.
+        const text = typeof next === "string" ? next : next.text;
+        const allow = typeof next === "string" ? false : next.allow;
+        if (TTS.disableTTS || (!TTS.speech && !allow)) {
+            continue;
+        }
+        TTS.speak(text, allow); // play next eligible message
+        break;
     }
 };
 
@@ -989,14 +997,14 @@ TTS.speak = function(text, allow = false) {
 			if (!TTS.premiumQueueActive) {
 				TTS.piperTTS(text);
 			} else {
-				TTS.premiumQueueTTS.push(text);
+				TTS.premiumQueueTTS.push({ text, allow });
 			}
 			return;
 		case "espeak":
 			if (!TTS.premiumQueueActive) {
 				TTS.espeakTTS(text);
 			} else {
-				TTS.premiumQueueTTS.push(text);
+				TTS.premiumQueueTTS.push({ text, allow });
 			}
 			return;
 		case "kitten":
@@ -1007,14 +1015,14 @@ TTS.speak = function(text, allow = false) {
 					TTS.finishedAudio();
 				});
 			} else {
-				TTS.premiumQueueTTS.push(text);
+				TTS.premiumQueueTTS.push({ text, allow });
 			}
 			return;
 		case "kokoro":
 			if (!TTS.premiumQueueActive) {
 				TTS.kokoroTTS(text);
 			} else {
-				TTS.premiumQueueTTS.push(text);
+				TTS.premiumQueueTTS.push({ text, allow });
 			}
 			return;
 		case "google":
@@ -1022,7 +1030,7 @@ TTS.speak = function(text, allow = false) {
 				if (!TTS.premiumQueueActive) {
 					TTS.googleTTS(text);
 				} else {
-					TTS.premiumQueueTTS.push(text);
+					TTS.premiumQueueTTS.push({ text, allow });
 				}
 				return;
 			}
@@ -1032,7 +1040,7 @@ TTS.speak = function(text, allow = false) {
 				if (!TTS.premiumQueueActive) {
 					TTS.ElevenLabsTTS(text);
 				} else {
-					TTS.premiumQueueTTS.push(text);
+					TTS.premiumQueueTTS.push({ text, allow });
 				}
 				return;
 			}
@@ -1042,7 +1050,7 @@ TTS.speak = function(text, allow = false) {
 				if (!TTS.premiumQueueActive) {
 					TTS.SpeechifyTTS(text);
 				} else {
-					TTS.premiumQueueTTS.push(text);
+					TTS.premiumQueueTTS.push({ text, allow });
 				}
 				return;
 			}
@@ -1052,7 +1060,7 @@ TTS.speak = function(text, allow = false) {
 				if (!TTS.premiumQueueActive) {
 					TTS.openAITTS(text);
 				} else {
-					TTS.premiumQueueTTS.push(text);
+					TTS.premiumQueueTTS.push({ text, allow });
 				}
 				return;
 			}
