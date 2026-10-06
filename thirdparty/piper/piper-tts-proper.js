@@ -19,8 +19,9 @@
       const scriptSrc = (document.currentScript && document.currentScript.src) || window.location.href;
       const scriptDir = scriptSrc.substring(0, scriptSrc.lastIndexOf('/'));
       const baseUrl = scriptDir.replace(/\/thirdparty\/piper$/,'');
-      this.voiceModelPath = baseUrl + `/thirdparty/piper/piper-voices/${voiceId}.onnx`;
-      this.voiceConfigPath = baseUrl + `/thirdparty/piper/piper-voices/${voiceId}.onnx.json`;
+      const voicePath = this.getVoicePath(voiceId);
+      this.voiceModelPath = baseUrl + `/thirdparty/piper/piper-voices/${voicePath}.onnx`;
+      this.voiceConfigPath = baseUrl + `/thirdparty/piper/piper-voices/${voicePath}.onnx.json`;
       this.baseUrl = baseUrl;
       
       // Available voices
@@ -486,8 +487,9 @@
       
       // Update voice paths
       this.voiceId = voiceId;
-      this.voiceModelPath = this.baseUrl + `/thirdparty/piper/piper-voices/${voiceId}.onnx`;
-      this.voiceConfigPath = this.baseUrl + `/thirdparty/piper/piper-voices/${voiceId}.onnx.json`;
+      const voicePath = this.getVoicePath(voiceId);
+      this.voiceModelPath = this.baseUrl + `/thirdparty/piper/piper-voices/${voicePath}.onnx`;
+      this.voiceConfigPath = this.baseUrl + `/thirdparty/piper/piper-voices/${voicePath}.onnx.json`;
       
       // Reset initialization state
       this.initialized = false;
@@ -502,6 +504,14 @@
       console.log(`Voice changed to ${voiceId} successfully`);
     }
     
+    // These bundled voices live in per-voice directories; HFC keeps its legacy flat path.
+    getVoicePath(voiceId) {
+      const directoryVoices = [
+        'en_US-amy-medium', 'en_US-danny-low', 'en_GB-alan-low', 'en_GB-alba-medium'
+      ];
+      return directoryVoices.includes(voiceId) ? `${voiceId}/${voiceId}` : voiceId;
+    }
+
     // Get available voices
     getAvailableVoices() {
       return this.availableVoices;

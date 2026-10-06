@@ -1095,7 +1095,7 @@ class TTSApp {
         
         if (engine === 'piper') {
             this.showInlineProgress('Initializing Piper TTS...');
-            window.TTS.piperVoice = this.voiceSelect.value;
+            window.TTS.piperSettings.voice = this.voiceSelect.value;
             await window.TTS.initPiper();
             this.showInlineProgress('Generating speech with Piper...');
         } else if (engine === 'espeak') {
