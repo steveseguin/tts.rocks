@@ -2033,9 +2033,13 @@ TTS.espeakTTS = async function(text) {
  * @returns {Promise<boolean>} - Whether initialization was successful
  */
 TTS.initPiper = async function() {
-    if (TTS.piperLoaded) return true;
-    
     try {
+        if (TTS.piperLoaded && TTS.piperInstance &&
+            TTS.piperInstance.getCurrentVoice() === TTS.piperSettings.voice) {
+            return true;
+        }
+        // A previous voice may still be speaking; leave its instance intact.
+        TTS.piperLoaded = false;
         //console.log("Loading Piper TTS module...");
         
         // Load dependencies in order
