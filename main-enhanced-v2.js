@@ -7,6 +7,7 @@ class TTSApp {
         this.kokoroTTS = null;
         this.audioBlob = null;
         this.isGenerating = false;
+        this.kokoroGeneration = null;
         this.isInitializing = false;
         this.engineInitStatus = {
             kokoro: false,
@@ -572,7 +573,7 @@ class TTSApp {
         }
         
         this.generateBtn.innerHTML = buttonHTML;
-        this.generateBtn.disabled = this.isInitializing;
+        this.generateBtn.disabled = this.isInitializing || this.isGenerating;
     }
     
     setButtonProgress(percent) {
@@ -928,6 +929,9 @@ class TTSApp {
         this.generateBtn.disabled = true;
         this.stopBtn.style.display = 'inline-block';
         this.downloadBtn.disabled = true;
+        const generation = new AbortController();
+        this.activeGeneration = generation;
+        this.kokoroGeneration = this.currentEngine === 'kokoro' ? generation : null;
         
         try {
             switch (this.currentEngine) {
@@ -935,8 +939,9 @@ class TTSApp {
                     if (!this.kokoroTTS && !this.isInitializing) {
                         await this.initializeKokoro();
                     }
+                    if (generation.signal.aborted) return;
                     if (this.kokoroTTS) {
-                        await this.generateKokoro(text);
+                        await this.generateKokoro(text, generation.signal);
                     } else {
                         throw new Error('Kokoro TTS failed to initialize');
                     }
@@ -971,23 +976,29 @@ class TTSApp {
                     break;
             }
             
+            if (generation.signal.aborted || this.activeGeneration !== generation) return;
             this.audioSection.style.display = 'block';
             this.downloadBtn.disabled = false;
             
             // Waveform player loading is handled in individual generate methods
             
         } catch (error) {
+            if (generation.signal.aborted || this.activeGeneration !== generation) return;
             console.error('Generation failed:', error);
             this.showStatus(`Failed to generate speech: ${error.message}`, 'error');
         } finally {
-            this.isGenerating = false;
-            this.generateBtn.disabled = false;
-            this.stopBtn.style.display = 'none';
-            this.updateGenerateButtonState();
+            if (this.activeGeneration === generation) {
+                this.activeGeneration = null;
+                this.kokoroGeneration = null;
+                this.isGenerating = false;
+                this.generateBtn.disabled = false;
+                this.stopBtn.style.display = 'none';
+                this.updateGenerateButtonState();
+            }
         }
     }
 
-    async generateKokoro(text) {
+    async generateKokoro(text, signal) {
         if (!this.kokoroTTS) {
             throw new Error('Kokoro TTS not initialized');
         }
@@ -1011,22 +1022,25 @@ class TTSApp {
             
             // Collect all audio chunks
             for await (const { audio } of stream) {
+                if (signal?.aborted) return;
                 if (audio) {
                     console.log('Got audio chunk:', audio);
                     chunks.push(audio);
                 }
             }
             
+            if (signal?.aborted) return;
             if (chunks.length > 0) {
+                let audioBlob;
                 // Use the first chunk's toBlob method if available
                 if (chunks[0].toBlob) {
-                    this.audioBlob = chunks[0].toBlob();
+                    audioBlob = chunks[0].toBlob();
                 } else if (chunks[0] instanceof Blob) {
-                    this.audioBlob = chunks[0];
+                    audioBlob = chunks[0];
                 } else if (chunks[0] instanceof ArrayBuffer || chunks[0].buffer) {
                     // Convert ArrayBuffer to Blob
                     const buffer = chunks[0].buffer || chunks[0];
-                    this.audioBlob = new Blob([buffer], { type: 'audio/wav' });
+                    audioBlob = new Blob([buffer], { type: 'audio/wav' });
                 } else {
                     console.error('Unknown audio format:', chunks[0]);
                     throw new Error('Unknown audio format from Kokoro');
@@ -1038,9 +1052,11 @@ class TTSApp {
                 this.audioSection.style.display = 'block';
                 
                 // Load into waveform player ONLY - no fallback to audio element
-                if (this.waveformPlayer && this.audioBlob) {
+                if (this.waveformPlayer && audioBlob) {
                     console.log('Loading audio into waveform player...');
-                    await this.waveformPlayer.loadAudio(this.audioBlob);
+                    await this.waveformPlayer.loadAudio(audioBlob, signal);
+                    if (signal?.aborted) return;
+                    this.audioBlob = audioBlob;
                     console.log('Audio loaded, auto-playing...');
                     // Auto-play the waveform player
                     this.waveformPlayer.play();
@@ -1247,7 +1263,10 @@ class TTSApp {
     }
 
     stopGeneration() {
-        this.isGenerating = false;
+        // Kokoro shares its audio accumulator across calls and cannot abort inference.
+        // Discard the result, but wait for it to settle before accepting another run.
+        this.activeGeneration?.abort();
+        this.isGenerating = !!this.kokoroGeneration;
         
         if (window.speechSynthesis) {
             window.speechSynthesis.cancel();
@@ -1258,7 +1277,11 @@ class TTSApp {
             this.audioPlayer.currentTime = 0;
         }
         
-        this.generateBtn.disabled = false;
+        if (this.kokoroGeneration) {
+            this.generateBtn.innerHTML = '<span>Stopping generation...</span>';
+        }
+        this.waveformPlayer?.stop();
+        this.generateBtn.disabled = this.isGenerating;
         this.stopBtn.style.display = 'none';
     }
 
