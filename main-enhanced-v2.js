@@ -457,7 +457,7 @@ class TTSApp {
     }
 
     populateKokoroVoices() {
-        if (!this.kokoroTTS) return;
+        if (!this.kokoroTTS || this.currentEngine !== 'kokoro') return;
         
         this.voiceSelect.innerHTML = '<option value="">Select a voice...</option>';
         
