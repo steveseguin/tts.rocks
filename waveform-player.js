@@ -179,7 +179,8 @@ class WaveformPlayer {
         }
     }
 
-    async loadAudio(audioData) {
+    async loadAudio(audioData, signal) {
+        if (signal?.aborted) return;
         try {
             console.log('Loading audio data into waveform player:', audioData);
             
@@ -192,19 +193,23 @@ class WaveformPlayer {
                 this.gainNode.connect(this.audioContext.destination);
             }
             
+            let audioBuffer;
             // Decode audio data
             if (audioData instanceof ArrayBuffer) {
                 console.log('Decoding ArrayBuffer, size:', audioData.byteLength);
-                this.audioBuffer = await this.audioContext.decodeAudioData(audioData.slice(0));
+                audioBuffer = await this.audioContext.decodeAudioData(audioData.slice(0));
             } else if (audioData instanceof Blob) {
                 console.log('Decoding Blob, size:', audioData.size);
                 const arrayBuffer = await audioData.arrayBuffer();
-                this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
             } else if (audioData instanceof AudioBuffer) {
                 console.log('Using existing AudioBuffer');
-                this.audioBuffer = audioData;
+                audioBuffer = audioData;
             }
             
+            if (signal?.aborted) return;
+            this.audioBuffer = audioBuffer;
+
             console.log('Audio buffer created, duration:', this.audioBuffer.duration, 'seconds');
             this.duration = this.audioBuffer.duration;
             this.totalTimeEl.textContent = this.formatTime(this.duration);
