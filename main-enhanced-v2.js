@@ -852,6 +852,11 @@ class TTSApp {
 
     onLanguageChange() {
         this.updateLanguageOptions();
+        if (['kokoro', 'kitten-v08', 'supertonic'].includes(this.currentEngine)) {
+            const saved = this.savedVoice();
+            if (Array.from(this.voiceSelect.options).some(option => option.value === saved)) this.voiceSelect.value = saved;
+            this.syncPodcastVoices();
+        }
         // Update voices based on new language
         if (this.currentEngine === 'browser') {
             this.loadBrowserVoices();
