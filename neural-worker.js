@@ -1,5 +1,5 @@
 import { KokoroTTS, env, ort, phonemize, phonemizeKokoro, AutoTokenizer, MusicgenForConditionalGeneration } from './thirdparty/neural/runtime.js';
-import { splitText, joinAudio, pcmToWav } from './audio-utils.js';
+import { splitText, joinAudio, pcmToWav, chunksToWav } from './audio-utils.js';
 import { cachedFetch } from './model-assets.js';
 
 const runtimeURL = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/';
@@ -221,8 +221,7 @@ self.onmessage = async ({ data: { id, type, options } }) => {
                 progress({ chunk, sampleRate, gap: pause / 1000 });
             }
         }
-        const pcm = joinAudio(chunks, sampleRate, pauses);
-        self.postMessage({ id, result: { blob: pcmToWav(pcm, sampleRate), duration: pcm.length / sampleRate,
+        self.postMessage({ id, result: { blob: chunksToWav(chunks, sampleRate, pauses), duration: sampleOffset / sampleRate,
             seconds: (performance.now() - started) / 1000, device, dtype, chunks: chunks.length, cues } });
     } catch (error) {
         self.postMessage({ id, error: error.message || String(error) });

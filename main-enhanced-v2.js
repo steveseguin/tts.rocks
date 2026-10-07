@@ -1,7 +1,7 @@
 // Enhanced TTS application with multiple engines and Chrome AI integration
 import { StreamPlayer } from './stream-player.js';
 import { NeuralClient } from './neural-client.js';
-import { pcmToWav } from './audio-utils.js';
+import { chunksToWav } from './audio-utils.js';
 import { clearModelCache } from './model-assets.js';
 import { referenceDuration } from './reference-audio.js';
 import { parseDialogue, dialogueVtt } from './dialogue.js';
@@ -1131,11 +1131,8 @@ class TTSApp {
         }});
         check();
         // Pocket chunks are codec frames, not sentence boundaries: preserve their exact joins.
-        const samples = new Float32Array(sampleCount);
-        let offset = 0;
-        for (const chunk of chunks) { samples.set(chunk, offset); offset += chunk.length; }
-        if (!samples.length) throw new Error('No audio generated');
-        return pcmToWav(samples, pocket.sampleRate);
+        if (!sampleCount) throw new Error('No audio generated');
+        return chunksToWav(chunks, pocket.sampleRate, 0, false);
     }
 
     clearReferenceVoice() {

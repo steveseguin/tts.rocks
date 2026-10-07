@@ -158,6 +158,13 @@ class WaveformPlayer {
         this.stop();
         const loadId = this.loadId = (this.loadId || 0) + 1;
         this.playPauseBtn.disabled = true;
+        this.audioBuffer = null;
+        this.duration = 0;
+        this.peaks = [];
+        this.totalTimeEl.textContent = '0:00';
+        this.progressCanvas.setAttribute('aria-valuemax', '0');
+        this.progressCanvas.setAttribute('aria-disabled', 'true');
+        this.waveformCtx.clearRect(0, 0, this.waveformCanvas.width, this.waveformCanvas.height);
         try {
 
             
@@ -196,19 +203,10 @@ class WaveformPlayer {
             // Ensure canvas is sized before drawing
             this.resizeCanvases();
             
-            // Generate waveform
-            this.generateWaveform();
-
-            
-            this.drawWaveform();
-
-            
             // Also resize again after a short delay in case container wasn't ready
             setTimeout(() => {
+                if (loadId !== this.loadId) return;
                 this.resizeCanvases();
-                if (this.peaks && this.peaks.length > 0) {
-                    this.drawWaveform();
-                }
             }, 100);
             
             // Enable play button
@@ -443,8 +441,11 @@ class WaveformPlayer {
         const container = this.container.querySelector('.waveform-container');
         const rect = container.getBoundingClientRect();
         
-        this.waveformCanvas.width = Math.max(1, Math.round(rect.width || 600));
-        this.waveformCanvas.height = Math.max(1, Math.round(rect.height || 100));
+        const width = Math.max(1, Math.round(rect.width || 600));
+        const height = Math.max(1, Math.round(rect.height || 100));
+        if (this.waveformCanvas.width === width && this.waveformCanvas.height === height && this.peaks.length) return;
+        this.waveformCanvas.width = width;
+        this.waveformCanvas.height = height;
         this.progressCanvas.width = this.waveformCanvas.width;
         this.progressCanvas.height = this.waveformCanvas.height;
         
