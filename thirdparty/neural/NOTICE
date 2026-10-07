@@ -1,0 +1,49 @@
+Browser speech components
+
+runtime.js includes Kokoro.js 1.2.1 (hexgrad/Xenova, Apache-2.0),
+Transformers.js 4.3.1 (Hugging Face, Apache-2.0), ONNX Runtime Web 1.30.0
+(Microsoft, MIT), and phonemizer 1.2.1 (Xenova, Apache-2.0).
+Transformers.js is bundled with Kokoro and MusicGen model registrations.
+It includes Hugging Face Tokenizers.js 0.2.0 (Apache-2.0) and Jinja 0.5.10
+(MIT); their licenses accompany this distribution.
+The additional Kokoro phonemization helper comes from
+https://github.com/hexgrad/kokoro/tree/main/kokoro.js/src
+The voice download URL is pinned to the model snapshot listed below.
+Individual licenses accompany this distribution. The phonemizer embeds
+eSpeak NG (GPL-3.0; see espeak-ng-LICENSE).
+Phonemizer source: https://github.com/xenova/phonemizer.js
+eSpeak NG source: https://github.com/espeak-ng/espeak-ng
+
+Kokoro model and voice assets: hexgrad / ONNX Community, Apache-2.0.
+https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX
+Model snapshot: 1939ad2a8e416c0acfeecc08a694d14ef25f2231
+
+MusicGen Small model: Meta, CC BY-NC 4.0 (non-commercial).
+ONNX conversion: Xenova, https://huggingface.co/Xenova/musicgen-small
+Snapshot: 6a8096dabfff72909ef5eae41461408e29ae20fd
+https://huggingface.co/facebook/musicgen-small
+
+Kitten 0.8 voice tables are float32 conversions of KittenML's voices.npz
+files, without modifying the values. Models and voice assets: Apache-2.0.
+https://github.com/KittenML/KittenTTS
+Model repositories and revisions are recorded in kitten-models.json.
+
+supertonic.js is adapted from Supertone's MIT-licensed browser helper:
+https://github.com/supertone-oss-archive/supertonic/blob/main/web/helper.js
+Local adaptations select the shared runtime, cache model requests, reuse
+denoising tensors, report download progress, and release temporary tensors
+and failed session loads.
+Supertonic 3 weights: BigScience Open RAIL-M (see supertonic-model-LICENSE).
+https://huggingface.co/supertone-oss-archive/supertonic-3
+Snapshot: aafc6e32416a594460b32413efc49d7fe4ce6d46
+
+pocket/ is pocket-tts-js by vlapky, MIT, revision
+7d7a27423b0845eb0425c81a8aa5ed3f3d973eef.
+https://github.com/vlapky/pocket-tts-js
+Local adaptations reject pending requests on teardown and report truncated output.
+ONNX export work: KevinAHM. Pocket TTS architecture and model: Kyutai.
+https://github.com/kyutai-labs/pocket-tts
+https://huggingface.co/vlapky/pocket-tts-onnx
+Model snapshot: c469236dbc5f68287fa2fbf175b66de3b80123af
+Model weights and voice assets have separate licensing; see pocket/LICENSE
+and the upstream model/voice cards for attribution and usage terms.

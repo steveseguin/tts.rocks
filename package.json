@@ -1,8 +1,8 @@
 {
   "name": "tts-web",
   "version": "1.0.0",
-  "description": "A simple text-to-speech web application using kokoro-js and WebGPU",
-  "main": "main.js",
+  "description": "Browser text-to-speech with local neural voices, voice cloning and optional cloud providers",
+  "main": "tts.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,10 +10,7 @@
   },
   "author": "Steve Seguin",
   "license": "MIT",
-  "dependencies": {
-    "kokoro-js": "^1.2.0"
-  },
   "devDependencies": {
-    "vite": "^4.4.9"
+    "vite": "6.4.4"
   }
 }

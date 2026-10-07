@@ -16,11 +16,11 @@
       this.isProcessingQueue = false;
       this.voiceId = voiceId;
       // Derive base URL from this script's location so relative assets work when embedded on other pages
-      const scriptSrc = (document.currentScript && document.currentScript.src) || window.location.href;
+      const scriptSrc = (document.currentScript && document.currentScript.src) || (window.TTS_ASSET_BASE ? window.TTS_ASSET_BASE + '/thirdparty/piper/piper-tts-proper.js' : window.location.href);
       const scriptDir = scriptSrc.substring(0, scriptSrc.lastIndexOf('/'));
       const baseUrl = scriptDir.replace(/\/thirdparty\/piper$/,'');
-      this.voiceModelPath = baseUrl + `/thirdparty/piper/piper-voices/${voiceId}.onnx`;
-      this.voiceConfigPath = baseUrl + `/thirdparty/piper/piper-voices/${voiceId}.onnx.json`;
+      this.voiceModelPath = baseUrl + `/thirdparty/piper/piper-voices/${voiceId === 'en_US-hfc_female-medium' ? voiceId : voiceId + '/' + voiceId}.onnx`;
+      this.voiceConfigPath = baseUrl + `/thirdparty/piper/piper-voices/${voiceId === 'en_US-hfc_female-medium' ? voiceId : voiceId + '/' + voiceId}.onnx.json`;
       this.baseUrl = baseUrl;
       
       // Available voices
@@ -486,8 +486,8 @@
       
       // Update voice paths
       this.voiceId = voiceId;
-      this.voiceModelPath = this.baseUrl + `/thirdparty/piper/piper-voices/${voiceId}.onnx`;
-      this.voiceConfigPath = this.baseUrl + `/thirdparty/piper/piper-voices/${voiceId}.onnx.json`;
+      this.voiceModelPath = this.baseUrl + `/thirdparty/piper/piper-voices/${voiceId === 'en_US-hfc_female-medium' ? voiceId : voiceId + '/' + voiceId}.onnx`;
+      this.voiceConfigPath = this.baseUrl + `/thirdparty/piper/piper-voices/${voiceId === 'en_US-hfc_female-medium' ? voiceId : voiceId + '/' + voiceId}.onnx.json`;
       
       // Reset initialization state
       this.initialized = false;

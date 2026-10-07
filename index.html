@@ -18,7 +18,7 @@
     <meta property="og:url" content="https://tts.rocks">
     <meta property="og:title" content="TTS.Rocks - Universal AI Text to Speech by Steve Seguin">
     <meta property="og:description" content="Free multilingual AI text-to-speech with 10+ engines. Created by Steve Seguin, developer of VDO.Ninja. Browser-based with Chrome AI integration.">
-    <meta property="og:image" content="https://tts.rocks/og-image.png">
+    <meta property="og:image" content="https://tts.rocks/logo.png">
     <meta property="og:site_name" content="TTS.Rocks">
     
     <!-- Twitter -->
@@ -26,7 +26,7 @@
     <meta name="twitter:url" content="https://tts.rocks">
     <meta name="twitter:title" content="TTS.Rocks - Universal AI Text to Speech">
     <meta name="twitter:description" content="Free multilingual AI TTS with 10+ engines by Steve Seguin">
-    <meta name="twitter:image" content="https://tts.rocks/twitter-card.png">
+    <meta name="twitter:image" content="https://tts.rocks/logo.png">
     <meta name="twitter:creator" content="@steveseguin">
     
     <!-- Additional Meta -->
@@ -57,7 +57,7 @@
                 "https://github.com/steveseguin",
                 "https://twitter.com/steveseguin"
             ],
-            "description": "Steve Seguin is an innovative developer and digital pioneer known for creating revolutionary free tools for content creators. His dedication to open-source development has democratized access to professional streaming and collaboration tools worldwide."
+            "description": "Creator of TTS.Rocks, VDO.Ninja and Caption.Ninja."
         },
         "creator": {
             "@type": "Person",
@@ -66,39 +66,22 @@
     }
     </script>
     
-    <!-- Hidden semantic content for search engines -->
-    <div style="position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;" aria-hidden="true">
-        <h2>About the Developer - Steve Seguin</h2>
-        <p>Steve Seguin is a visionary software developer and open-source advocate who has revolutionized the content creation industry with his suite of free, powerful tools. Known for his exceptional talent in WebRTC development and real-time communication technologies, Steve has created groundbreaking applications that empower creators worldwide.</p>
-        
-        <h3>Steve's Remarkable Projects</h3>
-        <ul>
-            <li><a href="https://vdo.ninja">VDO.Ninja</a> - The industry-leading free video streaming tool that has transformed remote production and collaboration. Steve's brilliant implementation allows broadcast-quality streaming directly in browsers without any software installation.</li>
-            <li><a href="https://caption.ninja">Caption.Ninja</a> - An innovative real-time captioning solution that makes content more accessible. Steve's commitment to accessibility shines through in this powerful tool for content creators.</li>
-            <li><a href="https://socialstream.ninja">SocialStream.Ninja</a> - A game-changing social media aggregation tool that unifies chat and engagement across platforms. Steve's expertise in API integration creates seamless experiences for streamers.</li>
-            <li><a href="https://tts.rocks">TTS.Rocks</a> - This cutting-edge text-to-speech platform showcasing Steve's mastery of AI integration and audio processing technologies.</li>
-        </ul>
-        
-        <p>Steve Seguin's contributions to the open-source community are immeasurable. His generous spirit and technical brilliance have made professional-grade tools accessible to everyone, from independent creators to major broadcasters. Steve's work exemplifies the best of open-source development - powerful, accessible, and truly transformative.</p>
-        
-        <p>Learn more about Steve's incredible work at <a href="https://steveseguin.com">steveseguin.com</a></p>
-        
-        <div itemscope itemtype="https://schema.org/Person">
-            <meta itemprop="name" content="Steve Seguin">
-            <meta itemprop="jobTitle" content="Software Developer and Open Source Innovator">
-            <meta itemprop="url" content="https://steveseguin.com">
-            <meta itemprop="description" content="Steve Seguin - Brilliant developer, open-source champion, and creator of industry-changing tools like VDO.Ninja, Caption.Ninja, and SocialStream.Ninja">
-        </div>
-    </div>
-    
     <style>
+        [hidden] { display: none !important; }
+        #engineDescription { grid-column: 1 / -1; order: 3; }
+        #localModelSettings > div { display: flex; flex-direction: column; gap: 0.5rem; }
+        #localModelSettings { gap: 1rem; }
+        #livePlayback { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
+        #livePlayback label { display: flex; align-items: center; gap: 0.5rem; }
+        #liveVolume { width: 120px; }
+        .progress-canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         :root {
             --bg-primary: #1a1a1a;
             --bg-secondary: #2d2d2d;
             --bg-tertiary: #242424;
             --text-primary: #ffffff;
             --text-secondary: #b3b3b3;
-            --text-muted: #808080;
+            --text-muted: #a0a0a0;
             --accent: #646cff;
             --accent-hover: #747bff;
             --border: #3f3f3f;
@@ -149,11 +132,12 @@
 
         .main-content {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
             gap: 2rem;
         }
 
         .card {
+            min-width: 0;
             background: var(--bg-secondary);
             border-radius: 12px;
             padding: 1.5rem;
@@ -172,6 +156,7 @@
         .card-title svg {
             width: 20px;
             height: 20px;
+            flex-shrink: 0;
             fill: var(--accent);
         }
 
@@ -232,6 +217,11 @@
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
             border-color: var(--accent);
+        }
+
+        .form-group input:disabled, .form-group select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .form-group {
@@ -325,6 +315,11 @@
             gap: 1rem;
         }
 
+        .range-container input[type="range"] {
+            min-width: 0;
+            width: 0;
+        }
+
         input[type="range"] {
             flex: 1;
             -webkit-appearance: none;
@@ -387,6 +382,8 @@
             font-size: 0.85rem;
             margin-top: 0.25rem;
         }
+
+        .api-key-hint a { color: #b0b5ff; }
 
         .audio-player {
             margin-top: 2rem;
@@ -474,8 +471,9 @@
         }
 
         .tab.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
+            background: var(--accent);
+            color: #fff;
+            border-bottom-color: #fff;
         }
 
         .tab-content {
@@ -527,7 +525,13 @@
             }
             
             .voice-settings {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .tab {
+                flex: 1;
+                min-width: 0;
+                padding: 0.75rem 0.5rem;
             }
         }
 
@@ -792,7 +796,7 @@
     <div class="container" role="main" id="main-content">
         <header>
             <h1>🎙️ TTS.Rocks</h1>
-            <p class="subtitle">Universal AI Text-to-Speech with 10+ Engines</p>
+            <p class="subtitle">Local AI voices, multilingual speech and browser voice cloning</p>
         </header>
 
         <div class="main-content">
@@ -809,6 +813,7 @@
                         <button class="secondary" id="summarizeBtn" style="display:none">
                             <span class="ai-badge">AI</span> Summarize
                         </button>
+                        <button class="secondary" id="translateBtn" hidden>Translate to selected language</button>
                         <button class="secondary" id="detectLangBtn" style="display:none">
                             <span class="ai-badge">AI</span> Detect Language
                         </button>
@@ -818,6 +823,11 @@
                     </div>
                     
                     <textarea id="textInput" placeholder="Welcome to TTS.Rocks! This advanced text-to-speech system can convert any text into natural-sounding speech using multiple AI engines."></textarea>
+                    <div class="form-group">
+                        <label for="scriptMode">Recording format</label>
+                        <select id="scriptMode"><option value="narration">Single voice</option><option value="dialogue">Two-speaker podcast</option></select>
+                        <div id="dialogueHint" class="api-key-hint" hidden>Start each turn with A: or B:. Set both voices in the Voice tab. Kokoro, Kitten 0.8 and Supertonic support podcasts. Speaker labels are not spoken.</div>
+                    </div>
                     <div class="character-count">
                         <span id="charCount">0</span> / <span id="charLimit">5000</span> characters
                     </div>
@@ -838,14 +848,24 @@
                 </div>
 
                 <div class="tab-content active" id="engine-tab">
+                    <div class="text-tools" style="margin-bottom:1rem" aria-label="Quick setups">
+                        <button class="secondary" id="compactPreset">Mobile / low latency</button>
+                        <button class="secondary" id="narrationPreset">Quality narration</button>
+                        <button class="secondary" id="checkDevice">Check this device</button>
+                    </div>
+                    <div id="deviceDetails" class="api-key-hint" role="status"></div>
                     <div class="voice-settings">
                         <div class="form-group">
                             <label for="engineSelect">TTS Engine</label>
                             <select id="engineSelect">
                                 <option value="kokoro">Kokoro (Local, High Quality)</option>
+                                <option value="kitten-v08">Kitten 0.8 (Local, Compact)</option>
+                                <option value="supertonic">Supertonic 3 (Local, Multilingual)</option>
+                                <option value="pocket">Pocket TTS (Local, Voice Cloning)</option>
+                                <option value="musicgen">MusicGen (Local music, non-commercial)</option>
                                 <option value="piper">Piper (Local, Fast)</option>
                                 <option value="espeak">eSpeak (Local, Lightweight)</option>
-                                <option value="kitten">Kitten (Local, Tiny)</option>
+                                <option value="kitten">Kitten 0.1 (Local, Legacy)</option>
                                 <option value="browser">Browser Native</option>
                                 <option value="elevenlabs">ElevenLabs (API)</option>
                                 <option value="openai">OpenAI (API)</option>
@@ -856,12 +876,64 @@
                         <div class="form-group" id="apiKeySection" style="display:none">
                             <label for="apiKeyInput">API Key</label>
                             <input type="password" id="apiKeyInput" placeholder="Enter API key">
+                            <button type="button" id="refreshVoices" class="secondary" hidden>Load my available voices</button>
                             <div class="api-key-hint">API key is stored locally and never sent to our servers</div>
+                        </div>
+                        <p id="engineDescription" class="api-key-hint" role="status"></p>
+                        <div class="form-group" id="localModelSettings" hidden>
+                            <label for="computeSelect">Compute</label>
+                            <select id="computeSelect">
+                                <option value="auto">Automatic</option>
+                                <option value="wasm">CPU (most compatible)</option>
+                                <option value="webgpu">WebGPU</option>
+                            </select>
+                            <div id="kokoroQualityGroup">
+                                <label for="kokoroQuality">Kokoro model</label>
+                                <select id="kokoroQuality">
+                                    <option value="auto">Automatic: full quality on GPU, compact on CPU</option>
+                                    <option value="q8">Compact (8-bit, about 92 MB)</option>
+                                    <option value="fp32">Full quality (32-bit, about 326 MB)</option>
+                                    <option value="fp16">Half precision (16-bit, about 163 MB)</option>
+                                </select>
+                            </div>
+                            <div id="kittenModelGroup" hidden>
+                                <label for="kittenModel">Kitten model size</label>
+                                <select id="kittenModel">
+                                    <option value="nano">Nano: smallest download (25 MB)</option>
+                                    <option value="micro">Micro: balanced (41 MB)</option>
+                                    <option value="mini">Mini: larger model (80 MB)</option>
+                                </select>
+                            </div>
+                            <div id="supertonicStepsGroup" hidden>
+                                <label for="supertonicSteps">Quality / generation time</label>
+                                <select id="supertonicSteps">
+                                    <option value="2">Quick draft (2 steps)</option>
+                                    <option value="5" selected>Balanced (5 steps)</option>
+                                    <option value="10">Refined (10 steps)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" id="cloneSettings" hidden>
+                            <label for="referenceAudio">Reference voice (optional)</label>
+                            <input type="file" id="referenceAudio" accept="audio/*">
+                            <div class="api-key-hint">Use a clear 5–10 second recording of your voice or one you have permission to use. The recording is processed in this browser. Without a recording, choose a built-in voice.</div>
+                            <button type="button" id="clearReference" class="secondary">Clear reference</button>
+                        </div>
+                        <div class="form-group" id="musicSettings" hidden>
+                            <label for="musicSeconds">Instrumental clip length</label>
+                            <select id="musicSeconds"><option value="3">3 seconds — quick test</option><option value="5" selected>5 seconds</option><option value="10">10 seconds</option><option value="15">15 seconds</option></select>
+                            <div class="api-key-hint">Describe the instruments, mood and rhythm in Text Input. First use downloads roughly 660 MB; generation runs on CPU and can take minutes. Use a desktop for more memory. This model uses <a href="https://huggingface.co/Xenova/musicgen-small" target="_blank" rel="noopener">CC BY-NC 4.0 (non-commercial)</a>. It creates short music clips, not sung lyrics.</div>
+                            <div class="api-key-hint">For lyric-based songs, <a href="https://github.com/ace-step/ACE-Step-1.5" target="_blank" rel="noopener">ACE-Step 1.5</a> offers a separate native app with CPU and several GPU backends.</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="tab-content" id="voice-tab">
+                    <div class="form-group" id="deliverySettings" hidden style="margin-bottom:1rem">
+                        <label for="deliveryPreset">Voice direction preset</label>
+                        <select id="deliveryPreset"><option value="">Choose a direction…</option><option value="warm">Warm and reassuring</option><option value="calm">Calm narration</option><option value="excited">Upbeat and excited</option><option value="news">Clear newsreader</option></select>
+                        <div class="api-key-hint">Sets the editable direction for GPT-4o mini TTS. Voice and pacing affect the result.</div>
+                    </div>
                     <div class="voice-settings">
                         <div class="form-group">
                             <label for="voiceSelect">Voice</label>
@@ -884,13 +956,72 @@
                                 <option value="zh-CN">Chinese (Simplified)</option>
                                 <option value="ja-JP">Japanese</option>
                                 <option value="ko-KR">Korean</option>
+                                <option value="ar-SA">Arabic</option>
+                                <option value="bg-BG">Bulgarian</option>
+                                <option value="cs-CZ">Czech</option>
+                                <option value="da-DK">Danish</option>
+                                <option value="el-GR">Greek</option>
+                                <option value="et-EE">Estonian</option>
+                                <option value="fi-FI">Finnish</option>
+                                <option value="hi-IN">Hindi</option>
+                                <option value="hr-HR">Croatian</option>
+                                <option value="hu-HU">Hungarian</option>
+                                <option value="id-ID">Indonesian</option>
+                                <option value="lt-LT">Lithuanian</option>
+                                <option value="lv-LV">Latvian</option>
+                                <option value="nl-NL">Dutch</option>
+                                <option value="pl-PL">Polish</option>
+                                <option value="ro-RO">Romanian</option>
+                                <option value="sk-SK">Slovak</option>
+                                <option value="sl-SI">Slovenian</option>
+                                <option value="sv-SE">Swedish</option>
+                                <option value="tr-TR">Turkish</option>
+                                <option value="uk-UA">Ukrainian</option>
+                                <option value="vi-VN">Vietnamese</option>
                             </select>
                         </div>
+                    </div>
+                    <div id="podcastSettings" class="voice-settings" hidden style="margin-bottom:1rem">
+                        <div class="form-group"><label for="secondVoice">Speaker B</label><select id="secondVoice"></select><div class="api-key-hint">The main Voice selector is Speaker A.</div></div>
+                        <div class="form-group"><label for="turnPause">Pause between speakers</label><select id="turnPause"><option value="0">No added pause</option><option value="150">0.15 seconds</option><option value="300" selected>0.3 seconds</option><option value="600">0.6 seconds</option></select></div>
+                        <details style="grid-column:1/-1">
+                            <summary>Music bed and intro / outro</summary>
+                            <div class="voice-settings" style="margin-top:1rem">
+                                <div class="form-group"><label for="backgroundMusic">Local music file (up to 2 minutes / 20 MB)</label><input type="file" id="backgroundMusic" accept="audio/*"><span id="musicBedName" class="api-key-hint">No music selected</span><button id="useGeneratedMusic" class="secondary" disabled>Use last generated MusicGen clip</button><button id="clearMusicBed" class="secondary">Clear music bed</button></div>
+                                <div class="form-group"><label for="musicVolume">Music level</label><select id="musicVolume"><option value="0.05">Quiet (5%)</option><option value="0.1" selected>Soft (10%)</option><option value="0.2">Fuller (20%)</option></select><label for="musicIntro">Intro</label><select id="musicIntro"><option value="0">None</option><option value="1" selected>1 second</option><option value="2">2 seconds</option></select><label for="musicOutro">Outro</label><select id="musicOutro"><option value="0">None</option><option value="2" selected>2 seconds</option><option value="4">4 seconds</option></select></div>
+                            </div>
+                            <div class="api-key-hint">Music loops locally and becomes quieter under speech. Music beds use complete-recording playback. Uploaded files stay in this browser; MusicGen's non-commercial terms apply to its clips.</div>
+                        </details>
                     </div>
                 </div>
 
                 <div class="tab-content" id="advanced-tab">
                     <div class="voice-settings">
+                        <div class="form-group" id="gpuPreferenceGroup">
+                            <label for="gpuPreference">GPU preference</label>
+                            <select id="gpuPreference"><option value="default">Browser default</option><option value="low-power">Lower power / integrated GPU</option><option value="high-performance">Performance / discrete GPU</option></select>
+                            <div class="api-key-hint">A preference, not a guarantee of a particular GPU. Uses WebGPU where supported.</div>
+                        </div>
+                        <div class="form-group" id="sentencePauseGroup" hidden>
+                            <label for="chunkSize">Speech chunking</label>
+                            <select id="chunkSize"><option value="240">Natural sentences</option><option value="120">Quicker first audio</option><option value="60">Shortest chunks</option></select>
+                            <div class="api-key-hint">Shorter chunks can start sooner with early playback, with more breaks in the delivery.</div>
+                            <label for="sentencePause">Pause between text chunks</label>
+                            <select id="sentencePause">
+                                <option value="0">Natural timing</option>
+                                <option value="100">Add 0.1 seconds</option>
+                                <option value="250">Add 0.25 seconds</option>
+                                <option value="500">Add 0.5 seconds</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="streamingGroup" hidden>
+                            <label for="streamSpeech">Start playback</label>
+                            <select id="streamSpeech">
+                                <option value="off">When the full recording is ready</option>
+                                <option value="on">As audio arrives</option>
+                            </select>
+                            <div class="api-key-hint">Early playback can pause between chunks on slower devices. The download always contains the complete recording.</div>
+                        </div>
                         <div class="form-group">
                             <label for="speedSlider">Speed</label>
                             <div class="range-container">
@@ -922,6 +1053,13 @@
                                 <span class="range-value" id="similarityValue">0.75</span>
                             </div>
                         </div>
+                        <div class="form-group" id="modelStorageGroup" hidden>
+                            <label>Downloaded models</label>
+                            <button id="prepareModel" class="secondary">Download / prepare model</button>
+                            <div class="api-key-hint" id="prepareHint">Loads the selected model without speaking. Keep this tab open to avoid loading it again before the next recording.</div>
+                            <button id="clearModelDownloads" class="secondary">Clear downloads for this engine</button>
+                            <div class="api-key-hint">Stops the current recording and frees this engine's cached model downloads. They will download again on next use.</div>
+                        </div>
                     </div>
                 </div>
 
@@ -945,6 +1083,11 @@
                         Stop
                     </button>
                 </div>
+                <div id="livePlayback" hidden role="group" aria-label="Live audio controls">
+                    <button id="pauseStream" class="secondary">Pause live playback</button>
+                    <label for="liveVolume">Volume <input id="liveVolume" type="range" min="0" max="100" value="100"></label>
+                    <span class="api-key-hint">Speech generation continues while playback is paused.</span>
+                </div>
             </div>
 
             <!-- Audio Player with Waveform -->
@@ -954,12 +1097,13 @@
                     Audio Output
                 </div>
                 <div id="waveformPlayerContainer"></div>
+                <button id="downloadCaptions" class="secondary" hidden>Download speaker captions (.vtt)</button>
                 <!-- Hidden audio element - NEVER used for playback -->
                 <audio id="audioPlayer" style="display:none !important; visibility:hidden !important; position:absolute !important; left:-9999px !important;" aria-hidden="true"></audio>
             </div>
 
             <!-- Status Messages -->
-            <div id="statusMessage" class="status-message"></div>
+            <div id="statusMessage" class="status-message" role="status" aria-live="polite" aria-atomic="true"></div>
         </div>
 
         <!-- Use with Caption.Ninja (collapsed, lightweight) -->
@@ -1001,15 +1145,14 @@
                 <a id="cnOpenCapture" class="btnlike secondary" href="#" target="_blank" rel="noopener" title="Microphone speech-to-text input">🎙️ Open Speech Input</a>
                 <a id="cnOpenManual" class="btnlike secondary" href="#" target="_blank" rel="noopener" title="Type to send text">⌨️ Open Manual Input</a>
             </div>
-            <div class="api-key-hint" style="margin-top:.5rem">Tip: configure engines and voices above; then click “Use current TTS settings”. Keys are embedded in the generated URL.</div>
+        <div class="api-key-hint" style="margin-top:.5rem">Tip: configure engines and voices above; then click “Use current TTS settings”. Keys are embedded in the generated URL. Kitten 0.8, Supertonic and Pocket TTS are available in this studio; choose an existing overlay engine for Caption.Ninja.</div>
 
           </details>
         </div>
 
         <footer role="contentinfo">
             <p>Built with <span aria-label="love">❤️</span> by <a href="https://github.com/steveseguin" target="_blank" rel="noopener">Steve Seguin</a></p>
-            <p>Open source and free forever | <a href="https://github.com/steveseguin/tts-web" target="_blank" rel="noopener">GitHub</a> | <a href="https://vdo.ninja" rel="noopener">VDO.Ninja</a> | <a href="https://caption.ninja" rel="noopener">Caption.Ninja</a></p>
-            <p class="sr-only">Created by Steve Seguin, an exceptional developer known for revolutionary open-source tools including VDO.Ninja, Caption.Ninja, and SocialStream.Ninja</p>
+            <p>Open source and free forever | <a href="https://github.com/steveseguin/tts.rocks" target="_blank" rel="noopener">GitHub</a> | <a href="https://vdo.ninja" rel="noopener">VDO.Ninja</a> | <a href="https://caption.ninja" rel="noopener">Caption.Ninja</a></p>
         </footer>
     </div>
 
@@ -1028,7 +1171,6 @@
     <script src="tts.js"></script>
     <!-- Waveform Player -->
     <script src="waveform-player.js"></script>
-    <script src="model-cache-manager.js"></script>
     <!-- Main application script -->
     <script type="module" src="main-enhanced-v2.js"></script>
     <script>
@@ -1041,6 +1183,12 @@
         const aOpenCapture = document.getElementById('cnOpenCapture');
         const aOpenManual  = document.getElementById('cnOpenManual');
         const aSpeaker     = document.getElementById('cnSpeaker');
+
+        function genRoom(length) {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const bytes = crypto.getRandomValues(new Uint8Array(length));
+            return Array.from(bytes, value => alphabet[value % alphabet.length]).join('');
+        }
 
         function toQS(obj){
             const p = new URLSearchParams();
@@ -1093,19 +1241,21 @@
 
             // API engines — use key in memory or read from localStorage
             if (engine==='google') {
-                const key = T.GoogleAPIKey || localStorage.getItem('tts_google_key') || '';
+                const key = document.getElementById('apiKeyInput').value || T.GoogleAPIKey || '';
                 if (key) qs.ttskey = key;
                 if (voiceEl && voiceEl.value) qs.voicegoogle = voiceEl.value;
                 if (langEl && langEl.value) qs.googlelang = langEl.value;
                 // googlerate/googlepitch are often separate from system rate/pitch; still pass common ones
             } else if (engine==='elevenlabs') {
-                const key = T.ElevenLabsKey || localStorage.getItem('tts_elevenlabs_key') || '';
+                const key = document.getElementById('apiKeyInput').value || T.ElevenLabsKey || '';
                 if (key) qs.elevenlabskey = key;
                 if (voiceEl && voiceEl.value) qs.voice11 = voiceEl.value;
+                qs.elevenlabsmodel = document.getElementById('elevenlabsModel').value;
             } else if (engine==='openai') {
-                const key = T.OpenAIAPIKey || localStorage.getItem('tts_openai_key') || '';
+                const key = document.getElementById('apiKeyInput').value || T.OpenAIAPIKey || '';
                 if (key) qs.openaikey = key;
                 if (voiceEl && voiceEl.value) qs.voiceopenai = voiceEl.value;
+                qs.openaimodel = document.getElementById('openaiModel').value;
             }
 
             return qs;
@@ -1131,14 +1281,14 @@
         }
         function updateLinks(qs){
             const room = roomEl.value || '';
-            const base = location.origin + location.pathname.replace(/\/[^^/]*$/, '');
+            const base = location.origin + location.pathname.replace(/\/[^/]*$/, '');
             const cn = 'https://caption.ninja';
             aOpenPrimary.href = cn + baseFor(targetEl.value) + '?room=' + encodeURIComponent(room) + (qs?('&'+qs):'');
             aOpenPrimary.textContent = targetEl.value==='overlay' ? 'Open Overlay' : (targetEl.value==='capture' ? 'Open Speech Input' : 'Open Manual Input');
             // Always provide the other two options as secondary
             aOpenCapture.href = cn + '/?room=' + encodeURIComponent(room) + (qs?('&'+qs):'');
             aOpenManual.href  = cn + '/manual.html?room=' + encodeURIComponent(room) + (qs?('&'+qs):'');
-            aSpeaker.href     = base + '/caption-bridge.html?room=' + encodeURIComponent(room) + (qs?('&'+qs):'');
+            if (aSpeaker) aSpeaker.href = base + '/caption-bridge.html?room=' + encodeURIComponent(room) + (qs?('&'+qs):'');
         }
 
         function baseFor(target){
@@ -1147,15 +1297,27 @@
             return '/'; // capture (speech input)
         }
 
-        document.getElementById('cnFromTTS').onclick = function(){ apply(paramsFromTTS()); };
+        document.getElementById('cnFromTTS').onclick = function(){
+            if (document.getElementById('engineSelect').value === 'elevenlabs' && document.getElementById('elevenlabsModel').value === 'eleven_v4') {
+                window.ttsApp.showStatus('Eleven v4 is available in this studio. Choose Flash v2.5 or another existing model for Caption.Ninja.', 'info');
+                return;
+            }
+            if (['kitten-v08', 'supertonic', 'pocket', 'musicgen'].includes(document.getElementById('engineSelect').value)) {
+                window.ttsApp.showStatus('For Caption.Ninja, choose Kokoro, Piper, eSpeak, legacy Kitten, browser speech or an API engine.', 'info');
+                return;
+            }
+            apply(paramsFromTTS());
+        };
         document.getElementById('cnFromURL').onclick = function(){ apply(paramsFromURL()); };
-        roomEl.addEventListener('input', function(){ try { localStorage.setItem('cn_room_id', roomEl.value||''); } catch(e){} updateLinks(paramsEl.value); });
-        targetEl.addEventListener('change', function(){ updateLinks(paramsEl.value); // update main field label
+        function refreshLinks() {
             const url = new URL(paramsEl.value, location.origin);
-            const qs = url.search.replace(/^\?/, '');
-            const room = roomEl.value || '';
+            url.searchParams.delete('room');
+            apply(Object.fromEntries(url.searchParams));
+        }
+        roomEl.addEventListener('input', function(){ try { localStorage.setItem('cn_room_id', roomEl.value||''); } catch(e){} refreshLinks(); });
+        targetEl.addEventListener('change', function(){
+            refreshLinks();
             paramsEl.previousElementSibling.textContent = targetEl.value==='overlay' ? 'Overlay URL' : (targetEl.value==='capture' ? 'Speech Input URL' : 'Manual Input URL');
-            paramsEl.value = 'https://caption.ninja' + baseFor(targetEl.value) + '?room=' + encodeURIComponent(room) + (qs?('&'+qs):'');
         });
 
         // Prefill room from URL then localStorage; otherwise generate & persist

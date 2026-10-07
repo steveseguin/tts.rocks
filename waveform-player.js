@@ -36,7 +36,7 @@ class WaveformPlayer {
                 
                 <div class="waveform-container">
                     <canvas class="waveform-canvas"></canvas>
-                    <canvas class="progress-canvas"></canvas>
+                    <canvas class="progress-canvas" tabindex="0" role="slider" aria-label="Playback position" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-disabled="true"></canvas>
                     <div class="hover-time" style="display:none"></div>
                 </div>
                 
@@ -45,13 +45,13 @@ class WaveformPlayer {
                         <svg viewBox="0 0 24 24">
                             <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
                         </svg>
-                        <input type="range" class="volume-slider" min="0" max="100" value="100">
+                        <input type="range" class="volume-slider" aria-label="Playback volume" min="0" max="100" value="100">
                         <span class="volume-value">100%</span>
                     </div>
                     
                     <div class="playback-rate">
                         <label>Speed:</label>
-                        <select class="rate-selector">
+                        <select class="rate-selector" aria-label="Playback speed">
                             <option value="0.5">0.5x</option>
                             <option value="0.75">0.75x</option>
                             <option value="1" selected>1x</option>
@@ -61,7 +61,7 @@ class WaveformPlayer {
                         </select>
                     </div>
                     
-                    <button class="loop-btn" aria-label="Loop">
+                    <button class="loop-btn" aria-label="Loop" aria-pressed="false">
                         <svg viewBox="0 0 24 24">
                             <path d="M17 17H7v-3l-4 4 4 4v-3h12v-6h-2v4M7 7h10v3l4-4-4-4v3H5v6h2V7z"/>
                         </svg>
@@ -94,7 +94,8 @@ class WaveformPlayer {
     attachEventListeners() {
         // Set up canvas dimensions
         this.resizeCanvases();
-        window.addEventListener('resize', () => this.resizeCanvases());
+        this.onResize = () => this.resizeCanvases();
+        window.addEventListener('resize', this.onResize);
         
         this.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
         
@@ -106,21 +107,28 @@ class WaveformPlayer {
             }
         });
         
-        this.rateSelector.addEventListener('change', (e) => {
-            if (this.source) {
-                this.source.playbackRate.value = parseFloat(e.target.value);
-            }
+        this.rateSelector.addEventListener('change', () => {
+            if (this.isPlaying) { this.pause(); this.play(); }
         });
         
         this.loopBtn.addEventListener('click', () => {
             this.isLooping = !this.isLooping;
             this.loopBtn.classList.toggle('active', this.isLooping);
+            this.loopBtn.setAttribute('aria-pressed', String(this.isLooping));
             if (this.source) {
                 this.source.loop = this.isLooping;
             }
         });
         
         // Waveform interaction
+        this.progressCanvas.addEventListener('keydown', event => {
+            if (!this.audioBuffer) return;
+            const time = this.getCurrentTime();
+            const targets = { ArrowLeft: time - 5, ArrowDown: time - 5, ArrowRight: time + 5, ArrowUp: time + 5, Home: 0, End: this.duration };
+            if (!(event.key in targets)) return;
+            event.preventDefault();
+            this.seek(targets[event.key]);
+        });
         this.progressCanvas.addEventListener('click', (e) => {
             const rect = this.progressCanvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -143,45 +151,15 @@ class WaveformPlayer {
             this.hoverTime.style.display = 'none';
         });
         
-        // Resize handling
-        window.addEventListener('resize', () => this.resizeCanvases());
-    }
 
-    resizeCanvases() {
-        const container = this.waveformCanvas.parentElement;
-        const rect = container.getBoundingClientRect();
-        
-        // Set canvas dimensions - ensure minimum width
-        let width = rect.width;
-        
-        // If width is 0, try to get the parent container width
-        if (!width || width === 0) {
-            const playerContainer = this.container.querySelector('.waveform-player');
-            if (playerContainer) {
-                width = playerContainer.offsetWidth;
-            }
-        }
-        
-        // Fallback to a reasonable default if still 0
-        width = Math.max(width || 600, 300);
-        
-        this.waveformCanvas.width = width;
-        this.waveformCanvas.height = 100;
-        this.progressCanvas.width = width;
-        this.progressCanvas.height = 100;
-        
-        console.log('Canvas resized to:', width, 'x 100');
-        
-        // Redraw if we have data
-        if (this.peaks && this.peaks.length > 0) {
-            this.drawWaveform();
-            this.drawProgress();
-        }
     }
 
     async loadAudio(audioData) {
+        this.stop();
+        const loadId = this.loadId = (this.loadId || 0) + 1;
+        this.playPauseBtn.disabled = true;
         try {
-            console.log('Loading audio data into waveform player:', audioData);
+
             
             // Initialize audio context if needed
             if (!this.audioContext) {
@@ -189,24 +167,30 @@ class WaveformPlayer {
                 
                 // Create gain node for volume control
                 this.gainNode = this.audioContext.createGain();
+                this.gainNode.gain.value = Number(this.volumeSlider.value) / 100;
                 this.gainNode.connect(this.audioContext.destination);
             }
             
+            let decoded;
             // Decode audio data
             if (audioData instanceof ArrayBuffer) {
-                console.log('Decoding ArrayBuffer, size:', audioData.byteLength);
-                this.audioBuffer = await this.audioContext.decodeAudioData(audioData.slice(0));
+
+                decoded = await this.audioContext.decodeAudioData(audioData.slice(0));
             } else if (audioData instanceof Blob) {
-                console.log('Decoding Blob, size:', audioData.size);
+
                 const arrayBuffer = await audioData.arrayBuffer();
-                this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                decoded = await this.audioContext.decodeAudioData(arrayBuffer);
             } else if (audioData instanceof AudioBuffer) {
-                console.log('Using existing AudioBuffer');
-                this.audioBuffer = audioData;
+
+                decoded = audioData;
             }
             
-            console.log('Audio buffer created, duration:', this.audioBuffer.duration, 'seconds');
+            if (loadId !== this.loadId) return;
+            if (!decoded) throw new Error('Unsupported audio format');
+            this.audioBuffer = decoded;
             this.duration = this.audioBuffer.duration;
+            this.progressCanvas.setAttribute('aria-valuemax', String(Math.ceil(this.duration)));
+            this.progressCanvas.setAttribute('aria-disabled', 'false');
             this.totalTimeEl.textContent = this.formatTime(this.duration);
             
             // Ensure canvas is sized before drawing
@@ -214,10 +198,10 @@ class WaveformPlayer {
             
             // Generate waveform
             this.generateWaveform();
-            console.log('Waveform generated with', this.peaks.length, 'peaks');
+
             
             this.drawWaveform();
-            console.log('Waveform drawn');
+
             
             // Also resize again after a short delay in case container wasn't ready
             setTimeout(() => {
@@ -232,6 +216,7 @@ class WaveformPlayer {
             
         } catch (error) {
             console.error('Error loading audio:', error);
+            throw error;
         }
     }
 
@@ -239,15 +224,15 @@ class WaveformPlayer {
         // Don't resize here - it causes infinite recursion
         const channelData = this.audioBuffer.getChannelData(0);
         const canvasWidth = this.waveformCanvas.width || 600;
-        const samplesPerPeak = Math.floor(channelData.length / canvasWidth);
+        const samplesPerPeak = Math.max(1, Math.ceil(channelData.length / canvasWidth));
         
         this.peaks = [];
         
         for (let i = 0; i < canvasWidth; i++) {
-            let min = 1.0;
-            let max = -1.0;
+            let min = 0;
+            let max = 0;
             
-            for (let j = 0; j < samplesPerPeak; j++) {
+            for (let j = 0; j < samplesPerPeak && i * samplesPerPeak + j < channelData.length; j++) {
                 const value = channelData[(i * samplesPerPeak) + j];
                 if (value > max) max = value;
                 if (value < min) min = value;
@@ -262,7 +247,6 @@ class WaveformPlayer {
         const height = this.waveformCanvas.height;
         const centerY = height / 2;
         
-        console.log('Drawing waveform - canvas size:', width, 'x', height, 'peaks:', this.peaks.length);
         
         // Clear canvas
         this.waveformCtx.clearRect(0, 0, width, height);
@@ -290,11 +274,11 @@ class WaveformPlayer {
             this.waveformCtx.fillRect(x, minY, 1, peakHeight || 1);
         }
         
-        console.log('Waveform drawing complete');
     }
 
     drawProgress() {
-        if (!this.isPlaying) return;
+        if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
+        this.animationFrame = null;
         
         const width = this.progressCanvas.width;
         const height = this.progressCanvas.height;
@@ -304,7 +288,7 @@ class WaveformPlayer {
         
         // Calculate progress
         const currentTime = this.getCurrentTime();
-        const progress = currentTime / this.duration;
+        const progress = this.duration ? currentTime / this.duration : 0;
         const progressWidth = width * progress;
         
         // Draw progress overlay
@@ -321,10 +305,15 @@ class WaveformPlayer {
         
         // Update time display
         this.currentTimeEl.textContent = this.formatTime(currentTime);
+        const position = String(Math.floor(currentTime));
+        if (this.progressCanvas.getAttribute('aria-valuenow') !== position) {
+            this.progressCanvas.setAttribute('aria-valuenow', position);
+            this.progressCanvas.setAttribute('aria-valuetext', this.formatTime(currentTime));
+        }
         
         // Continue animation
         if (this.isPlaying) {
-            requestAnimationFrame(() => this.drawProgress());
+            this.animationFrame = requestAnimationFrame(() => this.drawProgress());
         }
     }
 
@@ -337,7 +326,7 @@ class WaveformPlayer {
     }
 
     play() {
-        if (!this.audioBuffer) return;
+        if (!this.audioBuffer || this.isPlaying) return;
         
         // Resume audio context if suspended
         if (this.audioContext.state === 'suspended') {
@@ -345,25 +334,27 @@ class WaveformPlayer {
         }
         
         // Create new source
-        this.source = this.audioContext.createBufferSource();
+        const source = this.audioContext.createBufferSource();
+        this.source = source;
         this.source.buffer = this.audioBuffer;
         this.source.connect(this.gainNode);
         this.source.loop = this.isLooping;
         this.source.playbackRate.value = parseFloat(this.rateSelector.value);
         
-        // Set up ended handler
-        this.source.onended = () => {
-            if (!this.isLooping) {
-                this.stop();
-            }
+        source.onended = () => {
+            if (this.source !== source) return;
+            source.disconnect();
+            this.source = null;
+            this.stop();
         };
-        
-        // Start playing
+        if (this.pauseTime >= this.duration) this.pauseTime = 0;
         const offset = this.pauseTime;
-        this.source.start(0, offset);
-        this.startTime = this.audioContext.currentTime - offset;
+        this.playbackRate = Number(this.rateSelector.value);
+        source.start(0, offset);
+        this.startTime = this.audioContext.currentTime;
         
         this.isPlaying = true;
+        this.playPauseBtn.setAttribute('aria-label', 'Pause');
         this.playIcon.style.display = 'none';
         this.pauseIcon.style.display = 'block';
         
@@ -375,18 +366,28 @@ class WaveformPlayer {
         if (!this.source) return;
         
         this.pauseTime = this.getCurrentTime();
-        this.source.stop();
+        const source = this.source;
         this.source = null;
+        source.onended = null;
+        source.stop();
+        source.disconnect();
         
         this.isPlaying = false;
+        this.playPauseBtn.setAttribute('aria-label', 'Play');
         this.playIcon.style.display = 'block';
         this.pauseIcon.style.display = 'none';
     }
 
     stop() {
+        this.loadId = (this.loadId || 0) + 1;
+        if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
+        this.animationFrame = null;
         if (this.source) {
-            this.source.stop();
+            const source = this.source;
             this.source = null;
+            source.onended = null;
+            source.stop();
+            source.disconnect();
         }
         
         this.isPlaying = false;
@@ -396,12 +397,16 @@ class WaveformPlayer {
         this.playIcon.style.display = 'block';
         this.pauseIcon.style.display = 'none';
         this.currentTimeEl.textContent = '0:00';
+        this.playPauseBtn.setAttribute('aria-label', 'Play');
+        this.progressCanvas.setAttribute('aria-valuenow', '0');
+        this.progressCanvas.setAttribute('aria-valuetext', '0:00');
         
         // Clear progress
         this.progressCtx.clearRect(0, 0, this.progressCanvas.width, this.progressCanvas.height);
     }
 
     seek(time) {
+        if (!this.audioBuffer) return;
         const wasPlaying = this.isPlaying;
         
         if (this.isPlaying) {
@@ -410,7 +415,7 @@ class WaveformPlayer {
         
         this.pauseTime = Math.max(0, Math.min(time, this.duration));
         
-        if (wasPlaying) {
+        if (wasPlaying && this.pauseTime < this.duration) {
             this.play();
         }
         
@@ -424,8 +429,8 @@ class WaveformPlayer {
             return this.pauseTime;
         }
         
-        const elapsed = this.audioContext.currentTime - this.startTime;
-        return Math.min(elapsed, this.duration);
+        const elapsed = this.pauseTime + (this.audioContext.currentTime - this.startTime) * (this.playbackRate || 1);
+        return this.isLooping && this.duration ? elapsed % this.duration : Math.min(elapsed, this.duration);
     }
 
     formatTime(seconds) {
@@ -438,19 +443,21 @@ class WaveformPlayer {
         const container = this.container.querySelector('.waveform-container');
         const rect = container.getBoundingClientRect();
         
-        this.waveformCanvas.width = rect.width;
-        this.waveformCanvas.height = rect.height;
-        this.progressCanvas.width = rect.width;
-        this.progressCanvas.height = rect.height;
+        this.waveformCanvas.width = Math.max(1, Math.round(rect.width || 600));
+        this.waveformCanvas.height = Math.max(1, Math.round(rect.height || 100));
+        this.progressCanvas.width = this.waveformCanvas.width;
+        this.progressCanvas.height = this.waveformCanvas.height;
         
         if (this.audioBuffer) {
             this.generateWaveform();
             this.drawWaveform();
+            this.drawProgress();
         }
     }
 
     destroy() {
         this.stop();
+        window.removeEventListener('resize', this.onResize);
         if (this.audioContext) {
             this.audioContext.close();
         }

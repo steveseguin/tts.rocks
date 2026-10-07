@@ -1,231 +1,132 @@
-# TTS.Rocks - Advanced Text-to-Speech Web Application
+# TTS.Rocks
 
-A comprehensive browser-based text-to-speech application featuring multiple AI-powered TTS engines, all running client-side with WebGPU acceleration where available.
+Turn text into speech in your browser. Choose local AI voices, clone a reference voice locally, or use a cloud provider with your own API key.
 
-🔗 **[Live Demo](https://tts.rocks/)**
+**[Open TTS.Rocks](https://tts.rocks/)**
 
-## Features
+1. Enter text and choose an engine.
+2. Open **Voice** to choose a voice and language. Adjust speed and playback timing under **Advanced**.
+3. Click **Generate Speech**. Local models download on first use and are cached when browser storage is available.
+4. Play, pause, seek, or download the recording.
 
-- **Multiple TTS Engines**: Choose from 8 different text-to-speech engines
-- **Fully Client-Side**: Most engines run entirely in your browser - no server required
-- **WebGPU Acceleration**: Leverages GPU for faster processing when available
-- **Visual Waveform Player**: Interactive audio visualization with playback controls
-- **Model Caching**: Automatic caching for faster subsequent loads
-- **Voice Customization**: Adjust speed, pitch, and other parameters
-- **Download Support**: Save generated audio as WAV files
+## Choose an engine
 
-## Available TTS Engines
+| Engine | Runs in | Best fit |
+| --- | --- | --- |
+| Kokoro | Browser CPU or WebGPU | 28 US/British English voices; compact Q8 or full-quality FP32 |
+| Kitten 0.8 | Browser CPU | Eight English voices; Nano (25 MB), Micro (41 MB), or Mini (80 MB) |
+| Supertonic 3 | Browser CPU or WebGPU | Ten voices, 31 languages, adjustable generation steps |
+| Pocket TTS | Browser CPU | Built-in voices and local reference-voice cloning; six language bundles |
+| MusicGen Small | Browser CPU | Short instrumental clips; non-commercial model, roughly 660 MB download |
+| Piper | Browser CPU | Bundled US and British English voice models |
+| eSpeak | Browser CPU | Lightweight multilingual synthesized speech |
+| Kitten 0.1 | Browser CPU | Original Kitten model and voices |
+| Browser Native | Browser/operating system | Immediate speech; no model download or audio export |
+| ElevenLabs | Provider API | Flash v2.5, expressive v3/v4, and account voices |
+| OpenAI | Provider API | GPT-4o mini TTS with voice directions, TTS-1 and TTS-1 HD |
+| Google Cloud | Provider API | Standard, WaveNet, Neural2, Studio and available account voices |
 
-### 🚀 Local AI Models (Browser-Based)
-1. **Kokoro TTS** - High-quality neural TTS with 100+ voices
-   - WebGPU/WASM support
-   - 82MB model size
-   - Multiple languages and accents
+Kokoro's automatic mode uses FP32 on WebGPU and Q8 on CPU. Smaller models reduce downloads but are not necessarily faster on every GPU. Choose **CPU** if GPU initialization fails. Supertonic defaults to CPU in automatic mode. Sizes exclude runtime and voice files.
 
-2. **Kitten TTS** - Lightweight TTS engine
-   - WASM-based (CPU)
-   - Compact model size
-   - Fast generation
+For quicker first audio, open **Advanced**, then set **Start playback** to **As audio arrives**. Slower devices may pause between chunks. The download contains every generated chunk. Add a short pause between chunks for narration, or keep natural timing.
 
-3. **Piper TTS** - Versatile open-source TTS
-   - WASM-based (CPU)
-   - Multiple voice models
-   - Good quality-to-size ratio
+During early playback, use the live pause/resume and volume controls. Generation continues while playback is paused. To remove a local engine's cached downloads, select it and use **Advanced > Clear downloads for this engine**; it downloads again on next use.
 
-4. **eSpeak TTS** - Classic speech synthesizer
-   - WASM-based (CPU)
-   - Minimal resource usage
-   - Supports many languages
+Choose **Mobile / low latency** for Kitten Nano and early playback, or **Quality narration** for Kokoro. **Advanced > Download / prepare model** loads supported models before recording. Keep the tab open to reuse the loaded model. **Check this device** reports WebGPU and FP16 availability; Advanced also offers lower-power and performance GPU preferences. The browser decides which hardware is available.
 
-### ☁️ API-Based Engines
-5. **ElevenLabs** - Premium AI voices
-   - Requires API key
-   - Multiple models including Turbo v2.5
-   - Ultra-realistic voices
+## Clone a voice locally
 
-6. **OpenAI TTS** - GPT-powered voices
-   - Requires API key
-   - TTS-1 and TTS-1-HD models
-   - High-quality synthesis
+Select **Pocket TTS**, choose English, French, German, Italian, Portuguese or Spanish, then upload a clear recording of your voice or one you have permission to use. A 5-10 second sample works well; the first 10 seconds are used. Leave the reference empty to use a built-in voice.
 
-7. **Google Cloud TTS** - Enterprise-grade TTS
-   - Requires API key
-   - WaveNet, Neural2, and Studio voices
-   - 200+ voices across 50+ languages
+The reference is encoded in a browser worker and is not uploaded. The selected recording lasts only for the current page session. English needs approximately 125 MB of model downloads, plus approximately 21 MB for the cloning encoder. Other language bundles can be larger. Use a desktop browser if your device runs out of memory.
 
-8. **Browser Native** - System TTS
-   - No download required
-   - Uses OS speech synthesis
-   - Platform-dependent voices
+The same reference is reused for subsequent recordings. **Clear reference** removes the selected file and releases its encoded voice from memory.
 
-## Quick Start
+## Make a two-speaker podcast
 
-### Using the Hosted Version
-Simply visit [https://tts.rocks/](https://tts.rocks/) to start using the application immediately.
+Choose **Two-speaker podcast** under Text Input and use Kokoro, Kitten 0.8 or Supertonic. Select Speaker A in the main Voice selector and Speaker B in the podcast controls. Write each turn with a label:
 
-### Self-Hosting
+```text
+A: Welcome to our show. What are we talking about today?
+B: How to make a podcast entirely in the browser.
+A: Let's get started.
+```
 
-1. Clone the repository:
-```bash
+Set the pause between speakers, generate, then download the complete WAV and speaker captions (`.vtt`). Captions follow speaker turns rather than individual words. Labels are not spoken.
+
+Expand **Music bed and intro / outro** to add a local track or the last MusicGen clip generated in this page. The music loops with fades and becomes quieter under speech. Music beds use complete-recording playback, and captions include the intro offset. Files remain local and must be selected again after reloading the page.
+
+## Create an instrumental clip
+
+Choose **MusicGen**, describe the instruments, mood and rhythm, and select a 3–15 second clip. Generation runs locally on CPU and can take minutes; use a desktop with room for the model. Download the WAV or select it as a podcast music bed.
+
+MusicGen uses **CC BY-NC 4.0 (non-commercial)** model weights. Review the [model license](https://huggingface.co/Xenova/musicgen-small) before choosing it for a project. For lyric-based songs and larger local music models, see [ACE-Step 1.5](https://github.com/ace-step/ACE-Step-1.5), which runs in a separate native installation.
+
+## Cloud voices and translation
+
+For ElevenLabs, OpenAI or Google Cloud, enter your own API key. Requests go directly from your browser to that provider. Keys are saved in this browser's local storage; do not use a shared browser profile for private keys. Provider charges and account limits apply.
+
+**Load my available voices** retrieves current ElevenLabs or Google voices, including voices available to your account. For GPT-4o mini TTS, add a direction such as "warm, calm narration" in the Voice tab. Older OpenAI models use their own supported voice list.
+
+Voice choices are remembered per engine and language. Loaded account voice lists stay available while switching engines in the same page session.
+
+GPT-4o mini TTS offers warm, calm, upbeat and newsreader direction presets. Edit the direction to suit your script. Local speech engines use their own voice and speed controls.
+
+Eleven v4 accepts up to 2000 characters per recording here. Use the player's speed control for Eleven v3/v4; their synthesis speed controls are unavailable. Choose Flash v2.5 or another existing model for Caption.Ninja links.
+
+On compatible desktop Chrome installations, the text toolbar offers local summarization, language detection, rewriting and translation. Choose the target language in **Voice**, then use **Translate to selected language**. Browser language models may need an initial download. Review edited text before generating speech.
+
+## Run your own copy
+
+No build is required. Serve this folder over HTTPS or localhost:
+
+```sh
 git clone https://github.com/steveseguin/tts.rocks.git
 cd tts.rocks
-```
-
-2. Serve the files using any web server:
-```bash
-# Using Python
 python -m http.server 8000
-
-# Using Node.js
-npx serve
-
-# Or any other static file server
 ```
 
-3. Open `http://localhost:8000` in your browser
+Open `http://localhost:8000`. Use a current browser with WebAssembly and Web Workers. WebGPU requires a compatible browser, graphics driver and secure context. Models are fetched from Hugging Face, and the neural WASM runtime from jsDelivr. Local synthesis keeps your text and reference audio on your device.
 
-## Integration Guide
+If your browser cannot preview audio, download the recording and play it in another app. Reference cloning requires a browser that can decode audio locally.
 
-### Embedding in Your Website
+For the optional Vite workflow, use Node.js 22.12 or newer:
 
-You can integrate the TTS functionality into your own website:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>TTS Integration Example</title>
-</head>
-<body>
-    <!-- Include the TTS library -->
-    <script src="https://tts.rocks/tts.js"></script>
-    
-    <!-- Your content -->
-    <textarea id="text">Hello, world!</textarea>
-    <button onclick="speak()">Speak</button>
-    
-    <script>
-        // Initialize TTS
-        window.TTS = window.TTS || {};
-        
-        // Configure settings
-        TTS.TTSProvider = 'kokoro'; // or 'kitten', 'piper', etc.
-        TTS.rate = 1.0;  // Speech rate
-        TTS.pitch = 1.0; // Voice pitch
-        
-        async function speak() {
-            const text = document.getElementById('text').value;
-            
-            // For Kokoro TTS (requires initialization)
-            if (TTS.TTSProvider === 'kokoro') {
-                if (!TTS.kokoroLoaded) {
-                    await TTS.initKokoro();
-                }
-                await TTS.kokoroTTS(text);
-            } 
-            // For simpler engines
-            else {
-                TTS.speak(text, true);
-            }
-        }
-    </script>
-</body>
-</html>
-```
-
-### Advanced Integration with Waveform Player
-
-For a complete integration with visual waveform display:
-
-```html
-<!-- Include required files -->
-<link rel="stylesheet" href="https://tts.rocks/styles.css">
-<script src="https://tts.rocks/tts.js"></script>
-<script src="https://tts.rocks/waveform-player.js"></script>
-<script type="module" src="https://tts.rocks/main-enhanced-v2.js"></script>
-
-<!-- The app will initialize automatically -->
-<div id="app"></div>
-```
-
-## Project Structure
-
-```
-tts.rocks/
-├── index.html              # Main application
-├── main-enhanced-v2.js     # Application logic
-├── tts.js                  # TTS engine implementations
-├── waveform-player.js      # Audio visualization
-├── model-cache-manager.js  # IndexedDB caching
-├── styles.css              # UI styling
-├── dist/                   # Kokoro TTS distribution
-│   └── lib/               # Kokoro dependencies
-└── thirdparty/            # Third-party libraries
-    ├── piper/             # Piper TTS files
-    ├── espeak/            # eSpeak files
-    └── kitten/            # Kitten TTS files
-```
-
-## Browser Requirements
-
-- **Recommended**: Chrome/Edge 113+, Firefox 115+, Safari 16+
-- **WebGPU Support**: For optimal performance with Kokoro TTS
-- **WebAssembly**: Required for all local TTS engines
-- **IndexedDB**: For model caching
-
-## License
-
-**My Code**: MIT License - You're free to use, modify, and distribute my code for any purpose.
-
-**Third-Party Libraries**: Each third-party library in the `thirdparty/` folder has its own license:
-- Kokoro-JS: Apache 2.0 License
-- Piper TTS: MIT License
-- eSpeak: GPL v3 License
-- Kitten TTS: Check individual license
-- Other dependencies: See respective folders for license information
-
-Please ensure you comply with the licenses of any third-party libraries you use.
-
-## Development
-
-### Local Development
-```bash
-# Install dependencies (if any)
+```sh
 npm install
-
-# Start development server
-npx vite
-
-# Build for production
+npm run dev
 npm run build
+npm run preview
 ```
 
-### Contributing
-Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
+The build writes a static site to `build/`, including the standalone TTS library and its assets. Serve the whole output folder.
 
-## API Keys
+## Caption.Ninja and embedding
 
-For API-based TTS engines, you'll need to obtain API keys:
-- **ElevenLabs**: [Get API key](https://elevenlabs.io/)
-- **OpenAI**: [Get API key](https://platform.openai.com/)
-- **Google Cloud**: [Get API key](https://cloud.google.com/text-to-speech)
+Expand **Use with Caption.Ninja** to create speech-input, manual-input and output links for one room. Kokoro, Piper, eSpeak, legacy Kitten, browser speech and cloud engines can be passed to existing overlays. Kitten 0.8, Supertonic and Pocket are studio options. Generated cloud-provider links include API keys: share them only with trusted recipients.
 
-API keys are stored locally in your browser and never sent to our servers.
+For a simple browser-speech integration:
 
-## Acknowledgments
+```html
+<script src="https://tts.rocks/tts.js"></script>
+<button onclick="TTS.TTSProvider = 'system'; TTS.speak('Hello from TTS.Rocks', true)">
+  Speak
+</button>
+```
 
-This project integrates several excellent open-source TTS projects:
-- [Kokoro-JS](https://github.com/ddkaao/kokoro-js) by ddkaao
-- [Piper](https://github.com/rhasspy/piper) by Rhasspy
-- [eSpeak-ng](https://github.com/espeak-ng/espeak-ng)
-- And other contributors to the web TTS ecosystem
+The `tts.js` library and the studio UI are separate entry points. Embed the complete studio with an iframe when you need its model controls, cloning and waveform player.
 
-## Support
+## More voice model projects
 
-For issues, questions, or suggestions:
-- Open an issue on [GitHub](https://github.com/steveseguin/tts.rocks/issues)
-- Visit the live demo at [tts.rocks](https://tts.rocks/)
+These projects offer native runtimes, hosted demos or community browser ports. Use their linked setup instructions; they are not additional engines in the TTS.Rocks selector.
 
----
+- [Chatterbox](https://github.com/resemble-ai/chatterbox): Nano, Turbo and multilingual models, cloning and expressive speech. [Community ONNX exports](https://huggingface.co/onnx-community/chatterbox-ONNX) offer a separate browser integration path.
+- [Qwen3-TTS](https://github.com/QwenLM/Qwen3-TTS): multilingual cloning, custom voices and voice design, with native model runtimes.
+- [NeuTTS](https://github.com/neuphonic/neutts): Air and Nano cloning models, plus 2E expression controls. Choose the appropriate language, codec and model license.
+- [KittenTTS 2](https://github.com/KittenML/KittenTTS): a separate speech-language model with cloning and expression controls. Its native runtime differs from the lightweight Kitten 0.8 ONNX models used here.
 
-Made with ❤️ for the web audio community
+## Licenses and support
+
+TTS.Rocks application code is MIT-licensed. Third-party code, model weights and voice assets retain their own licenses. Supertonic 3 weights use BigScience Open RAIL-M; Pocket model/voice assets have separate attribution requirements. See [neural component notices](thirdparty/neural/NOTICE) and each bundled library's license before redistributing assets.
+
+[Report an issue](https://github.com/steveseguin/tts.rocks/issues). Created by [Steve Seguin](https://github.com/steveseguin).
