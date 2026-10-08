@@ -20,7 +20,8 @@ export class StreamPlayer {
         const source = this.context.createBufferSource();
         source.buffer = buffer;
         source.connect(this.gain);
-        const start = Math.max(this.context.currentTime + 0.025, this.nextTime);
+        // Leave time for the output device to wake before the first word.
+        const start = Math.max(this.context.currentTime + (this.sources.size ? 0.025 : 0.15), this.nextTime);
         this.nextTime = start + buffer.duration + gap;
         this.sources.add(source);
         source.onended = () => {

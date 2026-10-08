@@ -348,8 +348,9 @@ class WaveformPlayer {
         if (this.pauseTime >= this.duration) this.pauseTime = 0;
         const offset = this.pauseTime;
         this.playbackRate = Number(this.rateSelector.value);
-        source.start(0, offset);
-        this.startTime = this.audioContext.currentTime;
+        // A short silent lead-in gives the browser/output device time to start.
+        this.startTime = this.audioContext.currentTime + (offset === 0 ? 0.15 : 0.025);
+        source.start(this.startTime, offset);
         
         this.isPlaying = true;
         this.playPauseBtn.setAttribute('aria-label', 'Pause');
@@ -427,7 +428,7 @@ class WaveformPlayer {
             return this.pauseTime;
         }
         
-        const elapsed = this.pauseTime + (this.audioContext.currentTime - this.startTime) * (this.playbackRate || 1);
+        const elapsed = this.pauseTime + Math.max(0, this.audioContext.currentTime - this.startTime) * (this.playbackRate || 1);
         return this.isLooping && this.duration ? elapsed % this.duration : Math.min(elapsed, this.duration);
     }
 

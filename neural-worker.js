@@ -149,6 +149,7 @@ self.onmessage = async ({ data: { id, type, options } }) => {
             return;
         }
         await initialize(options, progress);
+        progress({ device, dtype, message: `Model ready on ${device === 'webgpu' ? 'GPU (WebGPU)' : 'CPU'}.` });
         if (type === 'prepare') {
             self.postMessage({ id, result: { device, dtype } });
             return;
@@ -175,11 +176,17 @@ self.onmessage = async ({ data: { id, type, options } }) => {
         const pauses = [];
         const cues = [];
         let sampleOffset = 0;
+        let generatedSamples = 0;
         let sampleRate = 24000;
         const chunkSize = Math.max(60, Math.min(240, Number(options.chunkSize) || 240));
         const maxLength = options.engine === 'supertonic' && /^(ko|ja)/.test(options.language) ? Math.min(120, chunkSize) : chunkSize;
         const turns = options.turns || [{ text: options.text, voice: options.voice }];
         const sentences = turns.flatMap((turn, turnIndex) => splitText(turn.text, maxLength).map(text => ({ text, voice: turn.voice, speaker: turn.speaker, turnIndex })));
+        // Start a long opening sentence sooner, keeping later chunks at the chosen size.
+        if (options.stream && sentences.length && Array.from(sentences[0].text).length > 120) {
+            const first = sentences[0];
+            sentences.splice(0, 1, ...splitText(first.text, 120).map(text => ({ ...first, text })));
+        }
         const started = performance.now();
         for (let index = 0; index < sentences.length; index++) {
             progress({ message: `Generating part ${index + 1} of ${sentences.length}…`, percent: index / sentences.length * 100 });
@@ -208,6 +215,7 @@ self.onmessage = async ({ data: { id, type, options } }) => {
             }
             sampleRate = audio.sampling_rate;
             chunks.push(audio.audio);
+            generatedSamples += audio.audio.length;
             const next = sentences[index + 1];
             const pause = next ? (next.turnIndex !== sentence.turnIndex ? options.turnPauseMs || 0 : options.pauseMs || 0) : 0;
             pauses.push(pause);
@@ -216,12 +224,13 @@ self.onmessage = async ({ data: { id, type, options } }) => {
                 cues[sentence.turnIndex].end = (sampleOffset + audio.audio.length) / sampleRate;
             }
             sampleOffset += audio.audio.length + Math.round(sampleRate * pause / 1000);
+            const metrics = { device, dtype, duration: generatedSamples / sampleRate, seconds: (performance.now() - started) / 1000 };
             if (options.stream) {
                 const chunk = joinAudio([audio.audio], sampleRate);
-                progress({ chunk, sampleRate, gap: pause / 1000 });
-            }
+                progress({ chunk, sampleRate, gap: pause / 1000, ...metrics });
+            } else progress(metrics);
         }
-        self.postMessage({ id, result: { blob: chunksToWav(chunks, sampleRate, pauses), duration: sampleOffset / sampleRate,
+        self.postMessage({ id, result: { blob: chunksToWav(chunks, sampleRate, pauses), duration: sampleOffset / sampleRate, generatedDuration: generatedSamples / sampleRate,
             seconds: (performance.now() - started) / 1000, device, dtype, chunks: chunks.length, cues } });
     } catch (error) {
         self.postMessage({ id, error: error.message || String(error) });

@@ -74,6 +74,7 @@
         #livePlayback { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
         #livePlayback label { display: flex; align-items: center; gap: 0.5rem; }
         #liveVolume { width: 120px; }
+        #computeModeDisplay { margin: 1rem 0; color: var(--text-primary); line-height: 1.6; }
         .progress-canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         :root {
             --bg-primary: #1a1a1a;
@@ -1014,14 +1015,6 @@
                                 <option value="500">Add 0.5 seconds</option>
                             </select>
                         </div>
-                        <div class="form-group" id="streamingGroup" hidden>
-                            <label for="streamSpeech">Start playback</label>
-                            <select id="streamSpeech">
-                                <option value="off">When the full recording is ready</option>
-                                <option value="on">As audio arrives</option>
-                            </select>
-                            <div class="api-key-hint">Early playback can pause between chunks on slower devices. The download always contains the complete recording.</div>
-                        </div>
                         <div class="form-group">
                             <label for="speedSlider">Speed</label>
                             <div class="range-container">
@@ -1063,6 +1056,15 @@
                     </div>
                 </div>
 
+                        <div class="form-group" id="streamingGroup" hidden>
+                            <label for="streamSpeech">Start playback</label>
+                            <select id="streamSpeech">
+                                <option value="off">When the full recording is ready</option>
+                                <option value="on" selected>As audio arrives (lower latency)</option>
+                            </select>
+                            <div class="api-key-hint" id="streamingHint">Hear the first chunk while the rest is generated. Slower devices may pause between chunks. The download contains the full recording.</div>
+                        </div>
+                <div id="computeModeDisplay" role="status" aria-live="polite" class="api-key-hint"></div>
                 <div class="action-buttons">
                     <button id="generateBtn">
                         <svg style="width:16px;height:16px;vertical-align:middle;margin-right:4px" viewBox="0 0 24 24">

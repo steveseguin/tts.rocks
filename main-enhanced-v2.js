@@ -104,16 +104,19 @@ class TTSApp {
             if (file?.size > 20 * 1024 * 1024) { event.target.value = ''; this.showStatus('Choose a music file smaller than 20 MB.', 'error'); return; }
             this.backgroundMusic = file || null;
             document.getElementById('musicBedName').textContent = file?.name || 'No music selected';
+            this.updateStreamingControls();
         });
         document.getElementById('useGeneratedMusic').addEventListener('click', () => {
             this.backgroundMusic = this.lastMusicBlob;
             document.getElementById('backgroundMusic').value = '';
             document.getElementById('musicBedName').textContent = 'Generated MusicGen clip (non-commercial)';
+            this.updateStreamingControls();
         });
         document.getElementById('clearMusicBed').addEventListener('click', () => {
             this.backgroundMusic = null;
             document.getElementById('backgroundMusic').value = '';
             document.getElementById('musicBedName').textContent = 'No music selected';
+            this.updateStreamingControls();
         });
         document.getElementById('secondVoice').addEventListener('change', () => {
             this.podcastVoices[`${this.currentEngine}:${this.languageSelect.value}`] = document.getElementById('secondVoice').value;
@@ -122,7 +125,7 @@ class TTSApp {
         document.getElementById('compactPreset').addEventListener('click', () => this.applyStudioPreset('compact'));
         document.getElementById('narrationPreset').addEventListener('click', () => this.applyStudioPreset('narration'));
         document.getElementById('checkDevice').addEventListener('click', () => this.checkDevice());
-        document.getElementById('gpuPreference').addEventListener('change', () => { this.stopGeneration(); this.neural.cancel(); this.saveSettings(); });
+        document.getElementById('gpuPreference').addEventListener('change', () => { this.stopGeneration(); this.neural.cancel(); this.computeMode = null; this.updateComputeModeDisplay(); this.saveSettings(); });
         document.getElementById('prepareModel').addEventListener('click', () => this.prepareModel());
         document.getElementById('downloadCaptions').addEventListener('click', () => this.downloadFile(new Blob([dialogueVtt(this.audioCues)], { type: 'text/vtt' }), 'podcast.vtt'));
         document.getElementById('deliveryPreset').addEventListener('change', event => {
@@ -138,7 +141,10 @@ class TTSApp {
         this.engineSelect.addEventListener('change', () => this.onEngineChange());
         this.voiceSelect.addEventListener('change', () => this.saveSettings());
         for (const id of ['computeSelect', 'kokoroQuality', 'kittenModel', 'supertonicSteps', 'sentencePause', 'streamSpeech']) {
-            document.getElementById(id).addEventListener('change', () => this.saveSettings());
+            document.getElementById(id).addEventListener('change', () => {
+                this.saveSettings();
+                if (!this.isGenerating && ['computeSelect', 'kokoroQuality', 'kittenModel'].includes(id)) { this.computeMode = null; this.updateComputeModeDisplay(); }
+            });
         }
         document.getElementById('clearReference').addEventListener('click', () => {
             document.getElementById('referenceAudio').value = '';
@@ -495,6 +501,7 @@ class TTSApp {
         document.getElementById('prepareHint').hidden = document.getElementById('prepareModel').hidden;
         document.getElementById('deliverySettings').hidden = this.currentEngine !== 'openai';
         this.syncPodcastVoices();
+        this.updateStreamingControls();
     }
 
     syncPodcastVoices() {
@@ -524,7 +531,10 @@ class TTSApp {
         this.updateGenerateButtonState();
         try {
             const result = await this.neural.request('prepare', this.neuralOptions(''), progress => {
-                if (id === this.generationId) this.showInlineProgress(progress.message);
+                if (id === this.generationId) {
+                    if (progress.device) this.updateGenerationMetrics(progress);
+                    if (progress.message) this.showInlineProgress(progress.message);
+                }
             });
             if (id === this.generationId) this.showStatus(`Model ready (${result.device === 'webgpu' ? 'WebGPU' : 'CPU'}, ${result.dtype}). Your next recording can start without loading the model again.`, 'success');
         } catch (error) {
@@ -875,33 +885,32 @@ class TTSApp {
     }
     
     updateComputeModeDisplay() {
-        // Find or create compute mode display element
-        let computeModeEl = document.getElementById('computeModeDisplay');
-        if (!computeModeEl) {
-            // Create it if it doesn't exist
-            const voiceGroup = this.voiceSelect.parentElement;
-            computeModeEl = document.createElement('div');
-            computeModeEl.id = 'computeModeDisplay';
-            computeModeEl.style.cssText = 'margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);';
-            voiceGroup.appendChild(computeModeEl);
-        }
-        
-        // Update display based on current engine
-        if (['kokoro', 'kitten-v08', 'supertonic', 'musicgen'].includes(this.currentEngine) && this.computeMode) {
-            computeModeEl.innerHTML = `<span style="color: var(--accent);">⚡</span> ${this.computeMode}`;
-            computeModeEl.style.display = 'block';
-        } else if (this.currentEngine === 'kitten') {
-            computeModeEl.innerHTML = `<span style="color: var(--accent);">🔧</span> WASM (CPU-based)`;
-            computeModeEl.style.display = 'block';
-        } else if (this.currentEngine === 'piper') {
-            computeModeEl.innerHTML = `<span style="color: var(--accent);">🔧</span> WASM (CPU-based)`;
-            computeModeEl.style.display = 'block';
-        } else if (this.currentEngine === 'espeak') {
-            computeModeEl.innerHTML = `<span style="color: var(--accent);">🔧</span> WASM (CPU-based)`;
-            computeModeEl.style.display = 'block';
-        } else {
-            computeModeEl.style.display = 'none';
-        }
+        const display = document.getElementById('computeModeDisplay');
+        const engine = this.currentEngine;
+        const device = document.getElementById('computeSelect').value;
+        display.textContent = this.computeMode || (['kokoro', 'supertonic'].includes(engine)
+            ? (device === 'auto' ? 'Automatic: actual CPU or GPU shown when the model is ready.' : device === 'webgpu' ? 'GPU requested: waiting for the model to load.' : 'CPU selected: waiting for the model to load.')
+            : ['kitten-v08', 'kitten', 'piper', 'espeak', 'pocket', 'musicgen'].includes(engine) ? 'CPU (local processing)'
+            : engine === 'browser' ? 'Browser / operating system voice' : 'Cloud provider (remote processing)');
+    }
+
+    updateGenerationMetrics(info, firstAudioSeconds) {
+        this.computeMode = `${info.device === 'webgpu' ? 'GPU (WebGPU)' : 'CPU (WASM)'}${info.dtype ? ` \u00b7 ${info.dtype}` : ''}`;
+        const duration = info.generatedDuration ?? info.duration;
+        if (info.seconds > 0 && duration > 0) {
+            const speed = duration / info.seconds;
+            this.computeMode += ` \u00b7 ${speed.toFixed(2)}\u00d7 real time${speed < 1 ? ' (slower than playback)' : ' (faster than playback)'} \u00b7 ${duration.toFixed(1)}s audio generated in ${info.seconds.toFixed(1)}s (excludes model loading)`;
+        } else this.computeMode += ' \u00b7 Model ready';
+        if (Number.isFinite(firstAudioSeconds)) this.computeMode += ` \u00b7 First chunk ready in ${firstAudioSeconds.toFixed(1)}s including loading`;
+        this.updateComputeModeDisplay();
+    }
+
+    updateStreamingControls() {
+        const music = document.getElementById('scriptMode').value === 'dialogue' && this.backgroundMusic;
+        document.getElementById('streamSpeech').disabled = !this.audioPlaybackSupported || Boolean(music);
+        document.getElementById('streamingHint').textContent = !this.audioPlaybackSupported ? 'This browser supports downloads only.' : music
+            ? 'Music beds play after the complete recording is mixed. Clear the music bed for early playback.'
+            : 'Hear the first chunk while the rest is generated. Slower devices may pause between chunks. The download contains the full recording.';
     }
 
     updateCharCount() {
@@ -972,6 +981,8 @@ class TTSApp {
         const streaming = !music && this.audioPlaybackSupported && ['kokoro', 'kitten-v08', 'supertonic', 'pocket'].includes(engine) && document.getElementById('streamSpeech').value === 'on';
         const neuralOptions = { ...this.neuralOptions(text, streaming), turns, turnPauseMs: Number(document.getElementById('turnPause').value) };
         const requestedAt = performance.now();
+        this.computeMode = null;
+        this.updateComputeModeDisplay();
         let firstAudioAt;
         let streamPlayer;
         try {
@@ -990,16 +1001,16 @@ class TTSApp {
             if (['kokoro', 'kitten-v08', 'supertonic', 'musicgen'].includes(engine)) {
                 const result = await this.neural.request('generate', neuralOptions, progress => {
                     if (id !== this.generationId) return;
-                    if (progress.chunk) { firstAudioAt ??= performance.now(); streamPlayer.enqueue(progress.chunk, progress.sampleRate, progress.gap); return; }
-                    this.showInlineProgress(progress.message);
+                    if (progress.duration > 0) firstAudioAt ??= performance.now();
+                    if (progress.device) this.updateGenerationMetrics(progress, firstAudioAt ? (firstAudioAt - requestedAt) / 1000 : undefined);
+                    if (progress.chunk) { streamPlayer.enqueue(progress.chunk, progress.sampleRate, progress.gap); return; }
+                    if (progress.message) this.showInlineProgress(progress.message);
                     if (Number.isFinite(progress.percent)) this.setButtonProgress(progress.percent);
                 });
                 if (id !== this.generationId) return;
                 this.audioCues = result.cues || [];
                 blob = result.blob;
-                this.computeMode = `${result.device === 'webgpu' ? 'WebGPU' : 'CPU'} · ${result.dtype} · ${result.seconds.toFixed(1)}s for ${result.duration.toFixed(1)}s audio`;
-                if (firstAudioAt) this.computeMode += ` · first audio ${((firstAudioAt - requestedAt) / 1000).toFixed(1)}s`;
-                this.updateComputeModeDisplay();
+                this.updateGenerationMetrics(result, firstAudioAt ? (firstAudioAt - requestedAt) / 1000 : undefined);
             } else if (engine === 'pocket') blob = await this.generatePocket(text, id);
             else if (engine === 'browser') await this.generateBrowser(text);
             else if (['piper', 'espeak', 'kitten'].includes(engine)) blob = await this.generateWithTTSLib(engine, text, id);
@@ -1064,6 +1075,7 @@ class TTSApp {
     }
 
     async generatePocket(text, id) {
+        const requestedAt = performance.now();
         const file = document.getElementById('referenceAudio').files[0];
         const selected = this.voiceSelect.value;
         const languages = { en: 'english_2026-04', fr: 'french_24l', de: 'german', it: 'italian', pt: 'portuguese', es: 'spanish' };
@@ -1122,14 +1134,25 @@ class TTSApp {
         check();
         const chunks = [];
         let sampleCount = 0;
+        const started = performance.now();
+        let firstAudioSeconds;
+        let lastMetricUpdate = 0;
+        this.updateGenerationMetrics({ device: 'wasm' });
         await pocket.generate(text, { voice, onChunk: audio => {
             if (id !== this.generationId) return;
             chunks.push(audio);
             sampleCount += audio.length;
+            const now = performance.now();
+            firstAudioSeconds ??= (now - requestedAt) / 1000;
+            if (now - lastMetricUpdate > 500) {
+                this.updateGenerationMetrics({ device: 'wasm', duration: sampleCount / pocket.sampleRate, seconds: (now - started) / 1000 }, firstAudioSeconds);
+                lastMetricUpdate = now;
+            }
             if (this.streamPlayer) this.streamPlayer.enqueue(audio, pocket.sampleRate);
             this.showInlineProgress(`Generating locally: ${(sampleCount / pocket.sampleRate).toFixed(1)}s audio…`);
         }});
         check();
+        this.updateGenerationMetrics({ device: 'wasm', duration: sampleCount / pocket.sampleRate, seconds: (performance.now() - started) / 1000 }, firstAudioSeconds);
         // Pocket chunks are codec frames, not sentence boundaries: preserve their exact joins.
         if (!sampleCount) throw new Error('No audio generated');
         return chunksToWav(chunks, pocket.sampleRate, 0, false);

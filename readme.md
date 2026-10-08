@@ -28,7 +28,9 @@ Turn text into speech in your browser. Choose local AI voices, clone a reference
 
 Kokoro's automatic mode uses FP32 on WebGPU and Q8 on CPU. Smaller models reduce downloads but are not necessarily faster on every GPU. Choose **CPU** if GPU initialization fails. Supertonic defaults to CPU in automatic mode. Sizes exclude runtime and voice files.
 
-For quicker first audio, open **Advanced**, then set **Start playback** to **As audio arrives**. Slower devices may pause between chunks. The download contains every generated chunk. Add a short pause between chunks for narration, or keep natural timing.
+Choose **Start playback > As audio arrives** beside Generate to hear the first chunk while the rest is generated. This is selected for new users; saved playback preferences are preserved. Slower devices may pause between chunks. Choose complete-recording playback for uninterrupted listening. The download contains every generated chunk.
+
+The display beside Generate reports the actual CPU or GPU after the model loads and updates generation speed as chunks finish. **2x real time** means ten seconds of audio generated in five seconds. This rate excludes model loading and added pauses; the first-chunk time includes loading. Playback has a short silent lead-in to give the audio output time to start; exported audio and caption timestamps are unchanged.
 
 During early playback, use the live pause/resume and volume controls. Generation continues while playback is paused. To remove a local engine's cached downloads, select it and use **Advanced > Clear downloads for this engine**; it downloads again on next use.
 
