@@ -800,6 +800,23 @@
         @media (max-width: 768px), (pointer: coarse) {
             button, .btnlike, summary, select { min-height: 44px; }
             .form-group input:not([type="range"]), .form-group select, textarea { font-size: 1rem; }
+            .rate-selector { font-size: 1rem; }
+            .api-key-hint, .status-message { overflow-wrap: anywhere; }
+            .voice-settings > * { min-width: 0; }
+            .loop-btn { width: 44px; height: 44px; }
+            input[type="range"] {
+                height: 44px;
+                padding: 0;
+                border: 0;
+                background: linear-gradient(#737373, #737373) center / 100% 6px no-repeat;
+            }
+            input[type="range"]::-webkit-slider-thumb { width: 24px; height: 24px; border: 2px solid var(--focus-ring); }
+            input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; border: 2px solid var(--focus-ring); box-sizing: border-box; }
+        }
+        @media (max-width: 480px) {
+            .action-buttons > button { flex: 1 1 100px; padding-inline: 0.75rem; }
+            .action-buttons > #generateBtn { flex-basis: 100%; }
+            .player-footer { gap: 1rem; }
         }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { transition: none !important; animation: none !important; }
