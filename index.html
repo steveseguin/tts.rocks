@@ -75,7 +75,7 @@
         #livePlayback label { display: flex; align-items: center; gap: 0.5rem; }
         #liveVolume { width: 120px; }
         #computeModeDisplay { margin: 1rem 0; color: var(--text-primary); line-height: 1.6; }
-        .progress-canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .progress-canvas:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
         :root {
             --bg-primary: #1a1a1a;
             --bg-secondary: #2d2d2d;
@@ -85,11 +85,16 @@
             --text-muted: #a0a0a0;
             --accent: #646cff;
             --accent-hover: #747bff;
+            --button-accent: #5158d6;
+            --button-hover: #5c63df;
+            --accent-text: #b0b5ff;
+            --focus-ring: #c3c7ff;
+            color-scheme: dark;
             --border: #3f3f3f;
-            --success: #4caf50;
+            --success: #81cf86;
             --warning: #ff9800;
-            --error: #f44336;
-            --info: #2196f3;
+            --error: #ff9290;
+            --info: #78c5ff;
         }
 
         * {
@@ -252,7 +257,7 @@
         }
 
         button {
-            background: var(--accent);
+            background: var(--button-accent);
             color: white;
             border: none;
             border-radius: 6px;
@@ -266,7 +271,7 @@
         }
 
         button:hover {
-            background: var(--accent-hover);
+            background: var(--button-hover);
             transform: translateY(-1px);
         }
 
@@ -341,7 +346,7 @@
         .range-value {
             min-width: 3rem;
             text-align: right;
-            color: var(--accent);
+            color: var(--accent-text);
             font-weight: 500;
         }
 
@@ -442,7 +447,7 @@
         }
 
         .ai-badge {
-            background: var(--accent);
+            background: var(--button-accent);
             color: white;
             padding: 0.2rem 0.5rem;
             border-radius: 4px;
@@ -472,7 +477,7 @@
         }
 
         .tab.active {
-            background: var(--accent);
+            background: var(--button-accent);
             color: #fff;
             border-bottom-color: #fff;
         }
@@ -508,8 +513,9 @@
         }
 
         footer a {
-            color: var(--accent);
-            text-decoration: none;
+            color: var(--accent-text);
+            text-decoration: underline;
+            text-underline-offset: 3px;
         }
 
         footer a:hover {
@@ -738,7 +744,7 @@
         }
 
         .loop-btn.active {
-            background: var(--accent);
+            background: var(--button-accent);
         }
 
         .loop-btn.active svg {
@@ -759,12 +765,50 @@
         }
 
         /* Focus styles for accessibility */
+        a:focus-visible,
+        summary:focus-visible,
         button:focus-visible,
         input:focus-visible,
         select:focus-visible,
         textarea:focus-visible {
-            outline: 2px solid var(--accent);
+            outline: 3px solid var(--focus-ring);
             outline-offset: 2px;
+        }
+
+        button, .btnlike { min-height: 40px; }
+        button, input, select, textarea { font-family: inherit; }
+        textarea::placeholder, input::placeholder { color: #a8a8a8; opacity: 1; }
+        .form-group input:not([type="range"]), .form-group select, textarea { border-color: #737373; }
+        #streamingGroup { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+        #computeModeDisplay { padding: 0.75rem 1rem; border-radius: 8px; background: var(--bg-tertiary); }
+        .action-buttons { flex-wrap: wrap; }
+        .action-buttons button, .action-buttons .btnlike { min-width: 0; }
+        .progress-canvas:focus-visible { outline-offset: -3px; }
+        input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border: 0; border-radius: 50%; background: var(--accent); }
+        summary { cursor: pointer; }
+        #cnPanel summary { display: flex; align-items: center; gap: 1rem; list-style: none; }
+        #cnPanel summary::-webkit-details-marker { display: none; }
+        #cnPanel summary::after { content: ''; width: 9px; height: 9px; margin-left: auto; flex-shrink: 0; border-right: 2px solid var(--text-secondary); border-bottom: 2px solid var(--text-secondary); transform: rotate(45deg); }
+        #cnPanel details[open] > summary::after { transform: rotate(225deg); }
+        .caption-summary { min-width: 0; }
+        .caption-summary .card-title { margin-bottom: 0.25rem; }
+        .caption-summary .api-key-hint { display: block; }
+        @media (max-width: 768px), (pointer: coarse) {
+            button, .btnlike, summary, select { min-height: 44px; }
+            .form-group input:not([type="range"]), .form-group select, textarea { font-size: 1rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition: none !important; animation: none !important; }
+            button:hover { transform: none; }
+        }
+        @media (forced-colors: active) {
+            h1 { background: none; -webkit-text-fill-color: CanvasText; }
+            button, .tab, .action-buttons a.btnlike { border: 1px solid ButtonText; }
+            .tab.active { border-bottom: 3px solid Highlight; }
+            :focus-visible { outline-color: Highlight; }
+            .play-pause-btn svg, .loop-btn svg, .volume-control svg { fill: ButtonText; }
+            input[type="range"]::-webkit-slider-thumb { background: Highlight; border: 1px solid ButtonText; forced-color-adjust: none; }
+            input[type="range"]::-moz-range-thumb { background: Highlight; border: 1px solid ButtonText; forced-color-adjust: none; }
         }
 
         /* Skip to content link */
@@ -794,7 +838,7 @@
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
-    <div class="container" role="main" id="main-content">
+    <div class="container" role="main" id="main-content" tabindex="-1">
         <header>
             <h1>🎙️ TTS.Rocks</h1>
             <p class="subtitle">Local AI voices, multilingual speech and browser voice cloning</p>
@@ -803,10 +847,10 @@
         <div class="main-content">
             <!-- Text Input Section -->
             <div class="card">
-                <div class="card-title">
+                <h2 class="card-title" id="text-input-title">
                     <svg viewBox="0 0 24 24"><path d="M14,17H7V15H14M17,13H7V11H17M17,9H7V7H17M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z"/></svg>
                     Text Input
-                </div>
+                </h2>
                 
                 <div class="text-input-section">
                     <div class="text-tools">
@@ -823,13 +867,13 @@
                         </button>
                     </div>
                     
-                    <textarea id="textInput" placeholder="Welcome to TTS.Rocks! This advanced text-to-speech system can convert any text into natural-sounding speech using multiple AI engines."></textarea>
+                    <textarea id="textInput" aria-labelledby="text-input-title" aria-describedby="text-count" placeholder="Welcome to TTS.Rocks! This advanced text-to-speech system can convert any text into natural-sounding speech using multiple AI engines."></textarea>
                     <div class="form-group">
                         <label for="scriptMode">Recording format</label>
                         <select id="scriptMode"><option value="narration">Single voice</option><option value="dialogue">Two-speaker podcast</option></select>
                         <div id="dialogueHint" class="api-key-hint" hidden>Start each turn with A: or B:. Set both voices in the Voice tab. Kokoro, Kitten 0.8 and Supertonic support podcasts. Speaker labels are not spoken.</div>
                     </div>
-                    <div class="character-count">
+                    <div class="character-count" id="text-count">
                         <span id="charCount">0</span> / <span id="charLimit">5000</span> characters
                     </div>
                 </div>
@@ -837,18 +881,18 @@
 
             <!-- Voice Settings -->
             <div class="card">
-                <div class="card-title">
+                <h2 class="card-title" id="voice-settings-title">
                     <svg viewBox="0 0 24 24"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/></svg>
                     Voice Settings
+                </h2>
+
+                <div class="tabs" role="tablist" aria-label="Voice settings">
+                    <button class="tab active" data-tab="engine" id="engine-tab-button" role="tab" aria-controls="engine-tab" aria-selected="true" tabindex="0">Engine</button>
+                    <button class="tab" data-tab="voice" id="voice-tab-button" role="tab" aria-controls="voice-tab" aria-selected="false" tabindex="-1">Voice</button>
+                    <button class="tab" data-tab="advanced" id="advanced-tab-button" role="tab" aria-controls="advanced-tab" aria-selected="false" tabindex="-1">Advanced</button>
                 </div>
 
-                <div class="tabs">
-                    <button class="tab active" data-tab="engine">Engine</button>
-                    <button class="tab" data-tab="voice">Voice</button>
-                    <button class="tab" data-tab="advanced">Advanced</button>
-                </div>
-
-                <div class="tab-content active" id="engine-tab">
+                <div class="tab-content active" id="engine-tab" role="tabpanel" aria-labelledby="engine-tab-button">
                     <div class="text-tools" style="margin-bottom:1rem" aria-label="Quick setups">
                         <button class="secondary" id="compactPreset">Mobile / low latency</button>
                         <button class="secondary" id="narrationPreset">Quality narration</button>
@@ -858,7 +902,7 @@
                     <div class="voice-settings">
                         <div class="form-group">
                             <label for="engineSelect">TTS Engine</label>
-                            <select id="engineSelect">
+                            <select id="engineSelect" aria-describedby="engineDescription">
                                 <option value="kokoro">Kokoro (Local, High Quality)</option>
                                 <option value="kitten-v08">Kitten 0.8 (Local, Compact)</option>
                                 <option value="supertonic">Supertonic 3 (Local, Multilingual)</option>
@@ -890,19 +934,20 @@
                             </select>
                             <div id="kokoroQualityGroup">
                                 <label for="kokoroQuality">Kokoro model</label>
-                                <select id="kokoroQuality">
-                                    <option value="auto">Automatic: full quality on GPU, compact on CPU</option>
-                                    <option value="q8">Compact (8-bit, about 92 MB)</option>
-                                    <option value="fp32">Full quality (32-bit, about 326 MB)</option>
-                                    <option value="fp16">Half precision (16-bit, about 163 MB)</option>
+                                <select id="kokoroQuality" aria-describedby="kokoroQualityHint">
+                                    <option value="auto">Automatic</option>
+                                    <option value="q8">Compact 8-bit (~92 MB)</option>
+                                    <option value="fp32">Full 32-bit (~326 MB)</option>
+                                    <option value="fp16">Half 16-bit (~163 MB)</option>
                                 </select>
+                                <div id="kokoroQualityHint" class="api-key-hint">Automatic uses full quality on GPU and compact on CPU.</div>
                             </div>
                             <div id="kittenModelGroup" hidden>
                                 <label for="kittenModel">Kitten model size</label>
                                 <select id="kittenModel">
-                                    <option value="nano">Nano: smallest download (25 MB)</option>
-                                    <option value="micro">Micro: balanced (41 MB)</option>
-                                    <option value="mini">Mini: larger model (80 MB)</option>
+                                    <option value="nano">Nano (25 MB)</option>
+                                    <option value="micro">Micro (41 MB)</option>
+                                    <option value="mini">Mini (80 MB)</option>
                                 </select>
                             </div>
                             <div id="supertonicStepsGroup" hidden>
@@ -929,7 +974,7 @@
                     </div>
                 </div>
 
-                <div class="tab-content" id="voice-tab">
+                <div class="tab-content" id="voice-tab" role="tabpanel" aria-labelledby="voice-tab-button" hidden>
                     <div class="form-group" id="deliverySettings" hidden style="margin-bottom:1rem">
                         <label for="deliveryPreset">Voice direction preset</label>
                         <select id="deliveryPreset"><option value="">Choose a direction…</option><option value="warm">Warm and reassuring</option><option value="calm">Calm narration</option><option value="excited">Upbeat and excited</option><option value="news">Clear newsreader</option></select>
@@ -996,7 +1041,7 @@
                     </div>
                 </div>
 
-                <div class="tab-content" id="advanced-tab">
+                <div class="tab-content" id="advanced-tab" role="tabpanel" aria-labelledby="advanced-tab-button" hidden>
                     <div class="voice-settings">
                         <div class="form-group" id="gpuPreferenceGroup">
                             <label for="gpuPreference">GPU preference</label>
@@ -1058,7 +1103,7 @@
 
                         <div class="form-group" id="streamingGroup" hidden>
                             <label for="streamSpeech">Start playback</label>
-                            <select id="streamSpeech">
+                            <select id="streamSpeech" aria-describedby="streamingHint">
                                 <option value="off">When the full recording is ready</option>
                                 <option value="on" selected>As audio arrives (lower latency)</option>
                             </select>
@@ -1094,10 +1139,10 @@
 
             <!-- Audio Player with Waveform -->
             <div class="card audio-player" id="audioSection" style="display:none" role="region" aria-label="Audio Player">
-                <div class="card-title">
+                <h2 class="card-title" id="audio-output-title">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/></svg>
                     Audio Output
-                </div>
+                </h2>
                 <div id="waveformPlayerContainer"></div>
                 <button id="downloadCaptions" class="secondary" hidden>Download speaker captions (.vtt)</button>
                 <!-- Hidden audio element - NEVER used for playback -->
@@ -1111,11 +1156,11 @@
         <!-- Use with Caption.Ninja (collapsed, lightweight) -->
         <div class="card" id="cnPanel" role="region" aria-label="Use with Caption.Ninja" style="margin-top:2rem">
           <details>
-            <summary style="cursor:pointer;list-style:none">
-              <div class="card-title" style="margin:0">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v2H3V3m0 4h18v2H3V7m0 4h12v2H3v-2m0 4h8v2H3v-2z"/></svg>
-                Use with Caption.Ninja — remote input, translation, transcription, and overlay support
-              </div>
+            <summary>
+              <span class="caption-summary">
+                <span class="card-title">Use with Caption.Ninja</span>
+                <span class="api-key-hint">Remote input, translation, transcription and overlays</span>
+              </span>
             </summary>
             <div class="voice-settings" style="margin-top:1rem">
                 <div class="form-group">

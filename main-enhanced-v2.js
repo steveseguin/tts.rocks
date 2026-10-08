@@ -200,17 +200,32 @@ class TTSApp {
         // Tabs
         this.tabs.forEach(tab => {
             tab.addEventListener('click', () => this.switchTab(tab));
+            tab.addEventListener('keydown', event => {
+                const index = Array.from(this.tabs).indexOf(tab);
+                const targets = { ArrowLeft: (index + this.tabs.length - 1) % this.tabs.length, ArrowRight: (index + 1) % this.tabs.length, Home: 0, End: this.tabs.length - 1 };
+                if (!(event.key in targets)) return;
+                event.preventDefault();
+                const next = this.tabs[targets[event.key]];
+                this.switchTab(next);
+                next.focus();
+            });
         });
     }
 
     switchTab(clickedTab) {
         const tabName = clickedTab.dataset.tab;
         
-        this.tabs.forEach(tab => tab.classList.remove('active'));
-        this.tabContents.forEach(content => content.classList.remove('active'));
-        
-        clickedTab.classList.add('active');
-        document.getElementById(`${tabName}-tab`).classList.add('active');
+        this.tabs.forEach(tab => {
+            const selected = tab === clickedTab;
+            tab.classList.toggle('active', selected);
+            tab.setAttribute('aria-selected', String(selected));
+            tab.tabIndex = selected ? 0 : -1;
+        });
+        this.tabContents.forEach(content => {
+            const selected = content.id === `${tabName}-tab`;
+            content.classList.toggle('active', selected);
+            content.hidden = !selected;
+        });
     }
 
     initializeWaveformPlayer() {
