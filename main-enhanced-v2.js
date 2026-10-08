@@ -429,6 +429,7 @@ class TTSApp {
         this.computeMode = null;
         this.voiceSelect.replaceChildren();
         const local = ['kokoro', 'kitten-v08', 'supertonic'].includes(engine);
+        document.getElementById('engineSettings').classList.toggle('has-local-model', local);
         this.apiKeySection.style.display = ['elevenlabs', 'openai', 'google'].includes(engine) ? 'block' : 'none';
         for (const id of ['stabilityGroup', 'similarityGroup']) document.getElementById(id).style.display = engine === 'elevenlabs' ? 'block' : 'none';
         document.getElementById('localModelSettings').hidden = !local;

@@ -68,9 +68,13 @@
     
     <style>
         [hidden] { display: none !important; }
-        #engineDescription { grid-column: 1 / -1; order: 3; }
         #localModelSettings > div { display: flex; flex-direction: column; gap: 0.5rem; }
-        #localModelSettings { gap: 1rem; }
+        #localModelSettings { display: contents; }
+        #engineSettings.has-local-model { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+        #engineSettings .form-group { min-width: 0; }
+        @media (max-width: 900px) {
+            #engineSettings.has-local-model { grid-template-columns: minmax(0, 1fr); }
+        }
         #livePlayback { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
         #livePlayback label { display: flex; align-items: center; gap: 0.5rem; }
         #liveVolume { width: 120px; }
@@ -899,7 +903,7 @@
                         <button class="secondary" id="checkDevice">Check this device</button>
                     </div>
                     <div id="deviceDetails" class="api-key-hint" role="status"></div>
-                    <div class="voice-settings">
+                    <div class="voice-settings" id="engineSettings">
                         <div class="form-group">
                             <label for="engineSelect">TTS Engine</label>
                             <select id="engineSelect" aria-describedby="engineDescription">
@@ -916,6 +920,7 @@
                                 <option value="openai">OpenAI (API)</option>
                                 <option value="google">Google Cloud (API)</option>
                             </select>
+                            <p id="engineDescription" class="api-key-hint" role="status"></p>
                         </div>
 
                         <div class="form-group" id="apiKeySection" style="display:none">
@@ -924,14 +929,15 @@
                             <button type="button" id="refreshVoices" class="secondary" hidden>Load my available voices</button>
                             <div class="api-key-hint">API key is stored locally and never sent to our servers</div>
                         </div>
-                        <p id="engineDescription" class="api-key-hint" role="status"></p>
-                        <div class="form-group" id="localModelSettings" hidden>
-                            <label for="computeSelect">Compute</label>
-                            <select id="computeSelect">
-                                <option value="auto">Automatic</option>
-                                <option value="wasm">CPU (most compatible)</option>
-                                <option value="webgpu">WebGPU</option>
-                            </select>
+                        <div id="localModelSettings" hidden>
+                            <div class="form-group">
+                                <label for="computeSelect">Compute</label>
+                                <select id="computeSelect">
+                                    <option value="auto">Automatic</option>
+                                    <option value="wasm">CPU (most compatible)</option>
+                                    <option value="webgpu">WebGPU</option>
+                                </select>
+                            </div>
                             <div id="kokoroQualityGroup">
                                 <label for="kokoroQuality">Kokoro model</label>
                                 <select id="kokoroQuality" aria-describedby="kokoroQualityHint">
