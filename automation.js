@@ -24,6 +24,8 @@ export function installAutomation(app) {
         current = { ...update };
         statusNode.dataset.state = current.state;
         statusNode.textContent = current.message;
+        statusNode.hidden = current.state === 'idle';
+        document.getElementById('agentDownloads').hidden = !last;
         for (const id of ['agentDownloadWav', 'agentDownloadVtt', 'agentDownloadJSON']) document.getElementById(id).disabled = !last;
         window.dispatchEvent(new CustomEvent('ttsrocks:status', { detail: { ...current } }));
     }
@@ -97,7 +99,7 @@ export function installAutomation(app) {
                 if (generation !== app.generationId) throw new DOMException('Generation stopped', 'AbortError');
                 const metadata = { id: `recording-${++sequence}`, engine: options.engine, voice: options.voice, language: options.language, duration: output.duration, sampleRate: output.sampleRate, channels: 1, format: 'wav', bytes: output.blob.size, device: output.device, quality: output.dtype, cues: output.cues };
                 last = { metadata, blob: output.blob };
-                status({ state: 'complete', id: metadata.id, message: `Recording ready: ${metadata.duration.toFixed(2)} seconds. Download using ttsRocks.download("${metadata.id}", "narration.wav").` });
+                status({ state: 'complete', id: metadata.id, message: `Recording ready · ${metadata.duration.toFixed(2)} seconds` });
                 return structuredClone(metadata);
             } catch (error) {
                 const cancelled = error.name === 'AbortError' || generation !== app.generationId;
@@ -210,7 +212,7 @@ export function installAutomation(app) {
     function updateSupport() {
         const supported = engines.includes(app.currentEngine);
         for (const id of ['copyAgentJS', 'copyAgentCLI']) document.getElementById(id).disabled = !supported;
-        document.getElementById('agentSupport').textContent = supported ? 'This engine supports browser functions and the CLI. Copied requests include voice and generation settings. Music beds and uploaded reference audio use the studio controls.' : 'For this engine, copy the setup and use the labelled browser controls. Select Kokoro, Kitten 0.8 or Supertonic for function calls and CLI generation.';
+        document.getElementById('agentSupport').textContent = supported ? 'This engine supports JavaScript and CLI generation.' : 'Use browser controls for this engine. JavaScript and CLI support Kokoro, Kitten 0.8 and Supertonic.';
     }
     document.getElementById('automationPanel').addEventListener('toggle', updateSupport);
     app.engineSelect.addEventListener('change', updateSupport);
