@@ -125,7 +125,7 @@ try {
         try { playwright = createRequire(join(process.cwd(), 'package.json'))('playwright'); }
         catch (_) { throw new Error('Install browser automation first: npm install --no-save playwright ; then npx playwright install chromium. No TTS package is needed.'); }
     }
-    const chatterboxGPU = jobs.some(job => job.options.engine === 'chatterbox' && ['auto', 'webgpu'].includes(job.options.device));
+    const needsGPU = jobs.some(job => ['kokoro', 'supertonic', 'chatterbox'].includes(job.options.engine || 'kokoro') && ['auto', 'webgpu'].includes(job.options.device));
     if (args.local) {
         let startLocalServer;
         try { ({ startLocalServer } = await import('./local-server.mjs')); }
@@ -137,7 +137,7 @@ try {
         site = new URL(localServer.url);
         console.error(`Using local repository at ${site.href}`);
     }
-    context = await playwright.chromium.launchPersistentContext(resolve(args.profile || join(homedir(), '.cache', 'tts-rocks', 'browser')), { headless: true, acceptDownloads: true, ...(chatterboxGPU ? { channel: 'chromium' } : {}) });
+    context = await playwright.chromium.launchPersistentContext(resolve(args.profile || join(homedir(), '.cache', 'tts-rocks', 'browser')), { headless: true, acceptDownloads: true, ...(needsGPU ? { channel: 'chromium' } : {}) });
     const page = context.pages()[0] || await context.newPage();
     page.setDefaultTimeout(60000);
     const response = await page.goto(site.href, { waitUntil: 'domcontentloaded' });

@@ -939,8 +939,8 @@ class TTSApp {
         const engine = this.currentEngine;
         const device = document.getElementById('computeSelect').value;
         display.textContent = this.computeMode || (['kokoro', 'supertonic', 'chatterbox'].includes(engine)
-            ? (device === 'auto' ? 'Automatic: actual CPU or GPU shown when the model is ready.' : device === 'webgpu' ? 'GPU requested: waiting for the model to load.' : 'CPU selected: waiting for the model to load.')
-            : ['kitten-v08', 'kitten', 'piper', 'espeak', 'pocket', 'musicgen'].includes(engine) ? 'CPU (local processing)'
+            ? (device === 'auto' ? (engine === 'supertonic' ? 'Automatic uses CPU for Supertonic. Select WebGPU to use a compatible GPU.' : 'Automatic: actual CPU or GPU shown when the model is ready.') : device === 'webgpu' ? 'GPU requested: waiting for the model to load.' : 'CPU selected: waiting for the model to load.')
+            : ['kitten-v08', 'kitten', 'piper', 'espeak', 'pocket', 'musicgen'].includes(engine) ? 'CPU only for this engine in TTS.Rocks. Choose Kokoro, Supertonic or Chatterbox for WebGPU.'
             : engine === 'browser' ? 'Browser / operating system voice' : 'Cloud provider (remote processing)');
     }
 
