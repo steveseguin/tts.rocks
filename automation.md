@@ -13,9 +13,38 @@ Choose whichever route your tools support: labelled browser controls, functions 
 
 This route supports all studio engines. **Browser Native** speaks but cannot export audio. Cloud providers require your own key. Select reference audio separately for cloning; copied instructions do not transfer that file. The ordinary studio playback and download controls still work independently of automation recordings.
 
+## Read documents and long scripts
+
+Upload PDF, TXT, Markdown, DOCX or ODT with **Read a document** (`#documentFile`), or choose **Use text as document** for pasted text. Review the editable text before generating. Scanned PDFs need OCR first. Imports stay on the device and accept up to 25 MB, 500 PDF pages and 100,000 characters; split larger documents before importing.
+
+Select the engine and voice using the studio controls. Document generation supports Kokoro, Kitten 0.8, Supertonic and Chatterbox. Choose **Single voice**, **Two narrators (alternate paragraphs)**, or an existing **A:/B: script** under Recording format. Chatterbox supports one narrator. Text is read as written; these formats do not rewrite a document into a discussion.
+
+```js
+// In Playwright, after opening the page and awaiting ttsRocks.ready():
+await page.locator('#documentFile').setInputFiles('tutorial.pdf');
+await page.waitForFunction(() => ttsRocks.documents.status().state !== 'importing');
+const imported = await page.evaluate(() => ttsRocks.documents.status());
+if (imported.state !== 'ready') throw new Error(imported.message);
+// Review the extracted text and choose engine, voices and recording format.
+await page.evaluate(() => ttsRocks.documents.generate());
+const pending = page.waitForEvent('download');
+await page.evaluate(() => ttsRocks.documents.download('wav'));
+await (await pending).saveAs('episode.wav');
+```
+
+Inside the page, `await ttsRocks.documents.import(file)` accepts a browser File. `ttsRocks.documents.useText(text, name)` enables document mode with a string. Both replace the editable text and reset prior document audio. `generate()` uses the current studio settings and resolves after the complete episode is ready. It takes no options; use the labelled controls to configure voices. The ordinary `ttsRocks.generate(options)` retains its separate 5,000-character limit and defaults.
+
+Poll `ttsRocks.documents.status()` or listen for `ttsrocks:document` events. Status includes `state`, `message`, `completed`, `total`, and audio `duration` in seconds. States are `idle`, `importing`, `ready`, `generating`, `paused`, `complete` or `error`. Methods throw Errors with a message when an operation cannot complete. Check completion before downloading the episode.
+
+`cancel()` stops import or generation; an active promise rejects. Finished sections remain available in the current tab. Call `generate()` again with unchanged text/settings to resume. Editing the text or changing synthesis settings starts a new recording. Keep the tab open: audio and uploaded reference recordings are not saved across reloads.
+
+`download('wav')` saves the completed episode; `download('vtt')` saves chunk timing captions; `download('txt')` saves the generated script. To save a completed section before the episode finishes, use `download('wav', index)` with a zero-based section index. Downloads return `{filename, bytes}` and trigger a browser download event. Combined WAV files are limited to 512 MB; divide longer recordings into smaller documents. Add music afterward in an audio editor.
+
+The AI-assistant panel copies document instructions and JavaScript while document mode is active. The standalone CLI helper handles short scripts and batches; use browser controls/functions for document imports.
+
 ## Call functions inside the page
 
-`window.ttsRocks` is the public browser API, version `1.1`. It supports **kokoro**, **kitten-v08**, **supertonic**, and **chatterbox**. Calls run inside the loaded TTS.Rocks page, such as through `page.evaluate()` in Playwright. They do not run directly in a Node shell. Generation uses the same worker as the studio and does not play audio or change your saved voice settings.
+`window.ttsRocks` is the public browser API, version `1.2`. It supports **kokoro**, **kitten-v08**, **supertonic**, and **chatterbox**. Calls run inside the loaded TTS.Rocks page, such as through `page.evaluate()` in Playwright. They do not run directly in a Node shell. Generation uses the same worker as the studio and does not play audio or change your saved voice settings.
 
 ```js
 await ttsRocks.ready();

@@ -7,6 +7,7 @@ import { referenceDuration, chatterboxReference } from './reference-audio.js';
 import { parseDialogue, dialogueVtt } from './dialogue.js';
 import { mixPodcast } from './audio-mix.js';
 import { installAutomation } from './automation.js';
+import { DocumentStudio } from './document-studio.js';
 
 class TTSApp {
     constructor() {
@@ -40,6 +41,7 @@ class TTSApp {
         this.initializeWaveformPlayer();
 
         this.initializeBrowserTTS();
+        this.documents = new DocumentStudio(this);
         this.ready = this.restoreState();
         this.initializeChromeAI();
         this.updateGenerateButtonState();
@@ -445,7 +447,7 @@ class TTSApp {
         this.voiceSelect.disabled = engine === 'musicgen';
         this.languageSelect.disabled = engine === 'musicgen';
         document.getElementById('sentencePauseGroup').hidden = !local;
-        document.getElementById('streamingGroup').hidden = !(local || engine === 'pocket');
+        document.getElementById('streamingGroup').hidden = this.documents?.active || !(local || engine === 'pocket');
         document.getElementById('modelStorageGroup').hidden = !(local || engine === 'pocket' || engine === 'musicgen');
         document.getElementById('computeSelect').disabled = engine === 'kitten-v08';
         this.pitchSlider.disabled = !['browser', 'espeak', 'google'].includes(engine);
@@ -505,18 +507,23 @@ class TTSApp {
     }
 
     updateGenerateButtonState() {
-        this.generateBtn.disabled = this.isGenerating || this.clearingDownloads;
+        this.generateBtn.disabled = this.isGenerating || this.clearingDownloads || this.documents?.importing || this.documents?.running;
         const label = document.createElement('span');
         label.textContent = this.isGenerating ? (this.preparing ? 'Preparing…' : 'Generating…') : this.currentEngine === 'musicgen' ? 'Generate Music' : 'Generate Speech';
         this.generateBtn.replaceChildren(label);
+        if (this.documents?.active && !this.isGenerating) label.textContent = 'Generate Episode';
+        this.generateBtn.setAttribute('aria-label', this.documents?.active ? 'Generate Episode' : 'Generate Speech');
         this.generateBtn.classList.toggle('loading', this.isGenerating);
-        document.getElementById('prepareModel').disabled = this.isGenerating || this.clearingDownloads;
+        document.getElementById('prepareModel').disabled = this.generateBtn.disabled;
     }
 
     updateStudioControls() {
-        const dialogue = document.getElementById('scriptMode').value === 'dialogue';
+        const dialogue = ['dialogue', 'alternating'].includes(document.getElementById('scriptMode').value);
         document.getElementById('podcastSettings').hidden = !dialogue;
         document.getElementById('dialogueHint').hidden = !dialogue;
+        document.getElementById('dialogueHint').textContent = document.getElementById('scriptMode').value === 'alternating'
+            ? 'Narrators alternate paragraphs, separated by a blank line. Set both voices in the Voice tab. The text is read as written.'
+            : 'Start each turn with A: or B:. Set both voices in the Voice tab. Kokoro, Kitten 0.8 and Supertonic support podcasts. Speaker labels are not spoken.';
         this.voiceSelect.labels[0].textContent = dialogue ? 'Speaker A' : 'Voice';
         document.getElementById('gpuPreferenceGroup').hidden = !['kokoro', 'supertonic', 'chatterbox'].includes(this.currentEngine);
         document.getElementById('prepareModel').hidden = !['kokoro', 'kitten-v08', 'supertonic', 'musicgen', 'chatterbox'].includes(this.currentEngine);
@@ -929,6 +936,7 @@ class TTSApp {
     }
 
     updateStreamingControls() {
+        document.getElementById('streamingGroup').hidden = this.documents?.active || !['kokoro', 'kitten-v08', 'supertonic', 'chatterbox', 'pocket'].includes(this.currentEngine);
         const music = document.getElementById('scriptMode').value === 'dialogue' && this.backgroundMusic;
         document.getElementById('streamSpeech').disabled = !this.audioPlaybackSupported || Boolean(music);
         document.getElementById('streamingHint').textContent = !this.audioPlaybackSupported ? 'This browser supports downloads only.' : music
@@ -954,6 +962,7 @@ class TTSApp {
     }
 
     textLimit() {
+        if (this.documents?.active) return 100000;
         if (this.currentEngine === 'musicgen') return 1000;
         if (this.currentEngine === 'openai') return 4096;
         if (this.currentEngine === 'elevenlabs' && document.getElementById('elevenlabsModel')?.value === 'eleven_v4') return 2000;
@@ -977,6 +986,11 @@ class TTSApp {
     }
 
     async generateSpeech() {
+        if (this.documents?.active) {
+            try { await this.documents.generate(); } catch (error) { if (error.name !== 'AbortError') this.showStatus(error.message, 'error'); }
+            return;
+        }
+        if (this.documents?.importing || this.documents?.running) return;
         if (this.isGenerating || this.clearingDownloads) return;
         const text = this.textInput.value.trim() || this.textInput.placeholder;
         if (text.length > this.textLimit()) { this.showStatus(`Please limit text to ${this.textLimit()} characters for this model.`, 'error'); return; }
@@ -1341,6 +1355,7 @@ class TTSApp {
     }
 
     stopGeneration() {
+        document.getElementById('documentPlayer')?.pause();
         const wasGenerating = this.isGenerating;
         document.getElementById('livePlayback').hidden = true;
         if (this.streamPlayer) { this.streamPlayer.stop(); this.streamPlayer = null; }
@@ -1440,7 +1455,8 @@ class TTSApp {
         this.settings = { engine: this.currentEngine, voices, language: this.languageSelect.value,
             podcastVoices: this.podcastVoices,
             speed: this.speedSlider.value, pitch: this.pitchSlider.value, stability: this.stabilitySlider.value,
-            similarity: this.similaritySlider.value, text: this.textInput.value };
+            similarity: this.similaritySlider.value, text: this.textInput.value,
+            documentMode: Boolean(this.documents?.active), documentName: this.documents?.name || '' };
         for (const id of ['computeSelect', 'kokoroQuality', 'kittenModel', 'supertonicSteps', 'sentencePause', 'streamSpeech', 'chatterboxExaggeration', 'scriptMode', 'turnPause', 'gpuPreference', 'musicSeconds', 'chunkSize', 'musicVolume', 'musicIntro', 'musicOutro']) this.settings[id] = document.getElementById(id).value;
         try { localStorage.setItem('tts_settings', JSON.stringify(this.settings)); } catch (_) { /* Storage is optional. */ }
     }

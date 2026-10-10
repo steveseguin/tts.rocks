@@ -1,5 +1,5 @@
 // Speaker labels are editing instructions, never spoken text.
-export function parseDialogue(text) {
+export function parseDialogue(text, maxTurns = 100) {
     const turns = [];
     for (const line of text.split(/\r?\n/)) {
         if (!line.trim()) continue;
@@ -10,7 +10,7 @@ export function parseDialogue(text) {
         else throw new Error('Start each speaker turn with A: or B:.');
     }
     if (!turns.length || turns.some(turn => !turn.text)) throw new Error('Add text after every A: or B: label.');
-    if (turns.length > 100) throw new Error('Use at most 100 speaker turns per recording.');
+    if (turns.length > maxTurns) throw new Error(`Use at most ${maxTurns} speaker turns per recording.`);
     return turns;
 }
 

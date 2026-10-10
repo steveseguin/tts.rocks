@@ -2,6 +2,8 @@
 
 Generate and download speech for videos, tutorials and narration in a browser.
 
+For PDF, TXT, Markdown, DOCX or ODT, upload through #documentFile ("Read a document"), review the extracted text, choose voices and click "Generate Episode". Files are read locally. Document mode supports 100,000 characters and uses current studio settings. In-page functions: ttsRocks.documents.import(file), useText(text, name), generate(), status(), cancel(), download("wav"), download("vtt"). Keep the tab open; completed sections can be resumed with unchanged text and settings. See the automation guide for Playwright downloads. The CLI helper handles short requests and batches; documents use browser controls/functions.
+
 - [Automation guide](https://tts.rocks/automation.md): browser controls, public window.ttsRocks functions, download handling, options and batch generation.
 - [Website](https://tts.rocks/): open "Use with an AI assistant" to copy Markdown instructions or the selected voice settings.
 - [CLI helper](https://tts.rocks/tts-rocks.mjs): Node.js and Playwright helper that uses the website and saves WAV, VTT and JSON files.

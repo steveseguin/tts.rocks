@@ -896,6 +896,19 @@
                 </h2>
                 
                 <div class="text-input-section">
+                    <div class="form-group">
+                        <label for="documentFile">Read a document</label>
+                        <input type="file" id="documentFile" accept=".pdf,.txt,.md,.markdown,.docx,.odt" aria-describedby="documentHint">
+                        <p class="api-key-hint" id="documentHint">PDF, text, Markdown, Word (DOCX) or ODT · up to 25 MB. Files are read on this device.</p>
+                        <button class="secondary" id="useDocumentText">Use text as document</button>
+                        <button class="secondary" id="cancelDocumentImport" hidden>Cancel import</button>
+                    </div>
+                    <div id="documentControls" hidden>
+                        <p><strong id="documentName"></strong></p>
+                        <p class="api-key-hint">Edit the text below, then choose one voice or two narrators. Up to 100,000 characters, generated in sections. Keep this tab open to resume or download.</p>
+                        <button class="secondary" id="leaveDocument">Return to short text</button>
+                    </div>
+                    <p class="api-key-hint" id="documentProgress" role="status" aria-live="polite"></p>
                     <div class="text-tools">
                         <button class="secondary" id="clearBtn">Clear text</button>
                         <button class="secondary" id="summarizeBtn" style="display:none">
@@ -913,12 +926,22 @@
                     <textarea id="textInput" aria-labelledby="text-input-title" aria-describedby="text-count" placeholder="Welcome to TTS.Rocks! This advanced text-to-speech system can convert any text into natural-sounding speech using multiple AI engines."></textarea>
                     <div class="form-group">
                         <label for="scriptMode">Recording format</label>
-                        <select id="scriptMode"><option value="narration">Single voice</option><option value="dialogue">Two-speaker podcast</option></select>
+                        <select id="scriptMode"><option value="narration">Single voice</option><option value="dialogue">Two-speaker podcast (A:/B: script)</option><option value="alternating" id="alternateNarrators" disabled hidden>Two narrators (alternate paragraphs)</option></select>
                         <div id="dialogueHint" class="api-key-hint" hidden>Start each turn with A: or B:. Set both voices in the Voice tab. Kokoro, Kitten 0.8 and Supertonic support podcasts. Speaker labels are not spoken.</div>
                     </div>
                     <div class="character-count" id="text-count">
                         <span id="charCount">0</span> / <span id="charLimit">5000</span> characters
                     </div>
+                    <section id="documentResults" aria-label="Document recording" hidden>
+                        <h3>Your episode</h3>
+                        <audio id="documentPlayer" controls preload="metadata" aria-label="Play document episode" style="width:100%"></audio>
+                        <div class="text-tools">
+                            <button id="documentDownload_wav" class="secondary" disabled>Download episode (WAV)</button>
+                            <button id="documentDownload_vtt" class="secondary" disabled>Download captions (VTT)</button>
+                            <button id="documentDownload_txt" class="secondary">Download script (TXT)</button>
+                        </div>
+                        <details><summary>Download individual sections</summary><div id="documentSections" class="text-tools"></div></details>
+                    </section>
                 </div>
             </div>
 
@@ -1232,7 +1255,7 @@
                 <button class="secondary" id="copyAgentCLI">Copy CLI instructions</button>
               </div>
               <p class="agent-note" id="agentSupport"></p>
-              <pre><code>await ttsRocks.ready();
+              <pre><code id="agentExample">await ttsRocks.ready();
 const audio = await ttsRocks.generate({ text: "Hello." });
 ttsRocks.download(audio.id, "narration.wav");</code></pre>
               <nav class="agent-links" aria-label="Automation resources"><a href="./automation.md">API guide</a><a href="./tts-rocks.mjs" download>CLI download</a><a href="./llms.txt">Agent instructions</a></nav>

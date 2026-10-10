@@ -1,0 +1,12 @@
+PDF.js 6.4.299 — Mozilla Foundation
+https://github.com/mozilla/pdf.js
+Apache-2.0: see PDFJS-LICENSE.
+
+PDF character maps — Adobe Systems Incorporated
+See cmaps/LICENSE for the permissive redistribution terms.
+
+fflate 0.8.3 — Arjun Barrett
+https://github.com/101arrowz/fflate
+MIT: see FFLATE-LICENSE.
+
+These libraries extract document text locally in the browser.

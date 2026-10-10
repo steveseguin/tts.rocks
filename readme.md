@@ -9,6 +9,14 @@ Turn text into speech in your browser. Choose local AI voices, clone a reference
 3. Click **Generate Speech**. Local models download on first use and are cached when browser storage is available.
 4. Play, pause, seek, or download the recording.
 
+## Read a document
+
+Choose a PDF, TXT, Markdown, Word (DOCX) or ODT file under **Read a document**. Review the extracted text, select voices, then click **Generate Episode**. Use **Single voice** for narration or **Two narrators (alternate paragraphs)** to share the reading. An existing **A:/B: script** can also use two voices. The document is read as written; edit or summarize it first if you want a shorter discussion.
+
+Files are read locally. Document mode supports up to 100,000 characters and 25 MB per file with Kokoro, Kitten 0.8, Supertonic or Chatterbox; Chatterbox uses one voice. Choose **Use text as document** for longer pasted scripts. For scanned PDFs, run OCR first; for older `.doc` files, export as DOCX or text. Review PDF reading order and any pages reported as missing text.
+
+Download the complete WAV, captions (VTT), or individual sections. **Stop** keeps completed sections in the current tab; **Generate Episode** resumes if the text and voice settings are unchanged. Keep the tab open until downloads are saved. Add music to the exported episode in your audio or video editor.
+
 ## Choose an engine
 
 | Engine | Runs in | Best fit |
