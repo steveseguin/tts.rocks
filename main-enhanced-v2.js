@@ -8,6 +8,7 @@ import { parseDialogue, dialogueVtt } from './dialogue.js';
 import { mixPodcast } from './audio-mix.js';
 import { installAutomation } from './automation.js';
 import { DocumentStudio } from './document-studio.js';
+import { TextAssistant } from './text-assistant.js';
 
 class TTSApp {
     constructor() {
@@ -42,6 +43,7 @@ class TTSApp {
 
         this.initializeBrowserTTS();
         this.documents = new DocumentStudio(this);
+        this.localText = new TextAssistant(this);
         this.ready = this.restoreState();
         this.initializeChromeAI();
         this.updateGenerateButtonState();
@@ -520,7 +522,7 @@ class TTSApp {
     }
 
     updateGenerateButtonState() {
-        this.generateBtn.disabled = this.isGenerating || this.clearingDownloads || this.documents?.importing || this.documents?.running;
+        this.generateBtn.disabled = this.isGenerating || this.clearingDownloads || this.documents?.importing || this.documents?.running || this.localText?.busy;
         const label = document.createElement('span');
         label.textContent = this.isGenerating ? (this.preparing ? 'Preparing…' : 'Generating…') : this.currentEngine === 'musicgen' ? 'Generate Music' : 'Generate Speech';
         this.generateBtn.replaceChildren(label);
@@ -528,6 +530,7 @@ class TTSApp {
         this.generateBtn.setAttribute('aria-label', this.documents?.active ? 'Generate Episode' : 'Generate Speech');
         this.generateBtn.classList.toggle('loading', this.isGenerating);
         document.getElementById('prepareModel').disabled = this.generateBtn.disabled;
+        document.getElementById('localTextBtn').disabled = this.generateBtn.disabled;
     }
 
     updateStudioControls() {
@@ -565,7 +568,7 @@ class TTSApp {
     }
 
     async prepareModel() {
-        if (this.isGenerating || this.clearingDownloads || !['kokoro', 'kitten-v08', 'supertonic', 'musicgen', 'chatterbox'].includes(this.currentEngine)) return;
+        if (this.isGenerating || this.clearingDownloads || this.localText?.busy || !['kokoro', 'kitten-v08', 'supertonic', 'musicgen', 'chatterbox'].includes(this.currentEngine)) return;
         this.stopGeneration();
         const id = ++this.generationId;
         this.isGenerating = true;
@@ -999,6 +1002,7 @@ class TTSApp {
     }
 
     async generateSpeech() {
+        if (this.localText?.busy) return;
         if (this.documents?.active) {
             try { await this.documents.generate(); } catch (error) { if (error.name !== 'AbortError') this.showStatus(error.message, 'error'); }
             return;
@@ -1221,7 +1225,7 @@ class TTSApp {
     }
 
     async clearDownloads() {
-        if (this.clearingDownloads) return;
+        if (this.clearingDownloads || this.localText?.busy) return;
         const engine = this.currentEngine;
         if (!['kokoro', 'kitten-v08', 'supertonic', 'pocket', 'musicgen', 'chatterbox'].includes(engine)) return;
         this.stopGeneration();

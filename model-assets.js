@@ -42,12 +42,13 @@ export async function clearModelCache(engine) {
         'kitten-v08': ['KittenML/kitten-tts-nano-0.8-int8', 'KittenML/kitten-tts-micro-0.8', 'KittenML/kitten-tts-mini-0.8'],
         supertonic: ['supertone-oss-archive/supertonic-3'],
         pocket: ['vlapky/pocket-tts-onnx'],
-        musicgen: ['Xenova/musicgen-small']
+        musicgen: ['Xenova/musicgen-small'],
+        text: ['onnx-community/Qwen3-0.6B-ONNX']
     };
     const prefixes = repositories[engine]?.map(repo => `https://huggingface.co/${repo}/`);
     if (!prefixes) throw new Error('Select a supported local neural engine first.');
     if (typeof caches === 'undefined') throw new Error('Model cache storage is unavailable in this browser.');
-    const buckets = ['musicgen', 'chatterbox'].includes(engine) ? ['transformers-cache'] : engine === 'kokoro' ? ['transformers-cache', 'kokoro-voices', 'tts-rocks-models-v1']
+    const buckets = ['musicgen', 'chatterbox', 'text'].includes(engine) ? ['transformers-cache'] : engine === 'kokoro' ? ['transformers-cache', 'kokoro-voices', 'tts-rocks-models-v1']
         : engine === 'pocket' ? ['pocket-tts-js-v1'] : ['tts-rocks-models-v1'];
     const available = await caches.keys();
     let removed = 0;

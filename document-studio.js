@@ -90,7 +90,7 @@ export class DocumentStudio {
         });
     }
 
-    busy() { return this.importing || this.running || this.app.isGenerating || this.app.clearingDownloads; }
+    busy() { return this.importing || this.running || this.app.isGenerating || this.app.clearingDownloads || this.app.localText?.busy; }
     error(error) { this.app.showStatus(error.message, 'error'); }
     status() { return { active: this.active, name: this.name, state: this.state, message: this.message, completed: this.parts.length, total: this.plan?.length || 0, duration: this.duration || 0 }; }
     refresh() {

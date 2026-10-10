@@ -82,15 +82,16 @@ export function installAutomation(app) {
         return options;
     }
     const api = {
-        version: '1.2',
+        version: '1.3',
+        text: app.localText.api,
         documents: app.documents.api,
         async ready() { await app.ready; return { version: api.version, guide: new URL('automation.md', site).href }; },
-        capabilities() { return { version: api.version, engines: [...engines], maxCharacters: 5000, maxTurns: 100, formats: ['wav', 'vtt', 'json'], documents: { maxCharacters: 100000, maxFileBytes: 25 * 1024 * 1024, maxPdfPages: 500, formats: ['pdf', 'txt', 'md', 'markdown', 'docx', 'odt'], methods: ['import', 'useText', 'generate', 'status', 'cancel', 'download'], settings: 'current studio controls', outputFormats: ['wav', 'vtt', 'txt'] }, timing: 'text chunks or speaker turns, not word alignment', options: [...optionNames], defaults: { ...defaults }, methods: ['ready', 'capabilities', 'listVoices', 'generate', 'status', 'result', 'audio', 'download', 'release', 'cancel'], guide: new URL('automation.md', site).href }; },
+        capabilities() { return { version: api.version, engines: [...engines], maxCharacters: 5000, maxTurns: 100, text: { model: 'Qwen3-0.6B', license: 'Apache-2.0', device: 'webgpu', maxCharacters: 3000, actions: ['improve', 'summarize'], methods: ['generate', 'status', 'cancel'], appliesToEditor: false }, formats: ['wav', 'vtt', 'json'], documents: { maxCharacters: 100000, maxFileBytes: 25 * 1024 * 1024, maxPdfPages: 500, formats: ['pdf', 'txt', 'md', 'markdown', 'docx', 'odt'], methods: ['import', 'useText', 'generate', 'status', 'cancel', 'download'], settings: 'current studio controls', outputFormats: ['wav', 'vtt', 'txt'] }, timing: 'text chunks or speaker turns, not word alignment', options: [...optionNames], defaults: { ...defaults }, methods: ['ready', 'capabilities', 'listVoices', 'generate', 'status', 'result', 'audio', 'download', 'release', 'cancel'], guide: new URL('automation.md', site).href }; },
         listVoices,
         status() { return { ...current }; },
         async generate(input) {
             await api.ready();
-            if (running || app.isGenerating || app.clearingDownloads || app.documents.importing || app.documents.running) throw fail('BUSY', 'A recording or model operation is already running. Wait for it or stop it first.');
+            if (running || app.isGenerating || app.clearingDownloads || app.documents.importing || app.documents.running || app.localText.busy) throw fail('BUSY', 'A recording or model operation is already running. Wait for it or stop it first.');
             running = true;
             app.stopGeneration();
             app.isGenerating = true;

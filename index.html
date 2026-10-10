@@ -896,6 +896,15 @@
             .main-content { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; gap: 1.5rem; }
             #audioSection, #statusMessage { grid-column: 1 / -1; }
         }
+        #localTextDialog { margin: auto; width: min(600px, calc(100vw - 2rem)); max-height: 90vh; overflow: auto; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-secondary); color: var(--text-primary); }
+        #localTextDialog::backdrop { background: rgba(0, 0, 0, .65); }
+        .local-text-header { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+        .local-text-header h2 { margin: 0; font-size: 1.2rem; }
+        #localTextDialog p { margin: .75rem 0; color: var(--text-secondary); font-size: .875rem; }
+        #localTextDialog select { margin-bottom: .75rem; }
+        #localTextDraft { min-height: 180px; margin: .5rem 0; }
+        #localTextStatus:empty { display: none; }
+        #localTextDialog details { margin-top: 1rem; font-size: .875rem; }
     </style>
 </head>
 <body>
@@ -921,6 +930,7 @@
                         <button class="secondary" id="useDocumentText" title="Use up to 100,000 characters">Long text</button>
                         <button class="secondary" id="cancelDocumentImport" hidden>Cancel import</button>
                         <button class="secondary" id="clearBtn">Clear text</button>
+                        <button class="secondary" id="localTextBtn" aria-haspopup="dialog">Local AI</button>
                         <button class="secondary" id="summarizeBtn" style="display:none">
                             <span class="ai-badge">AI</span> Summarize
                         </button>
@@ -1532,5 +1542,21 @@ ttsRocks.download(audio.id, "narration.wav");</code></pre>
         apply(paramsFromURL());
     })();
     </script>
+    <dialog id="localTextDialog" aria-labelledby="localTextTitle" aria-describedby="localTextScope">
+        <div class="local-text-header"><h2 id="localTextTitle">Local AI</h2><button class="secondary" id="localTextClose">Close</button></div>
+        <p id="localTextScope"></p>
+        <label for="localTextAction">Action</label>
+        <select id="localTextAction"><option value="improve">Fix spelling &amp; grammar</option><option value="summarize">Summarize</option></select>
+        <p>First use downloads 0.6–1 GB. Your text stays on this device.</p>
+        <button id="localTextRun">Create draft</button>
+        <p id="localTextStatus" role="status" aria-live="polite"></p>
+        <div id="localTextResult" hidden>
+            <label for="localTextDraft">Review draft</label>
+            <textarea id="localTextDraft" spellcheck="true"></textarea>
+            <p>Check names, numbers and meaning. You can edit the draft.</p>
+            <button id="localTextApply" disabled>Use this text</button>
+        </div>
+        <details><summary>Model &amp; download</summary><p>Qwen3-0.6B · Apache-2.0. Requires WebGPU. Select up to 3,000 characters in the editor to work on a passage. Model files download from Hugging Face and stay in your browser cache when space is available.</p><button class="secondary" id="localTextClear">Clear Local AI download</button></details>
+    </dialog>
 </body>
 </html>

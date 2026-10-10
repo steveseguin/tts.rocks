@@ -17,6 +17,12 @@ Files are read locally. Document mode supports up to 100,000 characters and 25 M
 
 Download the complete WAV, captions (VTT), or individual sections. **Stop** keeps completed sections in the current tab; **Generate Episode** resumes if the text and voice settings are unchanged. Keep the tab open until downloads are saved. Add music to the exported episode in your audio or video editor.
 
+## Edit text locally
+
+Choose **Local AI** to fix spelling and grammar or summarize a short passage. Select text first to edit just that passage (up to 3,000 characters). Review the editable draft, then choose **Use this text**.
+
+Qwen3-0.6B uses Apache-2.0 and runs on your device with WebGPU. First use downloads about 0.6–1 GB from Hugging Face into the browser cache; no API key or server is needed. Check names, numbers and meaning before applying a draft. **Model & download** lets you clear its cached files.
+
 ## Choose an engine
 
 | Engine | Runs in | Best fit |

@@ -180,6 +180,12 @@ Each section produces its own WAV, VTT and JSON. `manifest.json` lists the outpu
 
 To revise one passage, put its generation options in a request file and generate that file alone. Generation stops on failure; already saved sections remain on disk. Review or move those files before restarting a batch, or deliberately use `--force`. Split long scripts at paragraph boundaries; each section must fit the 5000-character limit.
 
+## Optional local text editing
+
+In the page, `ttsRocks.text.generate({text, action: "improve"})` returns an editable draft as `{text, action, model, license, device, dtype}`. Use `action: "summarize"` for a short summary. Calls never change the editor or generate speech. Review the draft before using it for narration; check names, numbers and meaning.
+
+Qwen3-0.6B (Apache-2.0) requires WebGPU, downloads about 0.6–1 GB from Hugging Face on first use, and caches locally when space is available. Text stays on the device. Limit input to 3,000 characters; token-dense passages may need a shorter selection. An incomplete draft returns an error. Use `ttsRocks.text.status()` for progress and `ttsRocks.text.cancel()` to stop. Run text editing and speech generation sequentially. The **Local AI** button provides the same tools with an editable preview and explicit **Use this text** action.
+
 ## Troubleshooting
 
 - **Function missing:** wait for `window.ttsRocks` and `ready()` inside the page. Check that your self-hosted copy includes the automation files.

@@ -10,4 +10,6 @@ For PDF, TXT, Markdown, DOCX or ODT, choose "Upload file" (#uploadDocument) or s
 
 Local models download into the browser cache. No native TTS engine or Python installation is required. This is not a server-side HTTP synthesis endpoint; a JavaScript-capable browser is necessary. Direct functions and the CLI support Kokoro, Kitten 0.8, Supertonic and Chatterbox. Other engines use the labelled studio controls. Browser Native cannot export audio.
 
+Optional text editing: await ttsRocks.text.generate({text: "Your passage", action: "improve"}) returns a draft without changing the editor. Also supports "summarize", status() and cancel(). Requires WebGPU and downloads Qwen3-0.6B (Apache-2.0) on first use. Up to 3,000 characters. Review facts before generating speech.
+
 Inside the page: await ttsRocks.ready(); await ttsRocks.listVoices({engine: "kokoro"}); const result = await ttsRocks.generate({text: "Welcome.", voice: "af_aoede"}); ttsRocks.download(result.id, "narration.wav"). Save downloads before closing the browser or generating the next recording. See the guide for Playwright saveAs and CLI examples.

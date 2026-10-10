@@ -1,5 +1,13 @@
 Browser speech components
 
+text-runtime.js bundles Transformers.js 4.3.1 (Apache-2.0), ONNX Runtime
+Web 1.30.0 (MIT), Tokenizers.js 0.2.0 (Apache-2.0) and Jinja 0.5.10 (MIT),
+with the Qwen3 model registration. Their licenses accompany this distribution.
+Qwen3-0.6B model: Qwen Team, Alibaba Cloud, Apache-2.0. See qwen-LICENSE.
+https://huggingface.co/Qwen/Qwen3-0.6B
+ONNX conversion: https://huggingface.co/onnx-community/Qwen3-0.6B-ONNX
+Snapshot: 1e0a4a196ecabdf9a879664110574563d3f372d3
+
 runtime.js includes Kokoro.js 1.2.1 (hexgrad/Xenova, Apache-2.0),
 Transformers.js 4.3.1 (Hugging Face, Apache-2.0), ONNX Runtime Web 1.30.0
 (Microsoft, MIT), and phonemizer 1.2.1 (Xenova, Apache-2.0).
