@@ -9,8 +9,7 @@ export class TextAssistant {
         this.dialog = el('localTextDialog');
         this.api = Object.freeze({ generate: options => this.generate(options), status: () => ({ ...this.current }), cancel: () => this.cancel() });
         el('localTextBtn').addEventListener('click', () => this.open());
-        el('localTextClose').addEventListener('click', () => this.dialog.close());
-        this.dialog.addEventListener('close', () => this.cancel());
+        el('localTextClose').addEventListener('click', () => { this.cancel(); this.dialog.close(); });
         this.dialog.addEventListener('cancel', () => this.cancel());
         el('localTextRun').addEventListener('click', () => this.preview());
         el('localTextApply').addEventListener('click', () => this.apply());
