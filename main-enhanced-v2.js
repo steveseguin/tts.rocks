@@ -6,6 +6,7 @@ import { clearModelCache } from './model-assets.js';
 import { referenceDuration } from './reference-audio.js';
 import { parseDialogue, dialogueVtt } from './dialogue.js';
 import { mixPodcast } from './audio-mix.js';
+import { installAutomation } from './automation.js';
 
 class TTSApp {
     constructor() {
@@ -39,7 +40,7 @@ class TTSApp {
         this.initializeWaveformPlayer();
 
         this.initializeBrowserTTS();
-        this.restoreState();
+        this.ready = this.restoreState();
         this.initializeChromeAI();
         this.updateGenerateButtonState();
         this.updateStudioControls();
@@ -1461,7 +1462,7 @@ class TTSApp {
         this.textInput.value = settings.text || '';
         this.updateCharCount();
         this.restoring = false;
-        this.onEngineChange();
+        return this.onEngineChange();
     }
 
     showStatus(message, type = 'info') {
@@ -1499,4 +1500,5 @@ class TTSApp {
 // Initialize the app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.ttsApp = new TTSApp();
+    installAutomation(window.ttsApp);
 });

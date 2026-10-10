@@ -36,6 +36,12 @@ During early playback, use the live pause/resume and volume controls. Generation
 
 Choose **Mobile / low latency** for Kitten Nano and early playback, or **Quality narration** for Kokoro. **Advanced > Download / prepare model** loads supported models before recording. Keep the tab open to reuse the loaded model. **Check this device** reports WebGPU and FP16 availability; Advanced also offers lower-power and performance GPU preferences. The browser decides which hardware is available.
 
+## Generate narration with an AI assistant
+
+Open **Use with an AI assistant** to copy Markdown instructions, your current voice settings, or JavaScript and CLI examples into your coding agent. Agents can navigate the labelled controls or call `window.ttsRocks` inside the page.
+
+The [CLI helper](tts-rocks.mjs) uses the website through Playwright to save WAV audio, VTT captions and JSON timing metadata, including named batches for video narration. Kokoro, Kitten 0.8 and Supertonic support direct calls. Models stay in the browser cache; no separate TTS engine installation is needed. See the [automation guide](automation.md) for setup and examples.
+
 ## Clone a voice locally
 
 Select **Pocket TTS**, choose English, French, German, Italian, Portuguese or Spanish, then upload a clear recording of your voice or one you have permission to use. A 5-10 second sample works well; the first 10 seconds are used. Leave the reference empty to use a built-in voice.

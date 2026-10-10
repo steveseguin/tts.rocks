@@ -875,7 +875,7 @@
                 
                 <div class="text-input-section">
                     <div class="text-tools">
-                        <button class="secondary" id="clearBtn">Clear</button>
+                        <button class="secondary" id="clearBtn">Clear text</button>
                         <button class="secondary" id="summarizeBtn" style="display:none">
                             <span class="ai-badge">AI</span> Summarize
                         </button>
@@ -1134,7 +1134,7 @@
                         </div>
                 <div id="computeModeDisplay" role="status" aria-live="polite" class="api-key-hint"></div>
                 <div class="action-buttons">
-                    <button id="generateBtn">
+                    <button id="generateBtn" aria-label="Generate Speech">
                         <svg style="width:16px;height:16px;vertical-align:middle;margin-right:4px" viewBox="0 0 24 24">
                             <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z"/>
                         </svg>
@@ -1146,7 +1146,7 @@
                         </svg>
                         Download Audio
                     </button>
-                    <button id="stopBtn" class="secondary" style="display:none">
+                    <button id="stopBtn" class="secondary" style="display:none" aria-label="Stop generation and playback">
                         <svg style="width:16px;height:16px;vertical-align:middle;margin-right:4px" viewBox="0 0 24 24">
                             <path fill="currentColor" d="M18,18H6V6H18V18Z"/>
                         </svg>
@@ -1175,6 +1175,34 @@
             <!-- Status Messages -->
             <div id="statusMessage" class="status-message" role="status" aria-live="polite" aria-atomic="true"></div>
         </div>
+
+        <section class="card" aria-labelledby="automation-title" style="margin-top:2rem">
+          <details id="automationPanel">
+            <summary><span class="caption-summary"><span class="card-title" id="automation-title">Use with an AI assistant</span><span class="api-key-hint">Copy instructions for your coding agent, or use browser functions and the CLI</span></span></summary>
+            <p>Generate narration through this website and save audio for videos or tutorials. Local voice models download into the browser cache on first use; no separate TTS engine installation is needed.</p>
+            <div class="voice-settings">
+              <div class="form-group"><label for="agentFilename">Output filename (WAV)</label><input id="agentFilename" value="narration.wav" maxlength="100"></div>
+              <div class="form-group"><label for="agentIncludeText" style="display:flex;align-items:center;gap:.6rem"><input id="agentIncludeText" type="checkbox" style="width:auto;flex:none"> Include my script in copied instructions</label><span class="api-key-hint">API keys and reference recordings are never included.</span></div>
+            </div>
+            <div class="text-tools" style="flex-wrap:wrap;margin:1rem 0">
+              <button class="secondary" id="copyAgentGuide">Copy instructions as Markdown</button>
+              <button class="secondary" id="copyAgentSetup">Copy this setup for an AI assistant</button>
+              <button class="secondary" id="copyAgentJS">Copy JavaScript example</button>
+              <button class="secondary" id="copyAgentCLI">Copy CLI instructions</button>
+            </div>
+            <p class="api-key-hint" id="agentSupport"></p>
+            <p><a href="./automation.md">Read the automation guide</a> · <a href="./tts-rocks.mjs" download>Download CLI helper</a> · <a href="./llms.txt">Agent entry point</a></p>
+            <p class="api-key-hint">In this page: <code>await ttsRocks.ready()</code>, <code>ttsRocks.capabilities()</code>, <code>await ttsRocks.listVoices()</code>, <code>await ttsRocks.generate(options)</code>, <code>ttsRocks.status()</code>, <code>ttsRocks.download(id, filename)</code>, <code>ttsRocks.cancel()</code>.</p>
+            <div id="agentStatus" role="status" aria-live="polite" data-state="idle">Automation ready.</div>
+            <div class="text-tools" style="flex-wrap:wrap;margin:1rem 0">
+              <button id="agentDownloadWav" class="secondary" disabled>Download automation audio (WAV)</button>
+              <button id="agentDownloadVtt" class="secondary" disabled>Download automation captions (VTT)</button>
+              <button id="agentDownloadJSON" class="secondary" disabled>Download automation metadata (JSON)</button>
+            </div>
+            <div id="agentCopyStatus" role="status" aria-live="polite"></div>
+            <div id="agentCopyFallback" hidden><label for="agentCopyText">Copyable instructions</label><textarea id="agentCopyText" readonly style="min-height:12rem" aria-describedby="agentCopyStatus"></textarea></div>
+          </details>
+        </section>
 
         <!-- Use with Caption.Ninja (collapsed, lightweight) -->
         <div class="card" id="cnPanel" role="region" aria-label="Use with Caption.Ninja" style="margin-top:2rem">

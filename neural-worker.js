@@ -222,6 +222,8 @@ self.onmessage = async ({ data: { id, type, options } }) => {
             if (sentence.speaker) {
                 if (!cues[sentence.turnIndex]) cues[sentence.turnIndex] = { speaker: sentence.speaker, text: turns[sentence.turnIndex].text, start: sampleOffset / sampleRate };
                 cues[sentence.turnIndex].end = (sampleOffset + audio.audio.length) / sampleRate;
+            } else if (options.includeCues) {
+                cues.push({ text: sentence.text, start: sampleOffset / sampleRate, end: (sampleOffset + audio.audio.length) / sampleRate });
             }
             sampleOffset += audio.audio.length + Math.round(sampleRate * pause / 1000);
             const metrics = { device, dtype, duration: generatedSamples / sampleRate, seconds: (performance.now() - started) / 1000 };
@@ -231,7 +233,7 @@ self.onmessage = async ({ data: { id, type, options } }) => {
             } else progress(metrics);
         }
         self.postMessage({ id, result: { blob: chunksToWav(chunks, sampleRate, pauses), duration: sampleOffset / sampleRate, generatedDuration: generatedSamples / sampleRate,
-            seconds: (performance.now() - started) / 1000, device, dtype, chunks: chunks.length, cues } });
+            seconds: (performance.now() - started) / 1000, device, dtype, chunks: chunks.length, cues, sampleRate } });
     } catch (error) {
         self.postMessage({ id, error: error.message || String(error) });
     } finally { busy = false; }
