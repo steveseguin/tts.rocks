@@ -11,9 +11,9 @@ Turn text into speech in your browser. Choose local AI voices, clone a reference
 
 ## Read a document
 
-Choose a PDF, TXT, Markdown, Word (DOCX) or ODT file under **Read a document**. Review the extracted text, select voices, then click **Generate Episode**. Use **Single voice** for narration or **Two narrators (alternate paragraphs)** to share the reading. An existing **A:/B: script** can also use two voices. The document is read as written; edit or summarize it first if you want a shorter discussion.
+Choose a PDF, TXT, Markdown, Word (DOCX) or ODT file using **Upload file**. Review the extracted text, select voices, then click **Generate Episode**. Use **Single voice** for narration or **Alternate narrators** to share the reading. An existing **A:/B: script** can also use two voices. The document is read as written; edit or summarize it first if you want a shorter discussion.
 
-Files are read locally. Document mode supports up to 100,000 characters and 25 MB per file with Kokoro, Kitten 0.8, Supertonic or Chatterbox; Chatterbox uses one voice. Choose **Use text as document** for longer pasted scripts. For scanned PDFs, run OCR first; for older `.doc` files, export as DOCX or text. Review PDF reading order and any pages reported as missing text.
+Files are read locally. Document mode supports up to 100,000 characters and 25 MB per file with Kokoro, Kitten 0.8, Supertonic or Chatterbox; Chatterbox uses one voice. Choose **Long text** for longer pasted scripts. For scanned PDFs, run OCR first; for older `.doc` files, export as DOCX or text. Review PDF reading order and any pages reported as missing text.
 
 Download the complete WAV, captions (VTT), or individual sections. **Stop** keeps completed sections in the current tab; **Generate Episode** resumes if the text and voice settings are unchanged. Keep the tab open until downloads are saved. Add music to the exported episode in your audio or video editor.
 
@@ -39,15 +39,15 @@ Kokoro's automatic mode uses FP32 on WebGPU and Q8 on CPU. Smaller models reduce
 
 Kokoro blends combine the two named voices equally: for example, **Heart + Bella blend**. The original voices remain available. Kokoro model and voice assets use Apache-2.0; Chatterbox model and default reference use MIT.
 
-Choose **Chatterbox** for expression controls or to match a reference voice. It needs a desktop with room for the larger model; preparation and CPU generation can take several minutes. Try **WebGPU** for faster generation. Choose Subtle, Natural, Expressive or Dramatic under **Expression**, and adjust playback speed in the player.
+Choose **Chatterbox** for expression controls or to match a reference voice. It needs a desktop with room for the larger model; preparation and CPU generation can take several minutes. Try **WebGPU** for faster generation. Choose Subtle, Natural, Expressive or Dramatic under **Advanced > Expression**, and adjust playback speed in the player.
 
-Choose **Start playback > As audio arrives** beside Generate to hear the first chunk while the rest is generated. This is selected for new users; saved playback preferences are preserved. Slower devices may pause between chunks. Choose complete-recording playback for uninterrupted listening. The download contains every generated chunk.
+Choose **Advanced > Start playback > As audio arrives** to hear the first chunk while the rest is generated. This is selected for new users; saved playback preferences are preserved. Slower devices may pause between chunks. Choose complete-recording playback for uninterrupted listening. The download contains every generated chunk.
 
-The display beside Generate reports the actual CPU or GPU after the model loads and updates generation speed as chunks finish. **2x real time** means ten seconds of audio generated in five seconds. This rate excludes model loading and added pauses; the first-chunk time includes loading. Playback has a short silent lead-in to give the audio output time to start; exported audio and caption timestamps are unchanged.
+The display in **Advanced** reports the actual CPU or GPU after the model loads and updates generation speed as chunks finish. **2x real time** means ten seconds of audio generated in five seconds. This rate excludes model loading and added pauses; the first-chunk time includes loading. Playback has a short silent lead-in to give the audio output time to start; exported audio and caption timestamps are unchanged.
 
 During early playback, use the live pause/resume and volume controls. Generation continues while playback is paused. To remove a local engine's cached downloads, select it and use **Advanced > Clear downloads for this engine**; it downloads again on next use.
 
-Choose **Mobile / low latency** for Kitten Nano and early playback, or **Quality narration** for Kokoro. **Advanced > Download / prepare model** loads supported models before recording. Keep the tab open to reuse the loaded model. **Check this device** reports WebGPU and FP16 availability; Advanced also offers lower-power and performance GPU preferences. The browser decides which hardware is available.
+In **Advanced**, choose **Mobile / low latency** for Kitten Nano and early playback, or **Quality narration** for Kokoro. **Advanced > Download / prepare model** loads supported models before recording. Keep the tab open to reuse the loaded model. **Check this device** reports WebGPU and FP16 availability; Advanced also offers lower-power and performance GPU preferences. The browser decides which hardware is available.
 
 ## Generate narration with an AI assistant
 
@@ -65,7 +65,7 @@ The same reference is reused for subsequent recordings. **Clear reference** remo
 
 ## Make a two-speaker podcast
 
-Choose **Two-speaker podcast** under Text Input and use Kokoro, Kitten 0.8 or Supertonic. Select Speaker A in the main Voice selector and Speaker B in the podcast controls. Write each turn with a label:
+Choose **Two speakers (A:/B:)** under Text Input and use Kokoro, Kitten 0.8 or Supertonic. Select Speaker A in the main Voice selector and Speaker B in the podcast controls. Write each turn with a label:
 
 ```text
 A: Welcome to our show. What are we talking about today?
@@ -95,7 +95,7 @@ GPT-4o mini TTS offers warm, calm, upbeat and newsreader direction presets. Edit
 
 Eleven v4 accepts up to 2000 characters per recording here. Use the player's speed control for Eleven v3/v4; their synthesis speed controls are unavailable. Choose Flash v2.5 or another existing model for Caption.Ninja links.
 
-On compatible desktop Chrome installations, the text toolbar offers local summarization, language detection, rewriting and translation. Choose the target language in **Voice**, then use **Translate to selected language**. Browser language models may need an initial download. Review edited text before generating speech.
+On compatible desktop Chrome installations, the text toolbar offers local summarization, language detection, rewriting and translation. Choose the target language in **Voice**, then use **Translate**. Browser language models may need an initial download. Review edited text before generating speech.
 
 ## Run your own copy
 

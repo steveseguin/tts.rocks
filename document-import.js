@@ -44,7 +44,7 @@ export async function readDocument(file, signal, progress) {
                 page.cleanup();
             }
             text = pages.join('\n\n');
-            warning = empty.length ? `Pages without selectable text: ${empty.slice(0, 30).join(', ')}${empty.length > 30 ? '…' : ''}. Run OCR on those pages to include them.` : 'Review the reading order, headers and footers before generating.';
+            warning = empty.length ? `Pages without selectable text: ${empty.slice(0, 30).join(', ')}${empty.length > 30 ? '…' : ''}. Run OCR on those pages to include them.` : 'Check PDF reading order before generating.';
         } catch (error) {
             if (error.name === 'PasswordException') throw new Error('This PDF needs a password. Save an unlocked copy, then import it.');
             throw error;
@@ -91,12 +91,12 @@ export async function readDocument(file, signal, progress) {
             }
             return true;
         }).map(read).join('\n\n');
-        warning = 'Imported body text and tables. Review lists and layout; images, comments, headers and footnotes are not narrated.';
+        warning = 'Body text imported. Images, comments, headers and footnotes are excluded.';
     } else {
         const encoding = data[0] === 255 && data[1] === 254 ? 'utf-16le' : data[0] === 254 && data[1] === 255 ? 'utf-16be' : 'utf-8';
         try { text = new TextDecoder(encoding, { fatal: true }).decode(data); }
         catch (_) { throw new Error('Save this text file using UTF-8 encoding, then import it again.'); }
-        if (['md', 'markdown'].includes(extension)) warning = 'Markdown is imported as written. Remove formatting or code you do not want spoken.';
+        if (['md', 'markdown'].includes(extension)) warning = 'Remove any Markdown or code you don’t want spoken.';
     }
     signal.throwIfAborted();
     return { text: checkedText(text), warning };

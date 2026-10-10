@@ -70,7 +70,7 @@
         [hidden] { display: none !important; }
         #localModelSettings > div { display: flex; flex-direction: column; gap: 0.5rem; }
         #localModelSettings { display: contents; }
-        #engineSettings.has-local-model { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+        #engineSettings { grid-template-columns: minmax(0, 1fr); }
         #engineSettings .form-group { min-width: 0; }
         @media (max-width: 900px) {
             #engineSettings.has-local-model { grid-template-columns: minmax(0, 1fr); }
@@ -123,7 +123,7 @@
 
         header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
         h1 {
@@ -877,6 +877,25 @@
             text-decoration: none;
             border-radius: 4px;
         }
+
+        .integration-card { padding: 1rem 1.5rem; }
+        .integration-card .caption-summary .card-title { margin: 0; font-size: 1rem; }
+        .editor-footer { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+        .inline-help { max-width: 70%; font-size: .85rem; color: var(--text-secondary); }
+        .document-chip { display: flex; align-items: center; gap: .75rem; font-size: .85rem; color: var(--text-secondary); }
+        .document-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .document-chip button { flex: none; padding: .3rem .65rem; font-size: .8rem; }
+        #documentProgress:empty, #deviceDetails:empty { display: none; }
+        #documentResults { border-top: 1px solid var(--border); padding-top: 1rem; }
+        #documentResults h3 { font-size: 1rem; margin-bottom: .5rem; }
+        #documentResults .text-tools { margin: .75rem 0; }
+        #documentResults details { font-size: .85rem; color: var(--text-secondary); }
+        #textInput { min-height: 200px; }
+        #advanced-tab #streamingGroup { border: 0; margin: 0 0 1rem; padding: 0; }
+        @media (min-width: 1000px) {
+            .main-content { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; gap: 1.5rem; }
+            #audioSection, #statusMessage { grid-column: 1 / -1; }
+        }
     </style>
 </head>
 <body>
@@ -884,7 +903,7 @@
     <div class="container" role="main" id="main-content" tabindex="-1">
         <header>
             <h1>🎙️ TTS.Rocks</h1>
-            <p class="subtitle">Local AI voices, multilingual speech and browser voice cloning</p>
+            <p class="subtitle">Text and documents, read aloud.</p>
         </header>
 
         <div class="main-content">
@@ -896,25 +915,16 @@
                 </h2>
                 
                 <div class="text-input-section">
-                    <div class="form-group">
-                        <label for="documentFile">Read a document</label>
-                        <input type="file" id="documentFile" accept=".pdf,.txt,.md,.markdown,.docx,.odt" aria-describedby="documentHint">
-                        <p class="api-key-hint" id="documentHint">PDF, text, Markdown, Word (DOCX) or ODT · up to 25 MB. Files are read on this device.</p>
-                        <button class="secondary" id="useDocumentText">Use text as document</button>
+                    <input type="file" id="documentFile" accept=".pdf,.txt,.md,.markdown,.docx,.odt" aria-label="Read a document" hidden>
+                    <div class="text-tools" aria-label="Text tools">
+                        <button class="secondary" id="uploadDocument" title="Import PDF, TXT, Markdown, DOCX or ODT">Upload file</button>
+                        <button class="secondary" id="useDocumentText" title="Use up to 100,000 characters">Long text</button>
                         <button class="secondary" id="cancelDocumentImport" hidden>Cancel import</button>
-                    </div>
-                    <div id="documentControls" hidden>
-                        <p><strong id="documentName"></strong></p>
-                        <p class="api-key-hint">Edit the text below, then choose one voice or two narrators. Up to 100,000 characters, generated in sections. Keep this tab open to resume or download.</p>
-                        <button class="secondary" id="leaveDocument">Return to short text</button>
-                    </div>
-                    <p class="api-key-hint" id="documentProgress" role="status" aria-live="polite"></p>
-                    <div class="text-tools">
                         <button class="secondary" id="clearBtn">Clear text</button>
                         <button class="secondary" id="summarizeBtn" style="display:none">
                             <span class="ai-badge">AI</span> Summarize
                         </button>
-                        <button class="secondary" id="translateBtn" hidden>Translate to selected language</button>
+                        <button class="secondary" id="translateBtn" title="Translate to the language selected in Voice" hidden>Translate</button>
                         <button class="secondary" id="detectLangBtn" style="display:none">
                             <span class="ai-badge">AI</span> Detect Language
                         </button>
@@ -923,24 +933,34 @@
                         </button>
                     </div>
                     
-                    <textarea id="textInput" aria-labelledby="text-input-title" aria-describedby="text-count" placeholder="Welcome to TTS.Rocks! This advanced text-to-speech system can convert any text into natural-sounding speech using multiple AI engines."></textarea>
+                    <div id="documentControls" class="document-chip" hidden>
+                        <span id="documentName"></span>
+                        <button class="secondary" id="leaveDocument" aria-label="Exit document mode">Exit</button>
+                    </div>
+                    <p class="api-key-hint" id="documentProgress" role="status" aria-live="polite" hidden></p>
+                    <textarea id="textInput" aria-labelledby="text-input-title" aria-describedby="text-count" placeholder="Type or paste your text here."></textarea>
                     <div class="form-group">
                         <label for="scriptMode">Recording format</label>
-                        <select id="scriptMode"><option value="narration">Single voice</option><option value="dialogue">Two-speaker podcast (A:/B: script)</option><option value="alternating" id="alternateNarrators" disabled hidden>Two narrators (alternate paragraphs)</option></select>
+                        <select id="scriptMode"><option value="narration">Single voice</option><option value="dialogue">Two speakers (A:/B:)</option><option value="alternating" id="alternateNarrators" disabled hidden>Alternate narrators</option></select>
                         <div id="dialogueHint" class="api-key-hint" hidden>Start each turn with A: or B:. Set both voices in the Voice tab. Kokoro, Kitten 0.8 and Supertonic support podcasts. Speaker labels are not spoken.</div>
                     </div>
-                    <div class="character-count" id="text-count">
-                        <span id="charCount">0</span> / <span id="charLimit">5000</span> characters
+                    <div class="editor-footer">
+                        <details class="inline-help">
+                            <summary>File help</summary>
+                            <p class="api-key-hint">PDF, TXT, Markdown, DOCX or ODT. Up to 25 MB and 100,000 characters. Files stay on your device. Scanned PDFs need OCR first.</p>
+                            <p class="api-key-hint">Keep this tab open to resume generation and save your audio.</p>
+                        </details>
+                        <div class="character-count" id="text-count"><span id="charCount">0</span> / <span id="charLimit">5000</span></div>
                     </div>
                     <section id="documentResults" aria-label="Document recording" hidden>
                         <h3>Your episode</h3>
                         <audio id="documentPlayer" controls preload="metadata" aria-label="Play document episode" style="width:100%"></audio>
                         <div class="text-tools">
-                            <button id="documentDownload_wav" class="secondary" disabled>Download episode (WAV)</button>
-                            <button id="documentDownload_vtt" class="secondary" disabled>Download captions (VTT)</button>
-                            <button id="documentDownload_txt" class="secondary">Download script (TXT)</button>
+                            <button id="documentDownload_wav" class="secondary" disabled>Download WAV</button>
+                            <button id="documentDownload_vtt" class="secondary" disabled>Captions</button>
+                            <button id="documentDownload_txt" class="secondary">Script</button>
                         </div>
-                        <details><summary>Download individual sections</summary><div id="documentSections" class="text-tools"></div></details>
+                        <details><summary>Sections</summary><div id="documentSections" class="text-tools"></div></details>
                     </section>
                 </div>
             </div>
@@ -959,12 +979,6 @@
                 </div>
 
                 <div class="tab-content active" id="engine-tab" role="tabpanel" aria-labelledby="engine-tab-button">
-                    <div class="text-tools" style="margin-bottom:1rem" aria-label="Quick setups">
-                        <button class="secondary" id="compactPreset">Mobile / low latency</button>
-                        <button class="secondary" id="narrationPreset">Quality narration</button>
-                        <button class="secondary" id="checkDevice">Check this device</button>
-                    </div>
-                    <div id="deviceDetails" class="api-key-hint" role="status"></div>
                     <div class="voice-settings" id="engineSettings">
                         <div class="form-group">
                             <label for="engineSelect">TTS Engine</label>
@@ -991,52 +1005,6 @@
                             <input type="password" id="apiKeyInput" placeholder="Enter API key">
                             <button type="button" id="refreshVoices" class="secondary" hidden>Load my available voices</button>
                             <div class="api-key-hint">API key is stored locally and never sent to our servers</div>
-                        </div>
-                        <div id="localModelSettings" hidden>
-                            <div class="form-group">
-                                <label for="computeSelect">Compute</label>
-                                <select id="computeSelect">
-                                    <option value="auto">Automatic</option>
-                                    <option value="wasm">CPU (most compatible)</option>
-                                    <option value="webgpu">WebGPU</option>
-                                </select>
-                            </div>
-                            <div id="kokoroQualityGroup">
-                                <label for="kokoroQuality">Kokoro model</label>
-                                <select id="kokoroQuality" aria-describedby="kokoroQualityHint">
-                                    <option value="auto">Automatic</option>
-                                    <option value="q8">Compact 8-bit (~92 MB)</option>
-                                    <option value="fp32">Full 32-bit (~326 MB)</option>
-                                    <option value="fp16">Half 16-bit (~163 MB)</option>
-                                </select>
-                                <div id="kokoroQualityHint" class="api-key-hint">Automatic uses full quality on GPU and compact on CPU.</div>
-                            </div>
-                            <div id="kittenModelGroup" hidden>
-                                <label for="kittenModel">Kitten model size</label>
-                                <select id="kittenModel">
-                                    <option value="nano">Nano (25 MB)</option>
-                                    <option value="micro">Micro (41 MB)</option>
-                                    <option value="mini">Mini (80 MB)</option>
-                                </select>
-                            </div>
-                            <div id="supertonicStepsGroup" hidden>
-                                <label for="supertonicSteps">Quality / generation time</label>
-                                <select id="supertonicSteps">
-                                    <option value="2">Quick draft (2 steps)</option>
-                                    <option value="5" selected>Balanced (5 steps)</option>
-                                    <option value="10">Refined (10 steps)</option>
-                                </select>
-                            </div>
-                            <div id="chatterboxSettings" hidden>
-                                <label for="chatterboxExaggeration">Expression</label>
-                                <select id="chatterboxExaggeration">
-                                    <option value="0.3">Subtle</option>
-                                    <option value="0.5" selected>Natural</option>
-                                    <option value="0.8">Expressive</option>
-                                    <option value="1.2">Dramatic</option>
-                                </select>
-                                <div class="api-key-hint">English · MIT model · about 1.5 GB. Use a desktop; preparation and CPU generation can take several minutes. Adjust speed in the player.</div>
-                            </div>
                         </div>
                         <div class="form-group" id="cloneSettings" hidden>
                             <label for="referenceAudio">Reference voice (optional)</label>
@@ -1122,7 +1090,69 @@
                 </div>
 
                 <div class="tab-content" id="advanced-tab" role="tabpanel" aria-labelledby="advanced-tab-button" hidden>
+                    <div class="text-tools" style="margin-bottom:1rem" aria-label="Quick setups">
+                        <button class="secondary" id="compactPreset">Mobile / low latency</button>
+                        <button class="secondary" id="narrationPreset">Quality narration</button>
+                        <button class="secondary" id="checkDevice">Check this device</button>
+                    </div>
+                    <div id="deviceDetails" class="api-key-hint" role="status"></div>
+                        <div class="form-group" id="streamingGroup" hidden>
+                            <label for="streamSpeech">Start playback</label>
+                            <select id="streamSpeech" aria-describedby="streamingHint">
+                                <option value="off">When the full recording is ready</option>
+                                <option value="on" selected>As audio arrives (lower latency)</option>
+                            </select>
+                            <div class="api-key-hint" id="streamingHint">Hear the first chunk while the rest is generated. Slower devices may pause between chunks. The download contains the full recording.</div>
+                        </div>
+                <div id="computeModeDisplay" role="status" aria-live="polite" class="api-key-hint"></div>
                     <div class="voice-settings">
+                        <div id="localModelSettings" hidden>
+                            <div class="form-group">
+                                <label for="computeSelect">Compute</label>
+                                <select id="computeSelect">
+                                    <option value="auto">Automatic</option>
+                                    <option value="wasm">CPU (most compatible)</option>
+                                    <option value="webgpu">WebGPU</option>
+                                </select>
+                            </div>
+                            <div id="kokoroQualityGroup">
+                                <label for="kokoroQuality">Kokoro model</label>
+                                <select id="kokoroQuality" aria-describedby="kokoroQualityHint">
+                                    <option value="auto">Automatic</option>
+                                    <option value="q8">Compact 8-bit (~92 MB)</option>
+                                    <option value="fp32">Full 32-bit (~326 MB)</option>
+                                    <option value="fp16">Half 16-bit (~163 MB)</option>
+                                </select>
+                                <div id="kokoroQualityHint" class="api-key-hint">Automatic uses full quality on GPU and compact on CPU.</div>
+                            </div>
+                            <div id="kittenModelGroup" hidden>
+                                <label for="kittenModel">Kitten model size</label>
+                                <select id="kittenModel">
+                                    <option value="nano">Nano (25 MB)</option>
+                                    <option value="micro">Micro (41 MB)</option>
+                                    <option value="mini">Mini (80 MB)</option>
+                                </select>
+                            </div>
+                            <div id="supertonicStepsGroup" hidden>
+                                <label for="supertonicSteps">Quality / generation time</label>
+                                <select id="supertonicSteps">
+                                    <option value="2">Quick draft (2 steps)</option>
+                                    <option value="5" selected>Balanced (5 steps)</option>
+                                    <option value="10">Refined (10 steps)</option>
+                                </select>
+                            </div>
+                            <div id="chatterboxSettings" hidden>
+                                <label for="chatterboxExaggeration">Expression</label>
+                                <select id="chatterboxExaggeration">
+                                    <option value="0.3">Subtle</option>
+                                    <option value="0.5" selected>Natural</option>
+                                    <option value="0.8">Expressive</option>
+                                    <option value="1.2">Dramatic</option>
+                                </select>
+                                <div class="api-key-hint">English · MIT model · about 1.5 GB. Use a desktop; preparation and CPU generation can take several minutes. Adjust speed in the player.</div>
+                            </div>
+                        </div>
+
                         <div class="form-group" id="gpuPreferenceGroup">
                             <label for="gpuPreference">GPU preference</label>
                             <select id="gpuPreference"><option value="default">Browser default</option><option value="low-power">Lower power / integrated GPU</option><option value="high-performance">Performance / discrete GPU</option></select>
@@ -1181,15 +1211,6 @@
                     </div>
                 </div>
 
-                        <div class="form-group" id="streamingGroup" hidden>
-                            <label for="streamSpeech">Start playback</label>
-                            <select id="streamSpeech" aria-describedby="streamingHint">
-                                <option value="off">When the full recording is ready</option>
-                                <option value="on" selected>As audio arrives (lower latency)</option>
-                            </select>
-                            <div class="api-key-hint" id="streamingHint">Hear the first chunk while the rest is generated. Slower devices may pause between chunks. The download contains the full recording.</div>
-                        </div>
-                <div id="computeModeDisplay" role="status" aria-live="polite" class="api-key-hint"></div>
                 <div class="action-buttons">
                     <button id="generateBtn" aria-label="Generate Speech">
                         <svg style="width:16px;height:16px;vertical-align:middle;margin-right:4px" viewBox="0 0 24 24">
@@ -1233,24 +1254,24 @@
             <div id="statusMessage" class="status-message" role="status" aria-live="polite" aria-atomic="true"></div>
         </div>
 
-        <section class="card" aria-labelledby="automation-title" style="margin-top:2rem">
+        <section class="card integration-card" aria-labelledby="automation-title" style="margin-top:1rem">
           <details id="automationPanel">
-            <summary><span class="caption-summary"><span class="card-title" id="automation-title">Use with an AI assistant</span><span class="api-key-hint">Create narration from your coding tool</span></span></summary>
-            <p class="agent-intro">Copy your settings, then paste them into Codex, Claude Code, or another assistant.</p>
+            <summary><span class="caption-summary"><span class="card-title" id="automation-title">Use with an AI assistant</span></span></summary>
+            <p class="agent-intro">Copy your setup into Codex, Claude Code or another assistant.</p>
             <div class="agent-setup">
               <div class="form-group"><label for="agentFilename">Output filename (WAV)</label><input id="agentFilename" value="narration.wav" maxlength="100"></div>
               <label for="agentIncludeText" class="agent-checkbox"><input id="agentIncludeText" type="checkbox"> Include my script</label>
             </div>
             <div class="agent-actions">
               <button id="copyAgentSetup">Copy for AI assistant</button>
-              <button class="secondary" id="copyAgentGuide">Copy general instructions</button>
             </div>
-            <p class="agent-note">Copies Markdown instructions with your voice settings. Keys and reference audio stay private.</p>
+            <p class="agent-note">Keys and reference audio are never copied.</p>
             <div id="agentCopyStatus" role="status" aria-live="polite"></div>
             <div id="agentCopyFallback" hidden><label for="agentCopyText">Copyable instructions</label><textarea id="agentCopyText" readonly aria-describedby="agentCopyStatus"></textarea></div>
             <details id="agentDeveloperOptions">
               <summary>Developer options</summary>
               <div class="agent-actions">
+                <button class="secondary" id="copyAgentGuide">Copy general instructions</button>
                 <button class="secondary" id="copyAgentJS">Copy JavaScript example</button>
                 <button class="secondary" id="copyAgentCLI">Copy CLI instructions</button>
               </div>
@@ -1272,12 +1293,11 @@ ttsRocks.download(audio.id, "narration.wav");</code></pre>
         </section>
 
         <!-- Use with Caption.Ninja (collapsed, lightweight) -->
-        <div class="card" id="cnPanel" role="region" aria-label="Use with Caption.Ninja" style="margin-top:2rem">
+        <div class="card integration-card" id="cnPanel" role="region" aria-label="Use with Caption.Ninja" style="margin-top:1rem">
           <details>
             <summary>
               <span class="caption-summary">
                 <span class="card-title">Use with Caption.Ninja</span>
-                <span class="api-key-hint">Remote input, translation, transcription and overlays</span>
               </span>
             </summary>
             <div class="voice-settings" style="margin-top:1rem">

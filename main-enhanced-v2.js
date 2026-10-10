@@ -456,11 +456,11 @@ class TTSApp {
         document.getElementById('refreshVoices').hidden = !['elevenlabs', 'google'].includes(engine);
         this.apiKeyInput.value = this.sessionKeys[engine] ?? this.readStorage(`tts_${engine}_key`) ?? '';
         const descriptions = {
-            kokoro: '28 US and British English voices plus eight blends. Downloads on first Generate; cached for reuse.',
-            chatterbox: 'Expressive English speech and local voice cloning. Use the default voice or upload your reference below. Downloads on first use; no account needed.',
-            'kitten-v08': 'Eight English voices. Choose Nano, Micro or Mini to trade download size for model capacity. Runs locally on CPU.',
-            supertonic: '31 languages, ten voices, adjustable generation steps. About 400 MB on first use. Runs locally; upstream models are archived.',
-            pocket: 'Experimental local voice cloning and built-in voices. About 125 MB for English, plus 21 MB when cloning. Larger language bundles may need more memory. Speed is controlled in the player.',
+            kokoro: '36 English voices and blends. Downloads once, runs locally.',
+            chatterbox: 'Expressive English and voice cloning. Local, about 1.5 GB download.',
+            'kitten-v08': 'Eight English voices. Local CPU models from 25 MB.',
+            supertonic: '31 languages, ten voices. Local, about 400 MB download.',
+            pocket: 'Local voice cloning. English: about 125 MB, plus 21 MB for cloning.',
             musicgen: 'Describe the music in Text Input and choose a clip length.',
             kitten: 'Original compact English model. Kitten 0.8 offers newer voices and model sizes.',
             piper: 'Local English voices, downloaded from the bundled voice library.',
@@ -522,8 +522,8 @@ class TTSApp {
         document.getElementById('podcastSettings').hidden = !dialogue;
         document.getElementById('dialogueHint').hidden = !dialogue;
         document.getElementById('dialogueHint').textContent = document.getElementById('scriptMode').value === 'alternating'
-            ? 'Narrators alternate paragraphs, separated by a blank line. Set both voices in the Voice tab. The text is read as written.'
-            : 'Start each turn with A: or B:. Set both voices in the Voice tab. Kokoro, Kitten 0.8 and Supertonic support podcasts. Speaker labels are not spoken.';
+            ? 'Alternate paragraphs between two voices. Separate paragraphs with a blank line.'
+            : 'Use A: and B: labels. Choose both voices in the Voice tab.';
         this.voiceSelect.labels[0].textContent = dialogue ? 'Speaker A' : 'Voice';
         document.getElementById('gpuPreferenceGroup').hidden = !['kokoro', 'supertonic', 'chatterbox'].includes(this.currentEngine);
         document.getElementById('prepareModel').hidden = !['kokoro', 'kitten-v08', 'supertonic', 'musicgen', 'chatterbox'].includes(this.currentEngine);
@@ -992,7 +992,7 @@ class TTSApp {
         }
         if (this.documents?.importing || this.documents?.running) return;
         if (this.isGenerating || this.clearingDownloads) return;
-        const text = this.textInput.value.trim() || this.textInput.placeholder;
+        const text = this.textInput.value.trim() || (this.currentEngine === 'musicgen' ? this.textInput.placeholder : 'Welcome to TTS.Rocks! This advanced text-to-speech system can convert any text into natural-sounding speech using multiple AI engines.');
         if (text.length > this.textLimit()) { this.showStatus(`Please limit text to ${this.textLimit()} characters for this model.`, 'error'); return; }
         const engine = this.currentEngine;
         const id = ++this.generationId;

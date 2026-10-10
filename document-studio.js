@@ -64,7 +64,18 @@ export class DocumentStudio {
             download: (format = 'wav', section) => this.download(format, section)
         });
         el('documentFile').addEventListener('change', event => { const file = event.target.files[0]; event.target.value = ''; if (file) this.import(file).catch(error => this.error(error)); });
-        el('useDocumentText').addEventListener('click', () => { try { this.useText(app.textInput.value); } catch (error) { this.error(error); } });
+        el('uploadDocument').addEventListener('click', () => el('documentFile').click());
+        el('useDocumentText').addEventListener('click', () => {
+            if (this.busy()) return;
+            try {
+                if (app.textInput.value.trim()) this.useText(app.textInput.value, 'Long text');
+                else {
+                    this.reset(); this.active = true; this.name = 'Long text'; this.update('', 'ready');
+                    app.updateCharCount(); app.updateStudioControls(); app.updateGenerateButtonState();
+                }
+                app.textInput.focus();
+            } catch (error) { this.error(error); }
+        });
         el('leaveDocument').addEventListener('click', () => {
             if (this.busy()) return;
             this.active = false;
@@ -89,11 +100,13 @@ export class DocumentStudio {
         el('alternateNarrators').disabled = !this.active;
         el('alternateNarrators').hidden = !this.active;
         el('documentFile').disabled = Boolean(this.busy());
+        el('uploadDocument').disabled = Boolean(this.busy());
         el('useDocumentText').hidden = this.active;
         el('useDocumentText').disabled = Boolean(this.busy());
         el('leaveDocument').disabled = Boolean(this.busy());
         el('cancelDocumentImport').hidden = !this.importing;
         el('documentProgress').textContent = this.message;
+        el('documentProgress').hidden = !this.message || !this.active && !['importing', 'error'].includes(this.state);
         el('documentResults').hidden = !this.parts.length;
         el('documentDownload_wav').disabled = !this.episode;
         el('documentDownload_vtt').disabled = !this.episode;
@@ -112,7 +125,7 @@ export class DocumentStudio {
         if (typeof text !== 'string' || typeof name !== 'string') throw new Error('Pass document text and a filename as strings.');
         const checked = checkedText(text);
         this.reset(); this.active = true; this.name = name.slice(0, 200); this.app.textInput.value = checked;
-        this.update('Review the text, choose voices, then Generate Episode.', 'ready');
+        this.update('', 'ready');
         this.app.updateCharCount(); this.app.updateStudioControls(); this.app.updateGenerateButtonState();
         return this.status();
     }
@@ -125,7 +138,7 @@ export class DocumentStudio {
             const result = await readDocument(file, this.importController.signal, message => this.update(message));
             this.importing = false;
             this.useText(result.text, file.name);
-            this.update(`${result.warning ? result.warning + ' ' : ''}Review the text, then Generate Episode.`, 'ready');
+            this.update(result.warning || '', 'ready');
             return this.status();
         } catch (error) {
             this.update(this.importController.signal.aborted ? 'Import cancelled. Existing text is unchanged.' : error.message, 'error');
@@ -139,7 +152,7 @@ export class DocumentStudio {
     async generate() {
         const app = this.app;
         if (this.busy()) throw new Error('Another operation is still running. Wait for it to finish.');
-        if (!this.active) throw new Error('Import a document or choose Use text as document first.');
+        if (!this.active) throw new Error('Upload a file or choose Long text first.');
         const text = checkedText(app.textInput.value);
         const options = { ...app.neuralOptions('', false), includeCues: true };
         const mode = el('scriptMode').value;
@@ -189,10 +202,10 @@ export class DocumentStudio {
             await this.assemble(pauseMs);
             controller.signal.throwIfAborted();
             this.url = URL.createObjectURL(this.episode); el('documentPlayer').src = this.url;
-            this.update(`Episode ready: ${this.parts.length} sections, ${(this.duration / 60).toFixed(1)} minutes.`, 'complete');
+            this.update(`Ready · ${(this.duration / 60).toFixed(1)} min`, 'complete');
             return this.status();
         } catch (error) {
-            if (controller.signal.aborted) this.update(`Stopped. ${this.parts.length} of ${this.plan.length} sections saved in this tab. Generate Episode resumes with unchanged text and settings.`, 'paused');
+            if (controller.signal.aborted) this.update(`Paused · ${this.parts.length}/${this.plan.length} sections saved. Generate Episode to resume.`, 'paused');
             else this.update(`${error.message} Completed sections remain available.`, 'error');
             throw error;
         } finally {

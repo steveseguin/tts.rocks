@@ -15,9 +15,9 @@ This route supports all studio engines. **Browser Native** speaks but cannot exp
 
 ## Read documents and long scripts
 
-Upload PDF, TXT, Markdown, DOCX or ODT with **Read a document** (`#documentFile`), or choose **Use text as document** for pasted text. Review the editable text before generating. Scanned PDFs need OCR first. Imports stay on the device and accept up to 25 MB, 500 PDF pages and 100,000 characters; split larger documents before importing.
+Upload PDF, TXT, Markdown, DOCX or ODT with **Upload file** (`#uploadDocument`, file input `#documentFile`), or choose **Long text** for pasted text. Review the editable text before generating. Scanned PDFs need OCR first. Imports stay on the device and accept up to 25 MB, 500 PDF pages and 100,000 characters; split larger documents before importing.
 
-Select the engine and voice using the studio controls. Document generation supports Kokoro, Kitten 0.8, Supertonic and Chatterbox. Choose **Single voice**, **Two narrators (alternate paragraphs)**, or an existing **A:/B: script** under Recording format. Chatterbox supports one narrator. Text is read as written; these formats do not rewrite a document into a discussion.
+Select the engine and voice using the studio controls. Document generation supports Kokoro, Kitten 0.8, Supertonic and Chatterbox. Choose **Single voice**, **Alternate narrators**, or an existing **A:/B: script** under Recording format. Chatterbox supports one narrator. Text is read as written; these formats do not rewrite a document into a discussion.
 
 ```js
 // In Playwright, after opening the page and awaiting ttsRocks.ready():
