@@ -260,18 +260,30 @@ class TTSApp {
     }
 
     async initializeChromeAI() {
-        for (const [name, button] of [['Summarizer', this.summarizeBtn], ['LanguageDetector', this.detectLangBtn], ['Rewriter', this.improveBtn]]) {
+        await Promise.all([['Summarizer', this.summarizeBtn], ['LanguageDetector', this.detectLangBtn], ['Rewriter', this.improveBtn]].map(async ([name, button]) => {
+            let available = false;
             try {
-                if (self[name] && await self[name].availability() !== 'unavailable') button.style.display = 'inline-block';
+                const options = name === 'Summarizer' ? { type: 'tldr', format: 'plain-text' }
+                    : name === 'Rewriter' ? { tone: 'as-is', format: 'plain-text', length: 'as-is' } : {};
+                if (self[name]) available = ['available', 'downloadable', 'downloading'].includes(await self[name].availability(options));
             } catch (_) { /* Built-in AI availability varies by browser and device. */ }
-        }
-        document.getElementById('translateBtn').hidden = !(self.Translator && self.LanguageDetector);
+            button.style.display = available ? 'inline-block' : 'none';
+            if (name === 'LanguageDetector') document.getElementById('translateBtn').hidden = !(self.Translator && available);
+        }));
     }
 
     aiMonitor() {
         return { monitor: monitor => monitor.addEventListener('downloadprogress', event => {
             this.showStatus(`Downloading browser language model: ${Math.round(event.loaded * 100)}%`, 'info');
         }) };
+    }
+
+    checkAIText(result, action) {
+        if (typeof result !== 'string' || !result.trim()) throw new Error(`No ${action} was returned. Your text has been kept.`);
+        if (/^Model not available in Chromium(?:\r?\n|$)/.test(result.trim())) {
+            throw new Error('This browser has no local AI model. Your text has been kept. Use a browser with on-device AI available.');
+        }
+        return result;
     }
 
     async translateText() {
@@ -289,7 +301,7 @@ class TTSApp {
             if (options.sourceLanguage === options.targetLanguage) { this.showStatus('The text already matches the selected language.', 'info'); return; }
             if (await Translator.availability(options) === 'unavailable') throw new Error('This browser does not support that language pair');
             translator = await Translator.create({ ...options, ...this.aiMonitor() });
-            const translated = await translator.translate(text);
+            const translated = this.checkAIText(await translator.translate(text), 'translation');
             if (this.textInput.value.trim() !== text) throw new Error('Text changed during translation. Try again with the current text.');
             this.textInput.value = translated;
             this.updateCharCount();
@@ -309,7 +321,7 @@ class TTSApp {
                 this.chromeAI.summarizer = await Summarizer.create({ type: 'tldr', format: 'plain-text', ...this.aiMonitor() });
             }
             
-            const summary = await this.chromeAI.summarizer.summarize(text);
+            const summary = this.checkAIText(await this.chromeAI.summarizer.summarize(text), 'summary');
             if (this.textInput.value.trim() !== text) throw new Error('Text changed during summarization. Try again with the current text.');
             this.textInput.value = summary;
             this.updateCharCount();
@@ -334,6 +346,7 @@ class TTSApp {
             
             const results = await this.chromeAI.detector.detect(text);
             if (this.textInput.value.trim() !== text) return;
+            if (!results?.length) throw new Error('Could not detect the language. Try a longer sample.');
             if (results && results.length > 0) {
                 const topLanguage = results[0];
                 const langCode = topLanguage.detectedLanguage;
@@ -351,7 +364,7 @@ class TTSApp {
             }
         } catch (error) {
             console.error('Language detection failed:', error);
-            this.showStatus('Failed to detect language', 'error');
+            this.showStatus(error.message || 'Failed to detect language', 'error');
         }
     }
 
@@ -363,12 +376,12 @@ class TTSApp {
             this.showStatus('Improving text with AI...', 'info');
             
             writer = await Rewriter.create({ ...this.aiMonitor(),
-                tone: 'neutral',
+                tone: 'as-is',
                 format: 'plain-text',
                 length: 'as-is'
             });
             
-            const improved = await writer.rewrite(text);
+            const improved = this.checkAIText(await writer.rewrite(text), 'rewrite');
             if (this.textInput.value.trim() !== text) throw new Error('Text changed during rewriting. Try again with the current text.');
             this.textInput.value = improved;
             this.updateCharCount();
