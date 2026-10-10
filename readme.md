@@ -13,7 +13,8 @@ Turn text into speech in your browser. Choose local AI voices, clone a reference
 
 | Engine | Runs in | Best fit |
 | --- | --- | --- |
-| Kokoro | Browser CPU or WebGPU | 28 US/British English voices; compact Q8 or full-quality FP32 |
+| Kokoro | Browser CPU or WebGPU | 28 US/British English voices plus eight blends; compact Q8 or full-quality FP32 |
+| Chatterbox | Browser CPU or WebGPU | Expressive English speech and reference-voice cloning; roughly 1.5 GB download |
 | Kitten 0.8 | Browser CPU | Eight English voices; Nano (25 MB), Micro (41 MB), or Mini (80 MB) |
 | Supertonic 3 | Browser CPU or WebGPU | Ten voices, 31 languages, adjustable generation steps |
 | Pocket TTS | Browser CPU | Built-in voices and local reference-voice cloning; six language bundles |
@@ -28,6 +29,10 @@ Turn text into speech in your browser. Choose local AI voices, clone a reference
 
 Kokoro's automatic mode uses FP32 on WebGPU and Q8 on CPU. Smaller models reduce downloads but are not necessarily faster on every GPU. Choose **CPU** if GPU initialization fails. Supertonic defaults to CPU in automatic mode. Sizes exclude runtime and voice files.
 
+Kokoro blends combine the two named voices equally: for example, **Heart + Bella blend**. The original voices remain available. Kokoro model and voice assets use Apache-2.0; Chatterbox model and default reference use MIT.
+
+Choose **Chatterbox** for expression controls or to match a reference voice. It needs a desktop with room for the larger model; preparation and CPU generation can take several minutes. Try **WebGPU** for faster generation. Choose Subtle, Natural, Expressive or Dramatic under **Expression**, and adjust playback speed in the player.
+
 Choose **Start playback > As audio arrives** beside Generate to hear the first chunk while the rest is generated. This is selected for new users; saved playback preferences are preserved. Slower devices may pause between chunks. Choose complete-recording playback for uninterrupted listening. The download contains every generated chunk.
 
 The display beside Generate reports the actual CPU or GPU after the model loads and updates generation speed as chunks finish. **2x real time** means ten seconds of audio generated in five seconds. This rate excludes model loading and added pauses; the first-chunk time includes loading. Playback has a short silent lead-in to give the audio output time to start; exported audio and caption timestamps are unchanged.
@@ -40,13 +45,13 @@ Choose **Mobile / low latency** for Kitten Nano and early playback, or **Quality
 
 Open **Use with an AI assistant** to copy Markdown instructions, your current voice settings, or JavaScript and CLI examples into your coding agent. Agents can navigate the labelled controls or call `window.ttsRocks` inside the page.
 
-The [CLI helper](tts-rocks.mjs) uses the website through Playwright to save WAV audio, VTT captions and JSON timing metadata, including named batches for video narration. Kokoro, Kitten 0.8 and Supertonic support direct calls. Models stay in the browser cache; no separate TTS engine installation is needed. See the [automation guide](automation.md) for setup and examples.
+The [CLI helper](tts-rocks.mjs) uses the website through Playwright to save WAV audio, VTT captions and JSON timing metadata, including named batches for video narration. Kokoro, Kitten 0.8, Supertonic and Chatterbox support direct calls. Models stay in the browser cache; no separate TTS engine installation is needed. See the [automation guide](automation.md) for setup and examples.
 
 ## Clone a voice locally
 
-Select **Pocket TTS**, choose English, French, German, Italian, Portuguese or Spanish, then upload a clear recording of your voice or one you have permission to use. A 5-10 second sample works well; the first 10 seconds are used. Leave the reference empty to use a built-in voice.
+Select **Chatterbox** for English expression controls, or **Pocket TTS** for a smaller model with English, French, German, Italian, Portuguese and Spanish bundles. Upload a clear recording of your voice or one you have permission to use. A 5-10 second sample works well; the first 10 seconds are used. Leave the reference empty to use a built-in voice.
 
-The reference is encoded in a browser worker and is not uploaded. The selected recording lasts only for the current page session. English needs approximately 125 MB of model downloads, plus approximately 21 MB for the cloning encoder. Other language bundles can be larger. Use a desktop browser if your device runs out of memory.
+The reference is encoded in a browser worker and is not uploaded. The selected recording lasts only for the current page session. Pocket English needs approximately 125 MB of model downloads, plus approximately 21 MB for the cloning encoder. Other language bundles can be larger. Chatterbox downloads approximately 1.5 GB, including its cloning encoder. Use a desktop browser if your device runs out of memory.
 
 The same reference is reused for subsequent recordings. **Clear reference** removes the selected file and releases its encoded voice from memory.
 

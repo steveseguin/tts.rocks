@@ -14,9 +14,21 @@ eSpeak NG (GPL-3.0; see espeak-ng-LICENSE).
 Phonemizer source: https://github.com/xenova/phonemizer.js
 eSpeak NG source: https://github.com/espeak-ng/espeak-ng
 
+chatterbox-runtime.js is a separate, on-demand bundle of Transformers.js
+4.3.1 (Apache-2.0), ONNX Runtime Web 1.30.0 (MIT), Tokenizers.js 0.2.0
+(Apache-2.0) and Jinja 0.5.10 (MIT), with the Chatterbox model registration.
+Their licenses accompany this distribution.
+Chatterbox model and default reference voice: Resemble AI / ONNX Community,
+MIT. See chatterbox-LICENSE and the model card:
+https://huggingface.co/onnx-community/chatterbox-ONNX
+Snapshot: 3cab09af388d3f02bba43443fce88c1f4525ac43
+https://github.com/resemble-ai/chatterbox
+
 Kokoro model and voice assets: hexgrad / ONNX Community, Apache-2.0.
 https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX
 Model snapshot: 1939ad2a8e416c0acfeecc08a694d14ef25f2231
+Kokoro blend presets mix the two named Apache-2.0 voice tables in equal
+proportions. They are voice combinations, not additional trained models.
 
 MusicGen Small model: Meta, CC BY-NC 4.0 (non-commercial).
 ONNX conversion: Xenova, https://huggingface.co/Xenova/musicgen-small

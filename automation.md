@@ -15,7 +15,7 @@ This route supports all studio engines. **Browser Native** speaks but cannot exp
 
 ## Call functions inside the page
 
-`window.ttsRocks` is the public browser API, version `1.0`. It supports **kokoro**, **kitten-v08**, and **supertonic**. Calls run inside the loaded TTS.Rocks page, such as through `page.evaluate()` in Playwright. They do not run directly in a Node shell. Generation uses the same worker as the studio and does not play audio or change your saved voice settings.
+`window.ttsRocks` is the public browser API, version `1.1`. It supports **kokoro**, **kitten-v08**, **supertonic**, and **chatterbox**. Calls run inside the loaded TTS.Rocks page, such as through `page.evaluate()` in Playwright. They do not run directly in a Node shell. Generation uses the same worker as the studio and does not play audio or change your saved voice settings.
 
 ```js
 await ttsRocks.ready();
@@ -58,19 +58,38 @@ Unknown options and invalid values are rejected. Supply text or speaker turns, n
 | Option | Values / default |
 | --- | --- |
 | `text` | Nonempty text, up to 5000 characters |
-| `engine` | `kokoro` (default), `kitten-v08`, `supertonic` |
-| `voice` | ID from `listVoices`; defaults to `af_aoede`, `Bella`, or `F1`, respectively |
-| `language` | `en-US` by default; Kokoro and Kitten are English; Supertonic supports languages listed by `listVoices` |
-| `speed` | Number from 0.5 to 2; default 1 |
+| `engine` | `kokoro` (default), `kitten-v08`, `supertonic`, `chatterbox` |
+| `voice` | ID from `listVoices`; defaults to `af_aoede`, `Bella`, `F1`, or `default`, respectively |
+| `language` | `en-US` by default; Kokoro, Kitten and Chatterbox are English; Supertonic supports languages listed by `listVoices` |
+| `speed` | Number from 0.5 to 2; default 1; Chatterbox requires 1 |
 | `device` | `wasm` (CPU, default), `auto`, `webgpu`; Kitten always uses CPU |
 | `quality` | Kokoro `q8` (default), `auto`, `fp32`, `fp16`; FP16 requires compatible WebGPU |
 | `model` | Kitten `nano` (default), `micro`, `mini` |
 | `steps` | Supertonic integer from 1 to 10; default 5 |
 | `pauseMs` | Added gap between text chunks, 0 to 5000; default 0 |
-| `chunkSize` | Integer from 60 to 240 characters; default 240 |
+| `chunkSize` | Integer from 60 to 240 characters; default 240; Chatterbox caps chunks at 180 |
 | `powerPreference` | `default`, `low-power`, `high-performance` |
-| `turns` | Up to 100 objects: `{speaker: "A", text: "Hello.", voice: "af_aoede"}`; speaker is A or B; combined text limit is 5000 characters |
+| `turns` | Kokoro, Kitten and Supertonic: up to 100 objects `{speaker: "A", text: "Hello.", voice: "af_aoede"}`; speaker is A or B; combined text limit is 5000 characters |
 | `turnPauseMs` | Gap between speaker turns, 0 to 5000; default 300 |
+| `exaggeration` | Chatterbox expression, 0 to 1.5; default 0.5 |
+| `referenceAudio` | Chatterbox only: an in-page audio Blob or File, under 20 MB and 3–30 seconds; the first 10 seconds are used |
+
+Kokoro's voice list includes eight presets with `blend` metadata identifying the two voices mixed equally. For example, use `voice: 'af_heart_bella'`. Model and voice assets are Apache-2.0.
+
+Chatterbox uses an MIT model and default voice, with approximately 1.5 GB of downloads. Use a desktop; preparation and CPU synthesis can take several minutes. Choose `device: 'webgpu'` on compatible hardware. It supports single-voice narration, with chunk timing captions. A speech-token limit error means the recording is incomplete; reduce `chunkSize` and retry.
+
+To clone a voice through Playwright, select a local file and pass the File inside the page:
+
+```js
+await page.locator('#referenceAudio').setInputFiles('my-voice.wav');
+const result = await page.evaluate(() => ttsRocks.generate({
+  engine: 'chatterbox', device: 'webgpu', voice: 'reference',
+  text: 'Welcome to this tutorial.', exaggeration: 0.5,
+  referenceAudio: document.getElementById('referenceAudio').files[0]
+}));
+```
+
+Use your own voice or one you have permission to use. The recording is decoded locally and is never uploaded. `voice: 'reference'` requires the file; omit both voice and referenceAudio to use Chatterbox's default voice. Copied instructions exclude recordings, so select the file again in the agent's browser or pass `--reference` to the CLI.
 
 Results contain `id`, `engine`, `voice` (default voice for the request), `language`, `duration` in seconds, `sampleRate`, `channels`, `format`, `bytes`, actual `device` and model `quality`, and `cues`. Cue starts and ends use generated audio sample positions, including added gaps. Narration cues follow generated text chunks; dialogue cues follow speaker turns. They are not word alignment or speech-recognition validation. Use a separate alignment tool when your video requires word-level highlighting.
 
@@ -100,6 +119,14 @@ npm install --no-save playwright
 npx playwright install chromium
 node tts-rocks.mjs --input narration.txt --voice af_aoede --output narration.wav
 ```
+
+For expressive narration with your reference voice:
+
+```sh
+node tts-rocks.mjs --input narration.txt --engine chatterbox --device webgpu --reference my-voice.wav --exaggeration 0.5 --output narration.wav
+```
+
+Omit `--reference` for the default Chatterbox voice. Use `--device wasm` for CPU and increase `--timeout` for long recordings or slower machines. Chatterbox GPU requests use Chromium's full headless browser. A batch shares the reference selected with `--reference`.
 
 The helper opens the website in headless Chromium, caches models in `~/.cache/tts-rocks/browser`, and saves WAV audio, VTT captions and JSON metadata beside the requested output. Use `--profile PATH` for another dedicated profile; do not use your daily browser profile or run two helpers with the same profile at once. Models are still loaded into memory at browser startup. CPU is the default for compatibility; use `--device auto` to allow available GPU acceleration.
 

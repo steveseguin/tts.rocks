@@ -3,7 +3,7 @@ import { StreamPlayer } from './stream-player.js';
 import { NeuralClient } from './neural-client.js';
 import { chunksToWav } from './audio-utils.js';
 import { clearModelCache } from './model-assets.js';
-import { referenceDuration } from './reference-audio.js';
+import { referenceDuration, chatterboxReference } from './reference-audio.js';
 import { parseDialogue, dialogueVtt } from './dialogue.js';
 import { mixPodcast } from './audio-mix.js';
 import { installAutomation } from './automation.js';
@@ -141,7 +141,7 @@ class TTSApp {
         // Engine selection
         this.engineSelect.addEventListener('change', () => this.onEngineChange());
         this.voiceSelect.addEventListener('change', () => this.saveSettings());
-        for (const id of ['computeSelect', 'kokoroQuality', 'kittenModel', 'supertonicSteps', 'sentencePause', 'streamSpeech']) {
+        for (const id of ['computeSelect', 'kokoroQuality', 'kittenModel', 'supertonicSteps', 'sentencePause', 'streamSpeech', 'chatterboxExaggeration']) {
             document.getElementById(id).addEventListener('change', () => {
                 this.saveSettings();
                 if (!this.isGenerating && ['computeSelect', 'kokoroQuality', 'kittenModel'].includes(id)) { this.computeMode = null; this.updateComputeModeDisplay(); }
@@ -420,6 +420,7 @@ class TTSApp {
     async onEngineChange() {
         this.stopGeneration();
         const engine = this.engineSelect.value || 'kokoro';
+        if (engine !== 'chatterbox' && this.neural.workerKind?.startsWith('chatterbox:')) this.neural.cancel();
         if (engine !== 'pocket' && this.pocket) { this.pocket.destroy(); this.pocket = null; }
         if (engine === 'pocket') this.neural.cancel();
         this.currentEngine = engine;
@@ -429,7 +430,7 @@ class TTSApp {
         this.updateStudioControls();
         this.computeMode = null;
         this.voiceSelect.replaceChildren();
-        const local = ['kokoro', 'kitten-v08', 'supertonic'].includes(engine);
+        const local = ['kokoro', 'kitten-v08', 'supertonic', 'chatterbox'].includes(engine);
         document.getElementById('engineSettings').classList.toggle('has-local-model', local);
         this.apiKeySection.style.display = ['elevenlabs', 'openai', 'google'].includes(engine) ? 'block' : 'none';
         for (const id of ['stabilityGroup', 'similarityGroup']) document.getElementById(id).style.display = engine === 'elevenlabs' ? 'block' : 'none';
@@ -437,7 +438,9 @@ class TTSApp {
         document.getElementById('kokoroQualityGroup').hidden = engine !== 'kokoro';
         document.getElementById('kittenModelGroup').hidden = engine !== 'kitten-v08';
         document.getElementById('supertonicStepsGroup').hidden = engine !== 'supertonic';
-        document.getElementById('cloneSettings').hidden = engine !== 'pocket';
+        document.getElementById('cloneSettings').hidden = !['pocket', 'chatterbox'].includes(engine);
+        document.getElementById('chatterboxSettings').hidden = engine !== 'chatterbox';
+        document.getElementById('kokoroVoiceHint').hidden = engine !== 'kokoro';
         document.getElementById('musicSettings').hidden = engine !== 'musicgen';
         this.voiceSelect.disabled = engine === 'musicgen';
         this.languageSelect.disabled = engine === 'musicgen';
@@ -446,12 +449,13 @@ class TTSApp {
         document.getElementById('modelStorageGroup').hidden = !(local || engine === 'pocket' || engine === 'musicgen');
         document.getElementById('computeSelect').disabled = engine === 'kitten-v08';
         this.pitchSlider.disabled = !['browser', 'espeak', 'google'].includes(engine);
-        this.speedSlider.disabled = ['pocket', 'musicgen'].includes(engine);
+        this.speedSlider.disabled = ['pocket', 'musicgen', 'chatterbox'].includes(engine);
         this.updateLanguageOptions();
         document.getElementById('refreshVoices').hidden = !['elevenlabs', 'google'].includes(engine);
         this.apiKeyInput.value = this.sessionKeys[engine] ?? this.readStorage(`tts_${engine}_key`) ?? '';
         const descriptions = {
-            kokoro: 'Local English voices, including US and British accents. Downloads on first Generate; cached for reuse.',
+            kokoro: '28 US and British English voices plus eight blends. Downloads on first Generate; cached for reuse.',
+            chatterbox: 'Expressive English speech and local voice cloning. Use the default voice or upload your reference below. Downloads on first use; no account needed.',
             'kitten-v08': 'Eight English voices. Choose Nano, Micro or Mini to trade download size for model capacity. Runs locally on CPU.',
             supertonic: '31 languages, ten voices, adjustable generation steps. About 400 MB on first use. Runs locally; upstream models are archived.',
             pocket: 'Experimental local voice cloning and built-in voices. About 125 MB for English, plus 21 MB when cloning. Larger language bundles may need more memory. Speed is controlled in the player.',
@@ -474,6 +478,7 @@ class TTSApp {
                     break;
                 case 'kitten-v08': this.setVoices(['Bella', 'Jasper', 'Luna', 'Bruno', 'Rosie', 'Hugo', 'Kiki', 'Leo'].map(name => [name, name])); break;
                 case 'supertonic': this.setVoices(['F1','F2','F3','F4','F5','M1','M2','M3','M4','M5'].map(name => [name, `${name[0] === 'F' ? 'Female' : 'Male'} ${name.slice(1)}`])); break;
+                case 'chatterbox': this.setVoices([['default', 'Default voice (or uploaded reference)']]); break;
                 case 'pocket': this.setVoices([['alba', 'Alba'], ['marius', 'Marius'], ['javert', 'Javert'], ['jean', 'Jean'], ['fantine', 'Fantine'], ['cosette', 'Cosette'], ['eponine', 'Eponine'], ['azelma', 'Azelma']]); break;
                 case 'browser': this.loadBrowserVoices(); break;
                 case 'piper': this.populatePiperVoices(); break;
@@ -513,8 +518,8 @@ class TTSApp {
         document.getElementById('podcastSettings').hidden = !dialogue;
         document.getElementById('dialogueHint').hidden = !dialogue;
         this.voiceSelect.labels[0].textContent = dialogue ? 'Speaker A' : 'Voice';
-        document.getElementById('gpuPreferenceGroup').hidden = !['kokoro', 'supertonic'].includes(this.currentEngine);
-        document.getElementById('prepareModel').hidden = !['kokoro', 'kitten-v08', 'supertonic', 'musicgen'].includes(this.currentEngine);
+        document.getElementById('gpuPreferenceGroup').hidden = !['kokoro', 'supertonic', 'chatterbox'].includes(this.currentEngine);
+        document.getElementById('prepareModel').hidden = !['kokoro', 'kitten-v08', 'supertonic', 'musicgen', 'chatterbox'].includes(this.currentEngine);
         document.getElementById('prepareHint').hidden = document.getElementById('prepareModel').hidden;
         document.getElementById('deliverySettings').hidden = this.currentEngine !== 'openai';
         this.syncPodcastVoices();
@@ -531,7 +536,8 @@ class TTSApp {
 
     neuralOptions(text, streaming = false) {
         return { engine: this.currentEngine, text, stream: streaming, voice: this.voiceSelect.value, language: this.languageSelect.value,
-            speed: Number(this.speedSlider.value), device: document.getElementById('computeSelect').value,
+            speed: this.currentEngine === 'chatterbox' ? 1 : Number(this.speedSlider.value), device: document.getElementById('computeSelect').value,
+            ...(this.currentEngine === 'chatterbox' ? { exaggeration: Number(document.getElementById('chatterboxExaggeration').value) } : {}),
             powerPreference: document.getElementById('gpuPreference').value,
             chunkSize: Number(document.getElementById('chunkSize').value),
             quality: document.getElementById('kokoroQuality').value, model: document.getElementById('kittenModel').value,
@@ -539,7 +545,7 @@ class TTSApp {
     }
 
     async prepareModel() {
-        if (this.isGenerating || this.clearingDownloads || !['kokoro', 'kitten-v08', 'supertonic', 'musicgen'].includes(this.currentEngine)) return;
+        if (this.isGenerating || this.clearingDownloads || !['kokoro', 'kitten-v08', 'supertonic', 'musicgen', 'chatterbox'].includes(this.currentEngine)) return;
         this.stopGeneration();
         const id = ++this.generationId;
         this.isGenerating = true;
@@ -872,14 +878,14 @@ class TTSApp {
 
     updateLanguageOptions() {
         const engine = this.currentEngine;
-        const supported = ['kokoro', 'kitten', 'kitten-v08', 'piper'].includes(engine) ? ['en'] : engine === 'pocket' ? ['en','fr','de','it','pt','es'] : engine === 'supertonic' ? ['en','ko','ja','ar','bg','cs','da','de','el','es','et','fi','fr','hi','hr','hu','id','it','lt','lv','nl','pl','pt','ro','ru','sk','sl','sv','tr','uk','vi'] : null;
+        const supported = ['kokoro', 'kitten', 'kitten-v08', 'piper', 'chatterbox'].includes(engine) ? ['en'] : engine === 'pocket' ? ['en','fr','de','it','pt','es'] : engine === 'supertonic' ? ['en','ko','ja','ar','bg','cs','da','de','el','es','et','fi','fr','hi','hr','hu','id','it','lt','lv','nl','pl','pt','ro','ru','sk','sl','sv','tr','uk','vi'] : null;
         for (const option of this.languageSelect.options) option.disabled = Boolean(supported && !supported.includes(option.value.split('-')[0]));
         if (this.languageSelect.selectedOptions[0]?.disabled) this.languageSelect.value = 'en-US';
     }
 
     onLanguageChange() {
         this.updateLanguageOptions();
-        if (['kokoro', 'kitten-v08', 'supertonic'].includes(this.currentEngine)) {
+        if (['kokoro', 'kitten-v08', 'supertonic', 'chatterbox'].includes(this.currentEngine)) {
             const saved = this.savedVoice();
             if (Array.from(this.voiceSelect.options).some(option => option.value === saved)) this.voiceSelect.value = saved;
             this.syncPodcastVoices();
@@ -905,7 +911,7 @@ class TTSApp {
         const display = document.getElementById('computeModeDisplay');
         const engine = this.currentEngine;
         const device = document.getElementById('computeSelect').value;
-        display.textContent = this.computeMode || (['kokoro', 'supertonic'].includes(engine)
+        display.textContent = this.computeMode || (['kokoro', 'supertonic', 'chatterbox'].includes(engine)
             ? (device === 'auto' ? 'Automatic: actual CPU or GPU shown when the model is ready.' : device === 'webgpu' ? 'GPU requested: waiting for the model to load.' : 'CPU selected: waiting for the model to load.')
             : ['kitten-v08', 'kitten', 'piper', 'espeak', 'pocket', 'musicgen'].includes(engine) ? 'CPU (local processing)'
             : engine === 'browser' ? 'Browser / operating system voice' : 'Cloud provider (remote processing)');
@@ -995,7 +1001,7 @@ class TTSApp {
         this.requestController = new AbortController();
         const music = turns && this.backgroundMusic;
         const mixOptions = { volume: Number(document.getElementById('musicVolume').value), intro: Number(document.getElementById('musicIntro').value), outro: Number(document.getElementById('musicOutro').value), signal: this.requestController.signal };
-        const streaming = !music && this.audioPlaybackSupported && ['kokoro', 'kitten-v08', 'supertonic', 'pocket'].includes(engine) && document.getElementById('streamSpeech').value === 'on';
+        const streaming = !music && this.audioPlaybackSupported && ['kokoro', 'kitten-v08', 'supertonic', 'pocket', 'chatterbox'].includes(engine) && document.getElementById('streamSpeech').value === 'on';
         const neuralOptions = { ...this.neuralOptions(text, streaming), turns, turnPauseMs: Number(document.getElementById('turnPause').value) };
         const requestedAt = performance.now();
         this.computeMode = null;
@@ -1015,7 +1021,12 @@ class TTSApp {
             document.getElementById('pauseStream').textContent = 'Pause live playback';
             document.getElementById('pauseStream').disabled = false;
             let blob;
-            if (['kokoro', 'kitten-v08', 'supertonic', 'musicgen'].includes(engine)) {
+            if (engine === 'chatterbox') {
+                this.showInlineProgress('Checking the reference voice locally…');
+                neuralOptions.reference = await chatterboxReference(document.getElementById('referenceAudio').files[0], this.requestController.signal);
+                if (id !== this.generationId) return;
+            }
+            if (['kokoro', 'kitten-v08', 'supertonic', 'musicgen', 'chatterbox'].includes(engine)) {
                 const result = await this.neural.request('generate', neuralOptions, progress => {
                     if (id !== this.generationId) return;
                     if (progress.duration > 0) firstAudioAt ??= performance.now();
@@ -1176,6 +1187,7 @@ class TTSApp {
     }
 
     clearReferenceVoice() {
+        if (this.currentEngine === 'chatterbox' || this.neural.workerKind?.startsWith('chatterbox:')) { this.stopGeneration(); this.neural.cancel(); }
         if (this.currentEngine === 'pocket' && this.isGenerating) this.stopGeneration();
         // Termination also removes the encoded reference and conditioned state from memory.
         if (this.pocket) { this.pocket.destroy(); this.pocket = null; }
@@ -1184,7 +1196,7 @@ class TTSApp {
     async clearDownloads() {
         if (this.clearingDownloads) return;
         const engine = this.currentEngine;
-        if (!['kokoro', 'kitten-v08', 'supertonic', 'pocket', 'musicgen'].includes(engine)) return;
+        if (!['kokoro', 'kitten-v08', 'supertonic', 'pocket', 'musicgen', 'chatterbox'].includes(engine)) return;
         this.stopGeneration();
         if (engine === 'pocket') this.clearReferenceVoice();
         else this.neural.cancel();
@@ -1429,7 +1441,7 @@ class TTSApp {
             podcastVoices: this.podcastVoices,
             speed: this.speedSlider.value, pitch: this.pitchSlider.value, stability: this.stabilitySlider.value,
             similarity: this.similaritySlider.value, text: this.textInput.value };
-        for (const id of ['computeSelect', 'kokoroQuality', 'kittenModel', 'supertonicSteps', 'sentencePause', 'streamSpeech', 'scriptMode', 'turnPause', 'gpuPreference', 'musicSeconds', 'chunkSize', 'musicVolume', 'musicIntro', 'musicOutro']) this.settings[id] = document.getElementById(id).value;
+        for (const id of ['computeSelect', 'kokoroQuality', 'kittenModel', 'supertonicSteps', 'sentencePause', 'streamSpeech', 'chatterboxExaggeration', 'scriptMode', 'turnPause', 'gpuPreference', 'musicSeconds', 'chunkSize', 'musicVolume', 'musicIntro', 'musicOutro']) this.settings[id] = document.getElementById(id).value;
         try { localStorage.setItem('tts_settings', JSON.stringify(this.settings)); } catch (_) { /* Storage is optional. */ }
     }
 
@@ -1455,7 +1467,7 @@ class TTSApp {
         for (const [name, control, label] of [['speed', this.speedSlider, this.speedValue], ['pitch', this.pitchSlider, this.pitchValue], ['stability', this.stabilitySlider, this.stabilityValue], ['similarity', this.similaritySlider, this.similarityValue]]) {
             if (settings[name] != null) { control.value = settings[name]; label.textContent = settings[name] + (name === 'speed' ? 'x' : ''); }
         }
-        for (const id of ['computeSelect', 'kokoroQuality', 'kittenModel', 'supertonicSteps', 'sentencePause', 'streamSpeech', 'scriptMode', 'turnPause', 'gpuPreference', 'musicSeconds', 'chunkSize', 'musicVolume', 'musicIntro', 'musicOutro']) {
+        for (const id of ['computeSelect', 'kokoroQuality', 'kittenModel', 'supertonicSteps', 'sentencePause', 'streamSpeech', 'chatterboxExaggeration', 'scriptMode', 'turnPause', 'gpuPreference', 'musicSeconds', 'chunkSize', 'musicVolume', 'musicIntro', 'musicOutro']) {
             const control = document.getElementById(id);
             if (settings[id] && Array.from(control.options).some(option => option.value === settings[id])) control.value = settings[id];
         }

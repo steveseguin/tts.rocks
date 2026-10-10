@@ -202,5 +202,77 @@
     "traits": "🚹",
     "targetQuality": "B",
     "overallGrade": "C"
+  },
+  "af_heart_bella": {
+    "name": "Heart + Bella blend",
+    "language": "en-us",
+    "gender": "Female",
+    "blend": {
+      "af_heart": 0.5,
+      "af_bella": 0.5
+    }
+  },
+  "af_heart_nicole": {
+    "name": "Heart + Nicole blend",
+    "language": "en-us",
+    "gender": "Female",
+    "blend": {
+      "af_heart": 0.5,
+      "af_nicole": 0.5
+    }
+  },
+  "af_heart_aoede": {
+    "name": "Heart + Aoede blend",
+    "language": "en-us",
+    "gender": "Female",
+    "blend": {
+      "af_heart": 0.5,
+      "af_aoede": 0.5
+    }
+  },
+  "af_bella_sarah": {
+    "name": "Bella + Sarah blend",
+    "language": "en-us",
+    "gender": "Female",
+    "blend": {
+      "af_bella": 0.5,
+      "af_sarah": 0.5
+    }
+  },
+  "am_michael_fenrir": {
+    "name": "Michael + Fenrir blend",
+    "language": "en-us",
+    "gender": "Male",
+    "blend": {
+      "am_michael": 0.5,
+      "am_fenrir": 0.5
+    }
+  },
+  "am_adam_eric": {
+    "name": "Adam + Eric blend",
+    "language": "en-us",
+    "gender": "Male",
+    "blend": {
+      "am_adam": 0.5,
+      "am_eric": 0.5
+    }
+  },
+  "bf_emma_isabella": {
+    "name": "Emma + Isabella blend",
+    "language": "en-gb",
+    "gender": "Female",
+    "blend": {
+      "bf_emma": 0.5,
+      "bf_isabella": 0.5
+    }
+  },
+  "bm_george_fable": {
+    "name": "George + Fable blend",
+    "language": "en-gb",
+    "gender": "Male",
+    "blend": {
+      "bm_george": 0.5,
+      "bm_fable": 0.5
+    }
   }
 }

@@ -17,7 +17,9 @@ Usage:
   node tts-rocks.mjs --voices --engine kokoro
 
 Options:
-  --engine kokoro|kitten-v08|supertonic   Default: kokoro
+  --engine kokoro|kitten-v08|supertonic|chatterbox   Default: kokoro
+  --reference PATH                     Local recording for Chatterbox cloning
+  --exaggeration NUMBER                Chatterbox expression, 0 to 1.5
   --voice ID                           See --voices
   --speed NUMBER                       0.5 to 2
   --language CODE                      Default: en-US
@@ -42,7 +44,7 @@ let context;
 try {
     const args = {};
     const booleans = ['help', 'voices', 'force'];
-    const values = ['input', 'request', 'batch', 'output', 'output-dir', 'engine', 'voice', 'speed', 'language', 'device', 'quality', 'model', 'site', 'profile', 'timeout'];
+    const values = ['input', 'request', 'batch', 'output', 'output-dir', 'engine', 'voice', 'speed', 'language', 'device', 'quality', 'model', 'site', 'profile', 'timeout', 'reference', 'exaggeration'];
     for (let index = 2; index < process.argv.length; index++) {
         const arg = process.argv[index];
         if (!arg.startsWith('--')) throw new Error(`Unexpected argument: ${arg}. Use --help.`);
@@ -61,7 +63,7 @@ try {
     const site = new URL(args.site || 'https://tts.rocks/');
     if (!['http:', 'https:'].includes(site.protocol) || site.username || site.password) throw new Error('--site must be an HTTP(S) website URL without credentials.');
     const overrides = {};
-    for (const key of ['engine', 'voice', 'speed', 'language', 'device', 'quality', 'model']) if (args[key] !== undefined) overrides[key] = key === 'speed' ? Number(args[key]) : args[key];
+    for (const key of ['engine', 'voice', 'speed', 'language', 'device', 'quality', 'model', 'exaggeration']) if (args[key] !== undefined) overrides[key] = ['speed', 'exaggeration'].includes(key) ? Number(args[key]) : args[key];
     const sources = ['input', 'request', 'batch'].filter(key => args[key]);
     if (args.voices ? sources.length > 0 : sources.length !== 1) throw new Error('Choose exactly one of --input, --request or --batch; or use --voices by itself.');
     if (args.batch && (args.output || !args['output-dir'])) throw new Error('Use --output-dir with --batch (not --output).');
@@ -80,6 +82,10 @@ try {
             ids.add(id.toLowerCase());
             return { id, options: { ...options, ...overrides }, output: resolve(args['output-dir'], id + '.wav') };
         });
+    }
+    if (args.reference) {
+        if (!jobs.length || jobs.some(job => job.options.engine !== 'chatterbox')) throw new Error('--reference requires --engine chatterbox for every recording.');
+        await access(resolve(args.reference));
     }
     const files = jobs.flatMap(job => {
         if (!job.output.toLowerCase().endsWith('.wav')) throw new Error('--output must end in .wav.');
@@ -101,7 +107,8 @@ try {
         try { playwright = createRequire(join(process.cwd(), 'package.json'))('playwright'); }
         catch (_) { throw new Error('Install browser automation first: npm install --no-save playwright ; then npx playwright install chromium. No TTS package is needed.'); }
     }
-    context = await playwright.chromium.launchPersistentContext(resolve(args.profile || join(homedir(), '.cache', 'tts-rocks', 'browser')), { headless: true, acceptDownloads: true });
+    const chatterboxGPU = jobs.some(job => job.options.engine === 'chatterbox' && ['auto', 'webgpu'].includes(job.options.device));
+    context = await playwright.chromium.launchPersistentContext(resolve(args.profile || join(homedir(), '.cache', 'tts-rocks', 'browser')), { headless: true, acceptDownloads: true, ...(chatterboxGPU ? { channel: 'chromium' } : {}) });
     const page = context.pages()[0] || await context.newPage();
     page.setDefaultTimeout(60000);
     const response = await page.goto(site.href, { waitUntil: 'domcontentloaded' });
@@ -126,17 +133,19 @@ try {
             await mkdir(dirname(target), { recursive: true });
             await copyFile(source, target, args.force ? 0 : constants.COPYFILE_EXCL);
         }
+        if (args.reference) await page.locator('#referenceAudio').setInputFiles(resolve(args.reference));
         for (const job of jobs) {
             console.error(`Generating ${job.id || basename(job.output)}…`);
-            const result = await page.evaluate(async ({ options, timeout }) => {
+            const result = await page.evaluate(async ({ options, timeout, reference }) => {
                 let timer;
                 try {
+                    if (reference) options.referenceAudio = document.getElementById('referenceAudio').files[0];
                     return await Promise.race([
                         ttsRocks.generate(options),
                         new Promise((_, reject) => { timer = setTimeout(() => { ttsRocks.cancel(); reject(new Error('Generation timed out. Increase --timeout or use a smaller section.')); }, timeout); })
                     ]);
                 } finally { clearTimeout(timer); }
-            }, { options: job.options, timeout });
+            }, { options: job.options, timeout, reference: Boolean(args.reference) });
             await download(result.id, job.output, 'wav');
             await download(result.id, job.base + '.vtt', 'vtt');
             await download(result.id, job.base + '.json', 'json');

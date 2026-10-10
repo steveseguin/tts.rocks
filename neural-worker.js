@@ -17,6 +17,7 @@ let device;
 let dtype;
 let busy = false;
 let kittenModels;
+let kokoroVoices;
 const styles = new Map();
 const supertonicBase = 'https://huggingface.co/supertone-oss-archive/supertonic-3/resolve/aafc6e32416a594460b32413efc49d7fe4ce6d46';
 
@@ -139,13 +140,41 @@ async function kitten(text, voice, speed) {
     }
 }
 
+async function kokoroBlend(inputIds, voice, speed) {
+    // Use the same tensor class as the loaded Kokoro tokenizer and model.
+    const Tensor = inputIds.constructor;
+    const row = 256 * Math.min(Math.max(inputIds.dims.at(-1) - 2, 0), 509);
+    const values = new Float32Array(256);
+    for (const [source, weight] of Object.entries(voice.blend)) {
+        if (!styles.has(source)) {
+            const url = `https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/1939ad2a8e416c0acfeecc08a694d14ef25f2231/voices/${source}.bin`;
+            const response = await cachedFetch(url);
+            const data = new Float32Array(await response.arrayBuffer());
+            if (data.length !== 510 * 256) throw new Error('The Kokoro voice download is incomplete. Clear its saved downloads and try again.');
+            styles.set(source, data);
+        }
+        const data = styles.get(source);
+        for (let i = 0; i < values.length; i++) values[i] += data[row + i] * weight;
+    }
+    const style = new Tensor('float32', values, [1, 256]);
+    const rate = new Tensor('float32', [speed], [1]);
+    let waveform;
+    try {
+        ({ waveform } = await instance.model({ input_ids: inputIds, style, speed: rate }));
+        return { audio: Float32Array.from(waveform.data), sampling_rate: 24000 };
+    } finally {
+        style.dispose(); rate.dispose(); waveform?.dispose();
+    }
+}
+
 self.onmessage = async ({ data: { id, type, options } }) => {
     if (busy) { self.postMessage({ id, error: 'A speech request is already running' }); return; }
     busy = true;
     const progress = data => self.postMessage({ id, type: 'progress', ...data }, data.chunk ? [data.chunk.buffer] : []);
     try {
         if (type === 'voices') {
-            self.postMessage({ id, result: new KokoroTTS(null, null).voices });
+            if (!kokoroVoices) kokoroVoices = await (await fetch(new URL('./thirdparty/neural/kokoro-voices.json', import.meta.url))).json();
+            self.postMessage({ id, result: kokoroVoices });
             return;
         }
         await initialize(options, progress);
@@ -194,6 +223,7 @@ self.onmessage = async ({ data: { id, type, options } }) => {
             const sentence = sentences[index];
             if (options.engine === 'kokoro') {
                 const voice = sentence.voice || 'af_aoede';
+                if (!kokoroVoices) kokoroVoices = await (await fetch(new URL('./thirdparty/neural/kokoro-voices.json', import.meta.url))).json();
                 const phonemes = await phonemizeKokoro(sentence.text, voice[0]);
                 const { input_ids } = instance.tokenizer(phonemes, { truncation: false });
                 if (input_ids.dims.at(-1) > 510) {
@@ -203,7 +233,9 @@ self.onmessage = async ({ data: { id, type, options } }) => {
                     index--;
                     continue;
                 }
-                audio = await instance.generate_from_ids(input_ids, { voice, speed: options.speed });
+                audio = kokoroVoices[voice]?.blend
+                    ? await kokoroBlend(input_ids, kokoroVoices[voice], options.speed)
+                    : await instance.generate_from_ids(input_ids, { voice, speed: options.speed });
             } else if (options.engine === 'kitten-v08') {
                 audio = await kitten(sentence.text, sentence.voice, options.speed);
             } else {

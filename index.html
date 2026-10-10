@@ -947,6 +947,7 @@
                             <label for="engineSelect">TTS Engine</label>
                             <select id="engineSelect" aria-describedby="engineDescription">
                                 <option value="kokoro">Kokoro (Local, High Quality)</option>
+                                <option value="chatterbox">Chatterbox (Local, Expressive / Cloning)</option>
                                 <option value="kitten-v08">Kitten 0.8 (Local, Compact)</option>
                                 <option value="supertonic">Supertonic 3 (Local, Multilingual)</option>
                                 <option value="pocket">Pocket TTS (Local, Voice Cloning)</option>
@@ -1003,6 +1004,16 @@
                                     <option value="10">Refined (10 steps)</option>
                                 </select>
                             </div>
+                            <div id="chatterboxSettings" hidden>
+                                <label for="chatterboxExaggeration">Expression</label>
+                                <select id="chatterboxExaggeration">
+                                    <option value="0.3">Subtle</option>
+                                    <option value="0.5" selected>Natural</option>
+                                    <option value="0.8">Expressive</option>
+                                    <option value="1.2">Dramatic</option>
+                                </select>
+                                <div class="api-key-hint">English · MIT model · about 1.5 GB. Use a desktop; preparation and CPU generation can take several minutes. Adjust speed in the player.</div>
+                            </div>
                         </div>
                         <div class="form-group" id="cloneSettings" hidden>
                             <label for="referenceAudio">Reference voice (optional)</label>
@@ -1031,6 +1042,7 @@
                             <select id="voiceSelect">
                                 <option value="">Select a voice...</option>
                             </select>
+                            <div id="kokoroVoiceHint" class="api-key-hint">28 voices plus eight blends. Blend names show the two voices mixed equally.</div>
                         </div>
 
                         <div class="form-group">
@@ -1275,7 +1287,7 @@ ttsRocks.download(audio.id, "narration.wav");</code></pre>
                 <a id="cnOpenCapture" class="btnlike secondary" href="#" target="_blank" rel="noopener" title="Microphone speech-to-text input">🎙️ Open Speech Input</a>
                 <a id="cnOpenManual" class="btnlike secondary" href="#" target="_blank" rel="noopener" title="Type to send text">⌨️ Open Manual Input</a>
             </div>
-        <div class="api-key-hint" style="margin-top:.5rem">Tip: configure engines and voices above; then click “Use current TTS settings”. Keys are embedded in the generated URL. Kitten 0.8, Supertonic and Pocket TTS are available in this studio; choose an existing overlay engine for Caption.Ninja.</div>
+        <div class="api-key-hint" style="margin-top:.5rem">Tip: configure engines and voices above; then click “Use current TTS settings”. Keys are embedded in the generated URL. Kitten 0.8, Supertonic, Chatterbox and Pocket TTS are available in this studio; choose an existing overlay engine for Caption.Ninja.</div>
 
           </details>
         </div>
@@ -1428,11 +1440,15 @@ ttsRocks.download(audio.id, "narration.wav");</code></pre>
         }
 
         document.getElementById('cnFromTTS').onclick = function(){
+            if (document.getElementById('engineSelect').value === 'kokoro' && window.ttsApp.voiceLists.kokoro?.[document.getElementById('voiceSelect').value]?.blend) {
+                window.ttsApp.showStatus('Kokoro blends work in this studio and the CLI. Choose an original Kokoro voice for Caption.Ninja.', 'info');
+                return;
+            }
             if (document.getElementById('engineSelect').value === 'elevenlabs' && document.getElementById('elevenlabsModel').value === 'eleven_v4') {
                 window.ttsApp.showStatus('Eleven v4 is available in this studio. Choose Flash v2.5 or another existing model for Caption.Ninja.', 'info');
                 return;
             }
-            if (['kitten-v08', 'supertonic', 'pocket', 'musicgen'].includes(document.getElementById('engineSelect').value)) {
+            if (['kitten-v08', 'supertonic', 'pocket', 'musicgen', 'chatterbox'].includes(document.getElementById('engineSelect').value)) {
                 window.ttsApp.showStatus('For Caption.Ninja, choose Kokoro, Piper, eSpeak, legacy Kitten, browser speech or an API engine.', 'info');
                 return;
             }

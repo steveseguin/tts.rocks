@@ -7,10 +7,14 @@ export class NeuralClient {
 
     request(type, options, onProgress) {
         const preference = options.powerPreference || 'default';
-        if (this.worker && this.powerPreference !== preference) this.cancel();
+        const workerKind = options.engine === 'chatterbox' ? `chatterbox:${options.device}` : 'neural';
+        if (this.worker && (this.powerPreference !== preference || this.workerKind !== workerKind)) this.cancel();
         this.powerPreference = preference;
+        this.workerKind = workerKind;
         if (!this.worker) {
-            this.worker = new Worker(new URL('./neural-worker.js', import.meta.url), { type: 'module' });
+            this.worker = options.engine === 'chatterbox'
+                ? new Worker(new URL('./chatterbox-worker.js', import.meta.url), { type: 'module' })
+                : new Worker(new URL('./neural-worker.js', import.meta.url), { type: 'module' });
             this.worker.onmessage = ({ data }) => {
                 const request = this.pending.get(data.id);
                 if (!request) return;
@@ -23,7 +27,10 @@ export class NeuralClient {
                     return;
                 }
                 this.pending.delete(data.id);
-                if (data.error) request.reject(new Error(data.error));
+                if (data.error) {
+                    request.reject(new Error(data.error));
+                    if (this.workerKind.startsWith('chatterbox:')) this.cancel();
+                }
                 else request.resolve(data.result);
             };
             this.worker.onerror = event => this.cancel(new Error(event.message || 'Speech worker failed to load'));
