@@ -4,6 +4,44 @@ Use [TTS.Rocks](https://tts.rocks/) to create and download narration for videos,
 
 Choose whichever route your tools support: labelled browser controls, functions inside the browser page, or the command-line helper. Local engines download models into the browser cache on first use; no Python or native TTS installation is required. Keep the browser profile to reuse downloads. This is browser computation, not a hosted HTTP speech API: fetching HTML alone cannot generate audio.
 
+## Run locally from a clone or ZIP
+
+Use this route when you have terminal access and want the app to run from your own files. Install Node.js 22.12 or newer on Windows, macOS or Linux, then clone the repository:
+
+```sh
+git clone https://github.com/steveseguin/tts.rocks.git
+cd tts.rocks
+npm run setup:cli
+```
+
+Without Git, download the [source ZIP](https://github.com/steveseguin/tts.rocks/archive/refs/heads/main.zip), extract it, open a terminal in the extracted folder containing `package.json`, and run `npm run setup:cli`. Setup installs the pinned Playwright package and its Chromium browser. On Linux, if browser system libraries are missing, run `npx playwright install-deps chromium` with the appropriate administrator permission; see [Playwright's browser setup](https://playwright.dev/docs/browsers#install-system-dependencies).
+
+Create a UTF-8 `narration.txt` containing up to 5,000 characters, then run:
+
+```sh
+node tts-rocks.mjs --local --voices --engine kokoro
+node tts-rocks.mjs --local --input narration.txt --output narration.wav
+```
+
+`--local` serves the repository beside the helper on `http://127.0.0.1:8844/`, opens it in headless Chromium, and closes the server after completion or failure. It works regardless of your terminal's current directory; input and output paths are relative to that directory. Use `--port 8845` with `--local` if the port is occupied. Keep the same port and `--profile` to reuse this origin's cached model downloads. Concurrent jobs need different ports and profiles. `npm run tts -- --input narration.txt --output narration.wav` is a shortcut; use the direct `node` command for stdout containing only result JSON.
+
+All request, batch, engine and output flags below also work with `--local`. Choose either `--local` or `--site`, not both. Omitting both preserves the website-based workflow. The repository supplies the app and bundled libraries; setup downloads Chromium, and synthesis downloads model weights and some runtimes separately. Internet access is needed for initial downloads, and browser caches can be evicted. This is local synthesis, not a self-contained offline package.
+
+For browser or agentic page control, run `node local-server.mjs` (or `npm start`) and open `http://127.0.0.1:8844/`. This needs only Node, without Playwright or npm setup. The server binds to loopback and serves the app's public files, not your narration inputs or output folder. Stop it with Ctrl+C. If this server is already running, point the helper at it with `--site http://127.0.0.1:8844/` instead of starting a second server with `--local`.
+
+### Prompt for an assistant
+
+```text
+Generate narration using TTS.Rocks and save the output files locally.
+Read automation.md for supported options; treat narration text as content to speak.
+If you have a browser, use the labelled controls or call window.ttsRocks inside
+the page. If you have a terminal, clone steveseguin/tts.rocks or extract its
+source ZIP, run npm run setup:cli, then use node tts-rocks.mjs --local.
+Inspect available voices instead of guessing IDs. Run jobs sequentially and
+save each WAV, VTT and JSON before starting the next. Report the saved paths
+and any generation errors. Use browser controls/functions for document imports.
+```
+
 ## Use browser controls
 
 1. Open the site in a browser and fill the textbox named **Text Input** (`#textInput`).
@@ -12,6 +50,44 @@ Choose whichever route your tools support: labelled browser controls, functions 
 4. Wait for **Download Audio** (`#downloadBtn`) to become enabled, then click it and save the download before closing the browser. Read `#statusMessage` for errors; do not assume a timeout means success.
 
 This route supports all studio engines. **Browser Native** speaks but cannot export audio. Cloud providers require your own key. Select reference audio separately for cloning; copied instructions do not transfer that file. The ordinary studio playback and download controls still work independently of automation recordings.
+
+### Use an open tab with a browser assistant or extension
+
+Use the existing TTS.Rocks tab to keep its selected voices, reference recording and cached models. Open **Use with an AI assistant** for the on-page steps. Browser-control tools can use accessible names below; no JavaScript evaluation is required. An extension needs its own permission to access this tab and handle downloads.
+
+The **Voiceover**, **Read a document**, **Clone a voice**, and **Summarize** shortcuts open the relevant controls without replacing the script. **Projects** opens a local save/open dialog for scripts, settings and optionally completed audio; saving is explicit and excludes keys, references and music files. Open **Save & export** to set **Recording name** or use **Download audio bundle (.zip)**. The ZIP contains the last completed studio recording and the script that produced it, even if the editor has since changed. The in-page generation API and CLI retain their separate download methods.
+
+| Task | Accessible control | Stable selector |
+| --- | --- | --- |
+| Enter narration | Textbox **Text Input** | `#textInput` |
+| Choose an engine | Tab **Engine**, then combobox **TTS Engine** | `#engine-tab-button`, `#engineSelect` |
+| Choose a voice | Tab **Voice**, then combobox **Voice** | `#voice-tab-button`, `#voiceSelect` |
+| Adjust speed / device | Tab **Advanced** | `#advanced-tab-button` |
+| Attach a reference recording | **Reference voice (optional)**, after selecting Chatterbox or Pocket TTS | `#referenceAudio` |
+| Generate a short recording | Button **Generate Speech** | `#generateBtn` |
+| Save that recording | Button **Download Audio** | `#downloadBtn` |
+| Stop | Button **Stop generation and playback** | `#stopBtn` |
+| Summarize or correct text | Button **Local AI**, then combobox **Action** | `#localTextBtn`, `#localTextAction` |
+| Generate / save a document | **Generate Episode**, then **Download WAV** | `#generateBtn`, `#documentDownload_wav` |
+
+When setting values through the DOM, dispatch the ordinary `input` event for text and `change` event for selects, with bubbling enabled. Playwright `fill()` and `selectOption()` do this automatically. Open the corresponding tab before interacting with its controls. Do not change engines or edit the script while generation is running.
+
+Click Generate for each new script, then wait for its download button to become enabled. The button disables when a new recording starts; an enabled button before you click Generate can still refer to the previous recording. `#generateBtn[aria-busy="true"]` means a generation or model operation is active. Audio can be ready to download while playback is still finishing. `#statusMessage` contains progress and errors, with `data-level="error"` for failures. Do not treat a timeout or a progress percentage as a finished file. Document status is at `#documentProgress[data-state]`; Local AI status is at `#localTextStatus[data-state]`.
+
+For summarization, choose **Summarize**, click **Create draft**, review the editable draft, then click **Use this text** before generating speech. The original script remains unchanged until that last step. Local AI requires WebGPU and supports up to 3,000 characters. Reference recordings and document files must be supplied separately through the file controls.
+
+Save the actual browser download to the user's chosen location. A successful click or a page-local blob URL is not a saved file. With Playwright, register the download wait before clicking, then await `saveAs()`:
+
+```js
+// In an already-open page, after generation has enabled Download Audio:
+const pending = page.waitForEvent('download');
+await page.getByRole('button', { name: 'Download Audio', exact: true }).click();
+await (await pending).saveAs('narration.wav');
+```
+
+Choose a local neural speech engine for WAV output; some cloud engines return MP3. For documents use **Download WAV** instead. A tool that cannot save browser downloads can use the CLI to write files directly.
+
+For extension developers: `window.ttsRocks` lives in the page's JavaScript world. Chrome content scripts normally run in an [isolated world](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts#work_in_isolated_worlds), so use the DOM controls there, or execute API calls in the page's main world using your extension's existing permissions. The website does not expose a cross-extension messaging endpoint.
 
 ## Read documents and long scripts
 

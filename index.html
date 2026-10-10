@@ -4,46 +4,65 @@
     <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzY0NmNmZiIgZD0iTTEyIDJDOS43OSAyIDggMy43OSA4IDZ2NmMwIDIuMjEgMS43OSA0IDQgNHM0LTEuNzkgNC00VjZjMC0yLjIxLTEuNzktNC00LTR6Ii8+PHBhdGggZmlsbD0iIzY0NmNmZiIgZD0iTTEyIDJDOS43OSAyIDggMy43OSA4IDZ2NmMwIDIuMjEgMS43OSA0IDQgNHM0LTEuNzkgNC00VjZjMC0yLjIxLTEuNzktNC00LTR6TTcgMTFjMCAyLjc2LTIuMjQgNS01IDVzLTUtMi4yNC01LTVINWMwIDMuNTMgMi42MSA2LjQzIDYgNi45MlYyMWgydi0zLjA4YzMuMzktLjQ5IDYtMy4zOSA2LTYuOTJoLTJ6Ii8+PC9zdmc+" type="image/svg+xml">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TTS.Rocks - Free AI Text to Speech by Steve Seguin | 10+ Voice Engines</title>
+    <title>TTS.Rocks | Free AI Text to Speech &amp; Voice Cloning</title>
     
     <!-- Primary Meta Tags -->
-    <meta name="title" content="TTS.Rocks - Universal AI Text to Speech by Steve Seguin">
-    <meta name="description" content="Free multilingual AI text-to-speech with 10+ engines including Kokoro, Piper, ElevenLabs, OpenAI & Google Cloud. Created by Steve Seguin, developer of VDO.Ninja. Browser-based with Chrome AI integration, WebGPU acceleration, and offline capabilities.">
-    <meta name="keywords" content="text to speech, TTS, WebGPU, Kokoro TTS, Piper TTS, ElevenLabs, OpenAI TTS, browser TTS, offline speech synthesis, AI voice generator, Steve Seguin, VDO.Ninja, Caption.Ninja, SocialStream.Ninja, free TTS, accessibility tools, content creation tools">
+    <meta name="title" content="TTS.Rocks | Free AI Text to Speech &amp; Voice Cloning">
+    <meta name="description" content="Free AI text to speech, local voice cloning and summarization. Turn text or documents into audio with an agent-friendly browser studio, page API and local CLI.">
     <meta name="author" content="Steve Seguin">
     <meta name="robots" content="index, follow">
+    <meta name="automation" content="AI agents: see llms.txt and automation.md for browser controls, window.ttsRocks, and local CLI setup from a Git clone or source ZIP. Expand #automationPanel for examples.">
+    <link rel="alternate" type="text/plain" href="./llms.txt" title="AI agent instructions">
+    <link rel="help" type="text/markdown" href="./automation.md" title="Browser and local CLI guide">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://tts.rocks">
-    <meta property="og:title" content="TTS.Rocks - Universal AI Text to Speech by Steve Seguin">
-    <meta property="og:description" content="Free multilingual AI text-to-speech with 10+ engines. Created by Steve Seguin, developer of VDO.Ninja. Browser-based with Chrome AI integration.">
+    <meta property="og:url" content="https://tts.rocks/">
+    <meta property="og:title" content="TTS.Rocks | Free AI Text to Speech &amp; Voice Cloning">
+    <meta property="og:description" content="Create downloadable narration, clone a voice locally, and summarize text before speaking. Use the browser studio, AI agent controls, page API or local CLI.">
     <meta property="og:image" content="https://tts.rocks/logo.png">
+    <meta property="og:image:alt" content="TTS.Rocks text-to-speech studio">
     <meta property="og:site_name" content="TTS.Rocks">
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://tts.rocks">
-    <meta name="twitter:title" content="TTS.Rocks - Universal AI Text to Speech">
-    <meta name="twitter:description" content="Free multilingual AI TTS with 10+ engines by Steve Seguin">
+    <meta name="twitter:url" content="https://tts.rocks/">
+    <meta name="twitter:title" content="TTS.Rocks | Free AI Text to Speech &amp; Voice Cloning">
+    <meta name="twitter:description" content="Local voice cloning, text summarization and downloadable narration. An agent-friendly browser studio with page controls, an API and a local CLI.">
     <meta name="twitter:image" content="https://tts.rocks/logo.png">
+    <meta name="twitter:image:alt" content="TTS.Rocks text-to-speech studio">
     <meta name="twitter:creator" content="@steveseguin">
     
     <!-- Additional Meta -->
     <meta name="theme-color" content="#646cff">
-    <link rel="canonical" href="https://tts.rocks">
-    <link rel="alternate" hreflang="en" href="https://tts.rocks">
+    <link rel="canonical" href="https://tts.rocks/">
+    <link rel="alternate" hreflang="en" href="https://tts.rocks/">
     
     <!-- Structured Data for SEO -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "WebApplication",
+        "@id": "https://tts.rocks/#app",
         "name": "TTS.Rocks",
-        "url": "https://tts.rocks",
-        "description": "Free universal AI text-to-speech application with 10+ voice engines",
-        "applicationCategory": "Multimedia",
+        "url": "https://tts.rocks/",
+        "description": "Free browser AI text to speech with local voice cloning, text summarization, document narration and downloadable audio. AI agents can use labelled page controls, an in-page API or a local command-line helper.",
+        "applicationCategory": "MultimediaApplication",
         "operatingSystem": "Web Browser",
+        "browserRequirements": "JavaScript, WebAssembly and Web Workers. Local AI summarization requires WebGPU.",
+        "isAccessibleForFree": true,
+        "image": "https://tts.rocks/logo.png",
+        "inLanguage": "en",
+        "softwareHelp": "https://tts.rocks/automation.md",
+        "featureList": [
+            "Local AI text to speech and downloadable WAV narration",
+            "Reference voice cloning with Chatterbox and Pocket TTS",
+            "Local text summarization and spelling and grammar correction",
+            "PDF, TXT, Markdown, DOCX and ODT document narration",
+            "Two-speaker podcasts and VTT captions",
+            "Labelled browser controls for AI assistants and browser extensions",
+            "In-page JavaScript API and local CLI for Windows, macOS and Linux"
+        ],
         "offers": {
             "@type": "Offer",
             "price": "0",
@@ -66,6 +85,10 @@
     }
     </script>
     
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebSite","@id":"https://tts.rocks/#website","name":"TTS.Rocks","url":"https://tts.rocks/"}
+    </script>
+
     <style>
         [hidden] { display: none !important; }
         #localModelSettings > div { display: flex; flex-direction: column; gap: 0.5rem; }
@@ -810,6 +833,30 @@
         #automationPanel .agent-note { color: var(--text-secondary); font-size: .875rem; }
         #agentDeveloperOptions { border-top: 1px solid var(--border); margin-top: 1.25rem; padding-top: 1rem; }
         #agentDeveloperOptions > summary { font-weight: 600; }
+        #agentQuickstart p { margin: .75rem 0; }
+        #browser-assistant-guide { margin: 1rem 0; }
+        #browser-assistant-guide h3 { font-size: 1rem; }
+        #browser-assistant-guide ol { padding-left: 1.5rem; }
+        #browser-assistant-guide li { margin: .5rem 0; }
+        .feature-overview { margin-top: 1rem; }
+        .feature-overview h2 { font-size: 1.15rem; margin-bottom: 1rem; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 1rem 2rem; }
+        .feature-grid h3 { font-size: 1rem; margin-bottom: .35rem; }
+        .feature-grid p { color: var(--text-secondary); font-size: .875rem; }
+        .task-shortcuts { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin: 0 0 1.25rem; }
+        .task-shortcuts button { font-size: .875rem; padding: .55rem .85rem; }
+        #exportOptions { margin-top: 1rem; }
+        #exportOptions > summary, #savedVoices > summary { font-size: .875rem; color: var(--text-secondary); }
+        #exportOptions .form-group, #savedVoices .form-group { margin-top: .75rem; }
+        #voiceSamplesSection { margin-top: .5rem; }
+        #voiceSamples button { padding: .4rem .65rem; font-size: .8rem; }
+        #projectDialog { margin: auto; width: min(540px, calc(100vw - 2rem)); max-height: 90vh; overflow: auto; padding: 1.5rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-secondary); color: var(--text-primary); }
+        #projectDialog::backdrop { background: rgba(0,0,0,.65); }
+        #projectDialog h2 { font-size: 1.2rem; }
+        #projectDialog .form-group { margin: 1rem 0; }
+        #projectDialog .include-audio { display: flex; gap: .5rem; align-items: center; margin-bottom: .75rem; }
+        #projectIncludeAudio { width: auto; }
+        #projectStatus:not(:empty) { margin-top: .75rem; }
         #agentDeveloperOptions pre { padding: 1rem; background: var(--bg-primary); border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .875rem; }
         #agentStatus:not([hidden]), #agentCopyStatus:not(:empty) { margin-top: 1rem; }
         #agentDownloads { border-top: 1px solid var(--border); margin-top: 1rem; }
@@ -911,9 +958,16 @@
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <div class="container" role="main" id="main-content" tabindex="-1">
         <header>
-            <h1>🎙️ TTS.Rocks</h1>
-            <p class="subtitle">Text and documents, read aloud.</p>
+            <h1>🎙️ TTS.Rocks — AI Text to Speech</h1>
+            <p class="subtitle">Free text to speech, local voice cloning and summarization.</p>
         </header>
+
+        <nav class="task-shortcuts" aria-label="Start a recording">
+            <button class="secondary" id="taskVoiceover" disabled>Voiceover</button>
+            <button class="secondary" id="taskDocument" disabled>Read a document</button>
+            <button class="secondary" id="taskClone" disabled>Clone a voice</button>
+            <button class="secondary" id="taskSummarize" disabled>Summarize</button>
+        </nav>
 
         <div class="main-content">
             <!-- Text Input Section -->
@@ -925,12 +979,13 @@
                 
                 <div class="text-input-section">
                     <input type="file" id="documentFile" accept=".pdf,.txt,.md,.markdown,.docx,.odt" aria-label="Read a document" hidden>
-                    <div class="text-tools" aria-label="Text tools">
+                    <div class="text-tools" role="group" aria-label="Text tools">
                         <button class="secondary" id="uploadDocument" title="Import PDF, TXT, Markdown, DOCX or ODT">Upload file</button>
                         <button class="secondary" id="useDocumentText" title="Use up to 100,000 characters">Long text</button>
                         <button class="secondary" id="cancelDocumentImport" hidden>Cancel import</button>
                         <button class="secondary" id="clearBtn">Clear text</button>
-                        <button class="secondary" id="localTextBtn" aria-haspopup="dialog">Local AI</button>
+                        <button class="secondary" id="openProjects" aria-haspopup="dialog" aria-controls="projectDialog" disabled>Projects</button>
+                        <button class="secondary" id="localTextBtn" aria-haspopup="dialog" aria-controls="localTextDialog" title="Summarize text or fix spelling and grammar locally">Local AI</button>
                         <button class="secondary" id="summarizeBtn" style="display:none">
                             <span class="ai-badge">AI</span> Summarize
                         </button>
@@ -1021,6 +1076,14 @@
                             <input type="file" id="referenceAudio" accept="audio/*">
                             <div class="api-key-hint">Use a clear 5–10 second recording of your voice or one you have permission to use. The recording is processed in this browser. Without a recording, choose a built-in voice.</div>
                             <button type="button" id="clearReference" class="secondary">Clear reference</button>
+                            <details id="savedVoices">
+                                <summary>Save or reuse a reference voice</summary>
+                                <div class="form-group"><label for="referenceName">Reference name</label><input id="referenceName" maxlength="80" placeholder="My voice"></div>
+                                <button id="saveReference" class="secondary">Save reference on this device</button>
+                                <div class="form-group"><label for="savedReference">Saved reference</label><select id="savedReference"><option value="">Choose a saved reference</option></select></div>
+                                <div class="text-tools"><button id="loadReference" class="secondary" disabled>Use reference</button><button id="deleteReference" class="secondary" disabled>Delete saved reference</button></div>
+                                <p class="api-key-hint">Only saved when you choose Save. Your recording stays in this browser; clearing site data removes it.</p>
+                            </details>
                         </div>
                         <div class="form-group" id="musicSettings" hidden>
                             <label for="musicSeconds">Instrumental clip length</label>
@@ -1044,6 +1107,12 @@
                                 <option value="">Select a voice...</option>
                             </select>
                             <div id="kokoroVoiceHint" class="api-key-hint">28 voices plus eight blends. Blend names show the two voices mixed equally.</div>
+                            <div id="voiceSamplesSection" hidden>
+                                <p class="api-key-hint">Hear a starter voice instantly. Selecting a sample chooses that voice; no model download is needed to listen.</p>
+                                <div id="voiceSamples" class="text-tools" role="group" aria-label="Voice samples"></div>
+                                <button id="stopVoiceSample" class="secondary" hidden>Stop sample</button>
+                                <p id="voiceSampleStatus" class="api-key-hint" role="status"></p>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -1221,14 +1290,14 @@
                     </div>
                 </div>
 
-                <div class="action-buttons">
-                    <button id="generateBtn" aria-label="Generate Speech">
+                <div class="action-buttons" role="group" aria-label="Speech generation and download">
+                    <button id="generateBtn" aria-label="Generate Speech" aria-busy="false" aria-controls="audioSection documentResults statusMessage">
                         <svg style="width:16px;height:16px;vertical-align:middle;margin-right:4px" viewBox="0 0 24 24">
                             <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z"/>
                         </svg>
                         Generate Speech
                     </button>
-                    <button id="downloadBtn" class="secondary" disabled>
+                    <button id="downloadBtn" class="secondary" aria-label="Download Audio" title="Save the generated audio file to your device" disabled>
                         <svg style="width:16px;height:16px;vertical-align:middle;margin-right:4px" viewBox="0 0 24 24">
                             <path fill="currentColor" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
                         </svg>
@@ -1246,6 +1315,13 @@
                     <label for="liveVolume">Volume <input id="liveVolume" type="range" min="0" max="100" value="100"></label>
                     <span class="api-key-hint">Speech generation continues while playback is paused.</span>
                 </div>
+                <details id="exportOptions">
+                    <summary>Save &amp; export</summary>
+                    <div class="form-group"><label for="exportName">Recording name</label><input id="exportName" maxlength="80" placeholder="Automatic filename"></div>
+                    <button id="downloadBundle" class="secondary" disabled>Download audio bundle (.zip)</button>
+                    <p id="exportStatus" class="api-key-hint" role="status">Generate audio to download a bundle with the recording, script and captions.</p>
+                    <p class="api-key-hint">Use Projects above the editor to save your script, settings and completed audio on this device.</p>
+                </details>
             </div>
 
             <!-- Audio Player with Waveform -->
@@ -1255,7 +1331,7 @@
                     Audio Output
                 </h2>
                 <div id="waveformPlayerContainer"></div>
-                <button id="downloadCaptions" class="secondary" hidden>Download speaker captions (.vtt)</button>
+                <button id="downloadCaptions" class="secondary" hidden>Download captions (.vtt)</button>
                 <!-- Hidden audio element - NEVER used for playback -->
                 <audio id="audioPlayer" style="display:none !important; visibility:hidden !important; position:absolute !important; left:-9999px !important;" aria-hidden="true"></audio>
             </div>
@@ -1268,6 +1344,17 @@
           <details id="automationPanel">
             <summary><span class="caption-summary"><span class="card-title" id="automation-title">Use with an AI assistant</span></span></summary>
             <p class="agent-intro">Copy your setup into Codex, Claude Code or another assistant.</p>
+            <section id="browser-assistant-guide" aria-labelledby="browser-assistant-title">
+              <h3 id="browser-assistant-title">Use this open tab with a browser assistant</h3>
+              <ol>
+                <li>Fill <strong>Text Input</strong> with the narration. Use <strong>Upload file</strong> for a document, or <strong>Exit</strong> to leave document mode before making a short recording.</li>
+                <li>Open the <strong>Engine</strong> tab and select <strong>TTS Engine</strong>. Kokoro and Kitten 0.8 make downloadable local speech without an API key. In <strong>Voice</strong>, choose <strong>Voice</strong> and <strong>Language</strong>; <strong>Advanced</strong> contains speed and compute settings.</li>
+                <li>Click <strong>Generate Speech</strong> (or <strong>Generate Episode</strong> for documents). Wait for <strong>Download Audio</strong> (or <strong>Download WAV</strong>) to become enabled. First use downloads the model; read the status for progress or errors.</li>
+                <li>Click the enabled download button and save the file through your browser's download controls. Save each recording before starting another or closing this tab.</li>
+              </ol>
+              <p class="agent-note">For voice cloning, choose Chatterbox or Pocket TTS and attach a recording under <strong>Reference voice (optional)</strong>. To summarize, open <strong>Local AI</strong>, choose <strong>Summarize</strong> under <strong>Action</strong>, then <strong>Create draft</strong>. Review the draft and select <strong>Use this text</strong> before generating audio. Local AI requires WebGPU. Browser Native speaks without exporting a file; cloud engines need your own API key.</p>
+              <p class="agent-note">Browser assistants and extensions need permission to control this tab and save downloads. They can use these ordinary page controls without running JavaScript. See the <a href="./automation.md#use-an-open-tab-with-a-browser-assistant-or-extension">browser assistant guide</a> for stable selectors and completion checks.</p>
+            </section>
             <div class="agent-setup">
               <div class="form-group"><label for="agentFilename">Output filename (WAV)</label><input id="agentFilename" value="narration.wav" maxlength="100"></div>
               <label for="agentIncludeText" class="agent-checkbox"><input id="agentIncludeText" type="checkbox"> Include my script</label>
@@ -1286,10 +1373,19 @@
                 <button class="secondary" id="copyAgentCLI">Copy CLI instructions</button>
               </div>
               <p class="agent-note" id="agentSupport"></p>
+              <div id="agentQuickstart">
+                <p>AI agents can use this page in Chromium, control the labelled buttons and fields, or run a downloaded copy locally on Windows, macOS or Linux.</p>
+                <p><strong>Inside a browser:</strong> call <code>await ttsRocks.ready()</code>, inspect <code>ttsRocks.capabilities()</code>, then use the example below. With page controls, fill <strong>Text Input</strong>, select an engine and voice, click <strong>Generate Speech</strong>, and save <strong>Download Audio</strong> when enabled. Save each recording before generating the next.</p>
+                <p><strong>Local CLI:</strong> install Node.js 22.12+, clone the repository or extract the <a href="https://github.com/steveseguin/tts.rocks/archive/refs/heads/main.zip">source ZIP</a>, and run these commands in that folder:</p>
+                <pre><code>npm run setup:cli
+node tts-rocks.mjs --local --voices --engine kokoro
+node tts-rocks.mjs --local --input narration.txt --output narration.wav</code></pre>
+                <p class="agent-note">Create narration.txt with your script first. Local mode starts and stops its own localhost server and saves WAV, VTT and JSON. For an interactive local page, run <code>node local-server.mjs</code> and open <code>http://127.0.0.1:8844/</code>. The source download includes the app and bundled libraries; Chromium, model weights and remote runtimes download separately. A browser still performs synthesis; fetching HTML alone cannot generate speech.</p>
+              </div>
               <pre><code id="agentExample">await ttsRocks.ready();
 const audio = await ttsRocks.generate({ text: "Hello." });
 ttsRocks.download(audio.id, "narration.wav");</code></pre>
-              <nav class="agent-links" aria-label="Automation resources"><a href="./automation.md">API guide</a><a href="./tts-rocks.mjs" download>CLI download</a><a href="./llms.txt">Agent instructions</a></nav>
+              <nav class="agent-links" aria-label="Automation resources"><a href="./automation.md">API and local setup guide</a><a href="./tts-rocks.mjs" download>Website CLI helper</a><a href="./llms.txt">Agent instructions</a><a href="https://github.com/steveseguin/tts.rocks">Source repository</a><a href="https://github.com/steveseguin/tts.rocks/archive/refs/heads/main.zip">Source ZIP</a></nav>
             </details>
             <div id="agentStatus" role="status" aria-live="polite" data-state="idle" hidden></div>
             <div id="agentDownloads" hidden>
@@ -1344,6 +1440,16 @@ ttsRocks.download(audio.id, "narration.wav");</code></pre>
 
           </details>
         </div>
+
+        <section class="card feature-overview" aria-labelledby="features-title">
+            <h2 id="features-title">Create narration with local AI</h2>
+            <div class="feature-grid">
+                <div><h3>Free text to speech and document narration</h3><p>Turn scripts, PDF, TXT, Markdown, DOCX and ODT files into spoken audio. Choose local voices such as Kokoro, Kitten or Supertonic, create two-speaker podcasts, and download WAV audio and VTT captions. Local engines need no account or API key; optional cloud providers use your own key.</p></div>
+                <div><h3>Clone a voice in your browser</h3><p>Choose Chatterbox or Pocket TTS and provide a short recording of your voice or one you have permission to use. Reference audio is processed locally. Download the generated speech for videos, tutorials and narration.</p></div>
+                <div><h3>Summarize and improve text locally</h3><p>Open Local AI to summarize a passage or fix spelling and grammar before turning it into speech. Review the editable draft, then use it in your recording. Local AI supports up to 3,000 characters and requires WebGPU and an initial model download.</p></div>
+                <div><h3>Agent-friendly audio generation</h3><p>AI browser assistants can navigate labelled controls and save audio from the open page. Coding agents can use the in-page JavaScript API or download the source and run the local CLI on Windows, macOS or Linux. Read the <a href="./automation.md">automation guide</a> or <a href="./llms.txt">agent instructions</a> to get started.</p></div>
+            </div>
+        </section>
 
         <footer role="contentinfo">
             <p>Built with <span aria-label="love">❤️</span> by <a href="https://github.com/steveseguin" target="_blank" rel="noopener">Steve Seguin</a></p>
@@ -1542,6 +1648,17 @@ ttsRocks.download(audio.id, "narration.wav");</code></pre>
         apply(paramsFromURL());
     })();
     </script>
+    <dialog id="projectDialog" aria-labelledby="projectTitle" aria-describedby="projectHelp">
+        <div class="local-text-header"><h2 id="projectTitle">Projects</h2><button id="closeProjects" class="secondary">Close</button></div>
+        <p id="projectHelp" class="api-key-hint">Saved in this browser. Download important recordings before clearing site data. Projects do not include API keys, reference voices or music files.</p>
+        <div class="form-group"><label for="projectName">Project name</label><input id="projectName" maxlength="80" placeholder="My narration"></div>
+        <label class="include-audio"><input type="checkbox" id="projectIncludeAudio" checked> Include the last completed audio</label>
+        <div class="text-tools"><button id="saveProject">Save project</button><button id="saveProjectCopy" class="secondary" hidden>Save as new project</button></div>
+        <div class="form-group"><label for="projectList">Saved projects</label><select id="projectList"><option value="">Choose a saved project</option></select></div>
+        <div class="text-tools"><button id="loadProject" class="secondary" disabled>Open selected project</button><button id="deleteProject" class="secondary" disabled>Delete selected project</button></div>
+        <p class="api-key-hint">Opening a project replaces the editor. Save your current changes first. After editing a script, generate again to update its audio.</p>
+        <p id="projectStatus" role="status" aria-live="polite"></p>
+    </dialog>
     <dialog id="localTextDialog" aria-labelledby="localTextTitle" aria-describedby="localTextScope">
         <div class="local-text-header"><h2 id="localTextTitle">Local AI</h2><button class="secondary" id="localTextClose">Close</button></div>
         <p id="localTextScope"></p>

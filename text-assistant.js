@@ -32,6 +32,7 @@ export class TextAssistant {
     update(state, message) {
         this.current = { state, message };
         el('localTextStatus').textContent = message;
+        el('localTextStatus').dataset.state = state;
     }
 
     open() {

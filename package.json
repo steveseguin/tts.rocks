@@ -4,6 +4,9 @@
   "description": "Browser text-to-speech with local neural voices, voice cloning and optional cloud providers",
   "main": "tts.js",
   "scripts": {
+    "start": "node local-server.mjs",
+    "setup:cli": "npm install --no-save --package-lock=false playwright@1.64.0 && npx --no-install playwright install chromium",
+    "tts": "node tts-rocks.mjs --local",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"

@@ -9,6 +9,7 @@ import { mixPodcast } from './audio-mix.js';
 import { installAutomation } from './automation.js';
 import { DocumentStudio } from './document-studio.js';
 import { TextAssistant } from './text-assistant.js';
+import { StudioLibrary } from './studio-library.js';
 
 class TTSApp {
     constructor() {
@@ -45,6 +46,7 @@ class TTSApp {
         this.documents = new DocumentStudio(this);
         this.localText = new TextAssistant(this);
         this.ready = this.restoreState();
+        this.library = new StudioLibrary(this);
         this.initializeChromeAI();
         this.updateGenerateButtonState();
         this.updateStudioControls();
@@ -132,7 +134,7 @@ class TTSApp {
         document.getElementById('checkDevice').addEventListener('click', () => this.checkDevice());
         document.getElementById('gpuPreference').addEventListener('change', () => { this.stopGeneration(); this.neural.cancel(); this.computeMode = null; this.updateComputeModeDisplay(); this.saveSettings(); });
         document.getElementById('prepareModel').addEventListener('click', () => this.prepareModel());
-        document.getElementById('downloadCaptions').addEventListener('click', () => this.downloadFile(new Blob([dialogueVtt(this.audioCues)], { type: 'text/vtt' }), 'podcast.vtt'));
+        document.getElementById('downloadCaptions').addEventListener('click', () => this.downloadFile(new Blob([dialogueVtt(this.audioCues)], { type: 'text/vtt' }), this.library.filename('vtt', 'podcast.vtt')));
         document.getElementById('deliveryPreset').addEventListener('change', event => {
             const directions = { warm: 'Speak warmly and reassuringly, with a gentle, conversational tone.', calm: 'Use calm, unhurried narration with natural pauses.', excited: 'Speak with upbeat enthusiasm and lively expression, while keeping every word clear.', news: 'Use a clear, composed newsreader delivery with precise articulation.' };
             const input = document.getElementById('speechInstructions');
@@ -522,7 +524,8 @@ class TTSApp {
     }
 
     updateGenerateButtonState() {
-        this.generateBtn.disabled = this.isGenerating || this.clearingDownloads || this.documents?.importing || this.documents?.running || this.localText?.busy;
+        this.generateBtn.disabled = this.isGenerating || this.clearingDownloads || this.documents?.importing || this.documents?.running || this.localText?.busy || this.library?.busy;
+        this.generateBtn.setAttribute('aria-busy', String(Boolean(this.generateBtn.disabled)));
         const label = document.createElement('span');
         label.textContent = this.isGenerating ? (this.preparing ? 'Preparing…' : 'Generating…') : this.currentEngine === 'musicgen' ? 'Generate Music' : 'Generate Speech';
         this.generateBtn.replaceChildren(label);
@@ -531,6 +534,7 @@ class TTSApp {
         this.generateBtn.classList.toggle('loading', this.isGenerating);
         document.getElementById('prepareModel').disabled = this.generateBtn.disabled;
         document.getElementById('localTextBtn').disabled = this.generateBtn.disabled;
+        this.library?.refresh();
     }
 
     updateStudioControls() {
@@ -1002,6 +1006,7 @@ class TTSApp {
     }
 
     async generateSpeech() {
+        if (this.library?.busy) return;
         if (this.localText?.busy) return;
         if (this.documents?.active) {
             try { await this.documents.generate(); } catch (error) { if (error.name !== 'AbortError') this.showStatus(error.message, 'error'); }
@@ -1023,6 +1028,8 @@ class TTSApp {
         this.isGenerating = true;
         this.audioBlob = null;
         this.audioCues = [];
+        this.library.clearRecording();
+        this.library.stopPreview();
         document.getElementById('downloadCaptions').hidden = true;
         this.audioSection.style.display = 'none';
         this.downloadBtn.disabled = true;
@@ -1033,7 +1040,7 @@ class TTSApp {
         const music = turns && this.backgroundMusic;
         const mixOptions = { volume: Number(document.getElementById('musicVolume').value), intro: Number(document.getElementById('musicIntro').value), outro: Number(document.getElementById('musicOutro').value), signal: this.requestController.signal };
         const streaming = !music && this.audioPlaybackSupported && ['kokoro', 'kitten-v08', 'supertonic', 'pocket', 'chatterbox'].includes(engine) && document.getElementById('streamSpeech').value === 'on';
-        const neuralOptions = { ...this.neuralOptions(text, streaming), turns, turnPauseMs: Number(document.getElementById('turnPause').value) };
+        const neuralOptions = { ...this.neuralOptions(text, streaming), turns, includeCues: true, turnPauseMs: Number(document.getElementById('turnPause').value) };
         const requestedAt = performance.now();
         this.computeMode = null;
         this.updateComputeModeDisplay();
@@ -1095,6 +1102,7 @@ class TTSApp {
                     if (id !== this.generationId) return;
                 }
                 this.audioBlob = blob;
+                this.library.record({ audio: blob, script: text, cues: this.audioCues, engine });
                 document.getElementById('downloadCaptions').hidden = !this.audioCues.length;
                 this.downloadBtn.disabled = false;
                 if (this.audioPlaybackSupported) {
@@ -1400,7 +1408,8 @@ class TTSApp {
             const url = URL.createObjectURL(this.audioBlob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `tts_${Date.now()}.${this.audioBlob.type.includes('mpeg') ? 'mp3' : 'wav'}`;
+            const extension = this.audioBlob.type.includes('mpeg') ? 'mp3' : 'wav';
+            a.download = this.library.filename(extension, `tts_${Date.now()}.${extension}`);
             a.click();
             URL.revokeObjectURL(url);
         } else if (this.audioPlayer.src) {
@@ -1513,6 +1522,7 @@ class TTSApp {
     showStatus(message, type = 'info') {
         clearTimeout(this.statusTimer);
         this.statusMessage.textContent = message;
+        this.statusMessage.dataset.level = type;
         this.statusMessage.className = `status-message ${type}`;
         this.statusMessage.style.display = 'block';
         if (type === 'success') this.statusTimer = setTimeout(() => { this.statusMessage.style.display = 'none'; }, 8000);

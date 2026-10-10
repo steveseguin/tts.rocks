@@ -86,7 +86,7 @@ export class DocumentStudio {
         for (const format of ['wav', 'vtt', 'txt']) el(`documentDownload_${format}`).addEventListener('click', () => { try { this.download(format); } catch (error) { this.error(error); } });
         this.refresh();
         app.textInput.addEventListener('input', () => {
-            if (this.active && this.parts.length && app.textInput.value.trim() !== this.script) this.update('Text changed. Generate Episode starts a new recording; downloads below contain the previous script.');
+            if (this.active && (this.parts.length || this.episode) && app.textInput.value.trim() !== this.script) this.update('Text changed. Generate Episode starts a new recording; downloads below contain the previous script.');
         });
     }
 
@@ -106,8 +106,10 @@ export class DocumentStudio {
         el('leaveDocument').disabled = Boolean(this.busy());
         el('cancelDocumentImport').hidden = !this.importing;
         el('documentProgress').textContent = this.message;
+        el('documentProgress').dataset.state = this.state;
         el('documentProgress').hidden = !this.message || !this.active && !['importing', 'error'].includes(this.state);
-        el('documentResults').hidden = !this.parts.length;
+        el('documentResults').hidden = !this.parts.length && !this.episode;
+        el('documentSections').parentElement.hidden = !this.parts.length;
         el('documentDownload_wav').disabled = !this.episode;
         el('documentDownload_vtt').disabled = !this.episode;
         window.dispatchEvent(new CustomEvent('ttsrocks:document', { detail: this.status() }));
@@ -151,7 +153,7 @@ export class DocumentStudio {
     }
     async generate() {
         const app = this.app;
-        if (this.busy()) throw new Error('Another operation is still running. Wait for it to finish.');
+        if (this.busy() || app.library?.busy) throw new Error('Another operation is still running. Wait for it to finish.');
         if (!this.active) throw new Error('Upload a file or choose Long text first.');
         const text = checkedText(app.textInput.value);
         const options = { ...app.neuralOptions('', false), includeCues: true };
@@ -170,6 +172,7 @@ export class DocumentStudio {
         if (this.episode) { this.update('Episode already complete. Download it below.', 'complete'); return this.status(); }
         if (this.parts.reduce((sum, part) => sum + part.blob.size, 0) > MAX_AUDIO) throw new Error('This episode exceeds 512 MB. Download completed sections and divide the text into smaller documents.');
         this.running = true; app.isGenerating = true;
+        app.library.clearRecording(); app.library.stopPreview();
         const id = ++app.generationId;
         const controller = app.requestController = new AbortController();
         app.audioBlob = null; app.downloadBtn.disabled = true; app.audioSection.style.display = 'none'; app.waveformPlayer?.stop();
@@ -202,6 +205,7 @@ export class DocumentStudio {
             await this.assemble(pauseMs);
             controller.signal.throwIfAborted();
             this.url = URL.createObjectURL(this.episode); el('documentPlayer').src = this.url;
+            app.library.record({ audio: this.episode, script: text, cues: this.cues, engine: options.engine });
             this.update(`Ready · ${(this.duration / 60).toFixed(1)} min`, 'complete');
             return this.status();
         } catch (error) {
@@ -248,7 +252,9 @@ export class DocumentStudio {
             } else throw new Error('Choose wav, vtt or txt.');
         }
         const url = URL.createObjectURL(blob), link = document.createElement('a');
-        link.href = url; link.download = `${safeName(this.name)}${suffix}.${format}`; link.click();
+        link.href = url;
+        const base = this.app.library.filename(format, `${safeName(this.name)}.${format}`).slice(0, -(format.length + 1));
+        link.download = `${base}${suffix}.${format}`; link.click();
         setTimeout(() => URL.revokeObjectURL(url), 60000);
         return { filename: link.download, bytes: blob.size };
     }

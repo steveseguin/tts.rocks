@@ -9,6 +9,14 @@ Turn text into speech in your browser. Choose local AI voices, clone a reference
 3. Click **Generate Speech**. Local models download on first use and are cached when browser storage is available.
 4. Play, pause, seek, or download the recording.
 
+Use the shortcuts above the studio for **Voiceover**, **Read a document**, **Clone a voice**, or **Summarize**. In the Voice tab, **Hear** buttons play six prerecorded Kokoro and Kitten starter voices without downloading a model. Selecting a sample chooses that voice for your next recording.
+
+## Save projects and download files
+
+Open **Projects** above the editor to name and save a script, voice settings and optionally its last completed audio. Reopen it later in the same browser to continue editing or download the saved recording. **Save project** updates the opened project; **Save as new project** makes another copy. Projects exclude API keys, reference recordings and music files; select those separately when reopening. Unfinished document sections stay in the current tab, so finish generation before saving its audio.
+
+Expand **Save & export** to set a recording filename or download a ZIP containing the last completed audio, its script, timing JSON and any VTT captions. Editing the script does not change existing audio: generate again to include your changes. ZIP bundles and saved project audio support recordings up to 128 MB; for larger recordings, download the audio separately and save the project with **Include the last completed audio** unchecked. Browser storage can be cleared or evicted, so keep downloaded copies of important work.
+
 ## Read a document
 
 Choose a PDF, TXT, Markdown, Word (DOCX) or ODT file using **Upload file**. Review the extracted text, select voices, then click **Generate Episode**. Use **Single voice** for narration or **Alternate narrators** to share the reading. An existing **A:/B: script** can also use two voices. The document is read as written; edit or summarize it first if you want a shorter discussion.
@@ -59,13 +67,13 @@ In **Advanced**, choose **Mobile / low latency** for Kitten Nano and early playb
 
 Open **Use with an AI assistant** to copy Markdown instructions, your current voice settings, or JavaScript and CLI examples into your coding agent. Agents can navigate the labelled controls or call `window.ttsRocks` inside the page.
 
-The [CLI helper](tts-rocks.mjs) uses the website through Playwright to save WAV audio, VTT captions and JSON timing metadata, including named batches for video narration. Kokoro, Kitten 0.8, Supertonic and Chatterbox support direct calls. Models stay in the browser cache; no separate TTS engine installation is needed. See the [automation guide](automation.md) for setup and examples.
+The [CLI helper](tts-rocks.mjs) uses headless Chromium to save WAV audio, VTT captions and JSON timing metadata, including named batches for video narration. Use the live website or a local copy with `--local`. Kokoro, Kitten 0.8, Supertonic and Chatterbox support direct calls. See the [automation guide](automation.md#run-locally-from-a-clone-or-zip) for Windows, macOS and Linux setup.
 
 ## Clone a voice locally
 
 Select **Chatterbox** for English expression controls, or **Pocket TTS** for a smaller model with English, French, German, Italian, Portuguese and Spanish bundles. Upload a clear recording of your voice or one you have permission to use. A 5-10 second sample works well; the first 10 seconds are used. Leave the reference empty to use a built-in voice.
 
-The reference is encoded in a browser worker and is not uploaded. The selected recording lasts only for the current page session. Pocket English needs approximately 125 MB of model downloads, plus approximately 21 MB for the cloning encoder. Other language bundles can be larger. Chatterbox downloads approximately 1.5 GB, including its cloning encoder. Use a desktop browser if your device runs out of memory.
+The reference is encoded in a browser worker and is not uploaded. To reuse it after closing the page, expand **Save or reuse a reference voice**, give it a name and choose **Save reference on this device**. Select it from **Saved reference** and click **Use reference** on your next visit. **Delete saved reference** removes the stored copy; clearing site data also removes it. Pocket English needs approximately 125 MB of model downloads, plus approximately 21 MB for the cloning encoder. Other language bundles can be larger. Chatterbox downloads approximately 1.5 GB, including its cloning encoder. Use a desktop browser if your device runs out of memory.
 
 The same reference is reused for subsequent recordings. **Clear reference** removes the selected file and releases its encoded voice from memory.
 
@@ -105,15 +113,23 @@ On compatible desktop Chrome installations, the text toolbar offers local summar
 
 ## Run your own copy
 
-No build is required. Serve this folder over HTTPS or localhost:
+Install Node.js 22.12 or newer. Clone the repository, or download and extract the [source ZIP](https://github.com/steveseguin/tts.rocks/archive/refs/heads/main.zip). No build or npm installation is needed to open the local studio:
 
 ```sh
 git clone https://github.com/steveseguin/tts.rocks.git
 cd tts.rocks
-python -m http.server 8000
+node local-server.mjs
 ```
 
-Open `http://localhost:8000`. Use a current browser with WebAssembly and Web Workers. WebGPU requires a compatible browser, graphics driver and secure context. Models are fetched from Hugging Face, and the neural WASM runtime from jsDelivr. Local synthesis keeps your text and reference audio on your device.
+Open `http://127.0.0.1:8844/`. The server listens only on this computer; stop it with Ctrl+C. Use `--port 8845` to choose another port. You can also serve the folder with your own HTTPS or localhost server. Use a current browser with WebAssembly and Web Workers. WebGPU requires a compatible browser, graphics driver and secure context. Models are fetched from Hugging Face, and the neural WASM runtime from jsDelivr. Local synthesis keeps your text and reference audio on your device; the source ZIP does not bundle model weights or guarantee offline use.
+
+For command-line generation, run `npm run setup:cli` once in the extracted folder, create `narration.txt`, then run:
+
+```sh
+node tts-rocks.mjs --local --input narration.txt --output narration.wav
+```
+
+Local mode starts and stops its server automatically. See the [automation guide](automation.md) for voice selection, batches and JSON requests.
 
 If your browser cannot preview audio, download the recording and play it in another app. Reference cloning requires a browser that can decode audio locally.
 

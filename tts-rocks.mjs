@@ -15,6 +15,10 @@ Usage:
   node tts-rocks.mjs --request request.json --output narration.wav
   node tts-rocks.mjs --batch sections.json --output-dir audio
   node tts-rocks.mjs --voices --engine kokoro
+  node tts-rocks.mjs --local --input narration.txt --output narration.wav
+
+From a cloned or extracted repository: npm run setup:cli
+Then use --local to serve that copy automatically, or npm start for browser use.
 
 Options:
   --engine kokoro|kitten-v08|supertonic|chatterbox   Default: kokoro
@@ -27,6 +31,8 @@ Options:
   --quality q8|auto|fp32|fp16           Kokoro quality; default q8
   --model nano|micro|mini               Kitten size; default nano
   --site URL                           Default: https://tts.rocks/
+  --local                              Serve this repository for this job
+  --port NUMBER                        Local port; default 8844 (with --local)
   --profile PATH                       Dedicated persistent browser cache
   --timeout SECONDS                    Per recording; default 900
   --force                              Replace existing output files
@@ -41,10 +47,18 @@ Progress goes to stderr; stdout is JSON. Failure exits nonzero.
 `;
 
 let context;
+let localServer;
+async function close() {
+    try { if (context) await context.close(); }
+    finally { if (localServer) await localServer.close(); }
+}
+for (const [signal, code] of [['SIGINT', 130], ['SIGTERM', 143]]) {
+    process.once(signal, () => { void close().finally(() => process.exit(code)); });
+}
 try {
     const args = {};
-    const booleans = ['help', 'voices', 'force'];
-    const values = ['input', 'request', 'batch', 'output', 'output-dir', 'engine', 'voice', 'speed', 'language', 'device', 'quality', 'model', 'site', 'profile', 'timeout', 'reference', 'exaggeration'];
+    const booleans = ['help', 'voices', 'force', 'local'];
+    const values = ['input', 'request', 'batch', 'output', 'output-dir', 'engine', 'voice', 'speed', 'language', 'device', 'quality', 'model', 'site', 'profile', 'timeout', 'reference', 'exaggeration', 'port'];
     for (let index = 2; index < process.argv.length; index++) {
         const arg = process.argv[index];
         if (!arg.startsWith('--')) throw new Error(`Unexpected argument: ${arg}. Use --help.`);
@@ -58,9 +72,13 @@ try {
         } else throw new Error(`Unknown option: ${arg}. Use --help.`);
     }
     if (args.help) { console.log(help); process.exit(0); }
+    if (args.local && args.site) throw new Error('Choose --local or --site, not both.');
+    if (args.port && !args.local) throw new Error('--port requires --local.');
+    const port = Number(args.port ?? 8844);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('--port must be 1 to 65535.');
     const timeout = Number(args.timeout ?? 900) * 1000;
     if (!Number.isFinite(timeout) || timeout < 1000 || timeout > 86400000) throw new Error('--timeout must be 1 to 86400 seconds.');
-    const site = new URL(args.site || 'https://tts.rocks/');
+    let site = new URL(args.site || 'https://tts.rocks/');
     if (!['http:', 'https:'].includes(site.protocol) || site.username || site.password) throw new Error('--site must be an HTTP(S) website URL without credentials.');
     const overrides = {};
     for (const key of ['engine', 'voice', 'speed', 'language', 'device', 'quality', 'model', 'exaggeration']) if (args[key] !== undefined) overrides[key] = ['speed', 'exaggeration'].includes(key) ? Number(args[key]) : args[key];
@@ -108,6 +126,17 @@ try {
         catch (_) { throw new Error('Install browser automation first: npm install --no-save playwright ; then npx playwright install chromium. No TTS package is needed.'); }
     }
     const chatterboxGPU = jobs.some(job => job.options.engine === 'chatterbox' && ['auto', 'webgpu'].includes(job.options.device));
+    if (args.local) {
+        let startLocalServer;
+        try { ({ startLocalServer } = await import('./local-server.mjs')); }
+        catch (error) {
+            if (error.code === 'ERR_MODULE_NOT_FOUND') throw new Error('--local needs the complete repository. Clone or extract the source ZIP; see https://tts.rocks/automation.md.');
+            throw error;
+        }
+        localServer = await startLocalServer(port);
+        site = new URL(localServer.url);
+        console.error(`Using local repository at ${site.href}`);
+    }
     context = await playwright.chromium.launchPersistentContext(resolve(args.profile || join(homedir(), '.cache', 'tts-rocks', 'browser')), { headless: true, acceptDownloads: true, ...(chatterboxGPU ? { channel: 'chromium' } : {}) });
     const page = context.pages()[0] || await context.newPage();
     page.setDefaultTimeout(60000);
@@ -160,5 +189,5 @@ try {
     console.error(JSON.stringify({ error: error.message }));
     process.exitCode = 1;
 } finally {
-    if (context) await context.close();
+    await close();
 }

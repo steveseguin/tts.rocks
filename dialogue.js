@@ -20,5 +20,5 @@ export function dialogueVtt(cues) {
         return `${String(Math.floor(ms / 3600000)).padStart(2, '0')}:${String(Math.floor(ms / 60000) % 60).padStart(2, '0')}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}.${String(ms % 1000).padStart(3, '0')}`;
     };
     const escape = text => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-    return 'WEBVTT\n\n' + cues.map((cue, index) => `${index + 1}\n${time(cue.start)} --> ${time(cue.end)}\n<v Speaker ${cue.speaker}>${escape(cue.text).replace(/\n+/g, ' ')}\n`).join('\n');
+    return 'WEBVTT\n\n' + cues.map((cue, index) => `${index + 1}\n${time(cue.start)} --> ${time(cue.end)}\n${cue.speaker ? `<v Speaker ${cue.speaker}>` : ''}${escape(cue.text).replace(/\n+/g, ' ')}\n`).join('\n');
 }

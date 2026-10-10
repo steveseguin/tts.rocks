@@ -1,6 +1,23 @@
 # TTS.Rocks
 
-Generate and download speech for videos, tutorials and narration in a browser.
+Generate and download speech for videos, tutorials and narration in a browser. Includes local voice cloning with Chatterbox or Pocket TTS, document narration, two-speaker podcasts, captions, and local summarization and text correction. Browser assistants can operate the labelled page controls; coding agents can use the in-page API or local CLI.
+
+## Choose a route
+
+- Browser tools: open the website, expand #automationPanel and #agentDeveloperOptions for instructions already embedded in the HTML. Use labelled controls or window.ttsRocks inside the page (for example Playwright page.evaluate). Read capabilities() after ready().
+- Terminal with your own copy (Windows, macOS, Linux): install Node.js 22.12+, clone https://github.com/steveseguin/tts.rocks.git or extract https://github.com/steveseguin/tts.rocks/archive/refs/heads/main.zip. In the folder containing package.json, run npm run setup:cli. Create narration.txt, then run node tts-rocks.mjs --local --input narration.txt --output narration.wav. Local mode starts and stops its localhost server automatically. Use --voices --engine kokoro to discover voices; add --local for a local voice listing.
+- Local interactive page: from the full source copy, run node local-server.mjs and open http://127.0.0.1:8844/. Only Node is needed. For a CLI using that already-running server, pass --site http://127.0.0.1:8844/ instead of --local.
+- Small website-based helper: download tts-rocks.mjs, install Playwright and Chromium as described in automation.md, and omit --local to use https://tts.rocks/.
+
+The source ZIP includes app files and bundled libraries, not Chromium, model weights or every remote runtime. Initial setup and model downloads need internet; local mode is not a guaranteed offline bundle. Preserve the dedicated browser profile and local port to reuse cached models. CLI stdout is result JSON, stderr is progress/errors, and failures exit nonzero. Save outputs before closing the browser; process recordings sequentially.
+
+## Reference
+
+Studio conveniences: task buttons Voiceover, Read a document, Clone a voice and Summarize. Projects saves scripts/settings and optionally completed audio in this browser. Save & export sets Recording name and downloads the last studio recording with its original script, captions and timing metadata as a ZIP. Keys, reference files and music are excluded from projects. Reference recordings can be saved explicitly under Save or reuse a reference voice. Hear buttons in the Voice tab select and play prerecorded starter voices without loading a model. These controls do not change the separate ttsRocks.generate/CLI download workflow.
+
+For an already-open tab or browser extension: expand "Use with an AI assistant" and follow #browser-assistant-guide. Fill "Text Input", select "TTS Engine" in the Engine tab and "Voice" in the Voice tab, then click "Generate Speech". Wait for "Download Audio" to become enabled and save the actual browser download. Documents use "Generate Episode" and "Download WAV". Read #statusMessage for errors; #generateBtn exposes aria-busy, and document / Local AI status nodes expose data-state. A previous enabled download is not the result of a new script: click Generate again. Browser Native cannot export a file. Extension content scripts can use the DOM; window.ttsRocks runs in the page's main JavaScript world. See automation.md for selectors, events and download handling.
+
+Cloning through page controls: choose Chatterbox or Pocket TTS and attach "Reference voice (optional)". Summarization: open "Local AI", choose "Summarize" in "Action", click "Create draft", review it, then "Use this text" before generating speech. Requires WebGPU; text is limited to 3,000 characters. The original text changes only when the draft is applied.
 
 For PDF, TXT, Markdown, DOCX or ODT, choose "Upload file" (#uploadDocument) or set files on #documentFile, review the extracted text, choose voices and click "Generate Episode". Files are read locally. Document mode supports 100,000 characters and uses current studio settings. In-page functions: ttsRocks.documents.import(file), useText(text, name), generate(), status(), cancel(), download("wav"), download("vtt"). Keep the tab open; completed sections can be resumed with unchanged text and settings. See the automation guide for Playwright downloads. The CLI helper handles short requests and batches; documents use browser controls/functions.
 
