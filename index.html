@@ -839,10 +839,14 @@
         #browser-assistant-guide ol { padding-left: 1.5rem; }
         #browser-assistant-guide li { margin: .5rem 0; }
         .feature-overview { margin-top: 1rem; }
-        .feature-overview h2 { font-size: 1.15rem; margin-bottom: 1rem; }
-        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 1rem 2rem; }
-        .feature-grid h3 { font-size: 1rem; margin-bottom: .35rem; }
+        .feature-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem; text-align: center; }
+        .feature-grid h3 { font-size: .95rem; margin: .65rem 0 .35rem; }
         .feature-grid p { color: var(--text-secondary); font-size: .875rem; }
+        .feature-icon { display: block; width: 56px; height: 56px; margin: 0 auto; padding: 12px; border-radius: 16px; background: var(--bg-tertiary); color: var(--accent-text); fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+        .feature-grid a { color: var(--accent-text); text-underline-offset: 3px; }
+        @media (max-width: 768px) {
+            .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
         .task-shortcuts { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin: 0 0 1.25rem; }
         .task-shortcuts button { font-size: .875rem; padding: .55rem .85rem; }
         #exportOptions { margin-top: 1rem; }
@@ -1441,20 +1445,34 @@ ttsRocks.download(audio.id, "narration.wav");</code></pre>
           </details>
         </div>
 
-        <section class="card feature-overview" aria-labelledby="features-title">
-            <h2 id="features-title">Create narration with local AI</h2>
+        <section class="card feature-overview" aria-label="Things you can create">
             <div class="feature-grid">
-                <div><h3>Free text to speech and document narration</h3><p>Turn scripts, PDF, TXT, Markdown, DOCX and ODT files into spoken audio. Choose local voices such as Kokoro, Kitten or Supertonic, create two-speaker podcasts, and download WAV audio and VTT captions. Local engines need no account or API key; optional cloud providers use your own key.</p></div>
-                <div><h3>Clone a voice in your browser</h3><p>Choose Chatterbox or Pocket TTS and provide a short recording of your voice or one you have permission to use. Reference audio is processed locally. Download the generated speech for videos, tutorials and narration.</p></div>
-                <div><h3>Summarize and improve text locally</h3><p>Open Local AI to summarize a passage or fix spelling and grammar before turning it into speech. Review the editable draft, then use it in your recording. Local AI supports up to 3,000 characters and requires WebGPU and an initial model download.</p></div>
-                <div><h3>Agent-friendly audio generation</h3><p>AI browser assistants can navigate labelled controls and save audio from the open page. Coding agents can use the in-page JavaScript API or download the source and run the local CLI on Windows, macOS or Linux. Read the <a href="./automation.md">automation guide</a> or <a href="./llms.txt">agent instructions</a> to get started.</p></div>
+                <div>
+                    <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3H5v18h7M13 3v6h6M13 3l6 6M8 8h2M8 12h3M8 16h2M15 14v5M18 12v9M21 15v3"/></svg>
+                    <h3>Narration</h3>
+                    <p>Turn text and documents into downloadable speech.</p>
+                </div>
+                <div>
+                    <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="12" rx="4"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M8 22h8M1 7v6M23 7v6"/></svg>
+                    <h3>Voice cloning</h3>
+                    <p>Clone your own voice from a short recording, locally.</p>
+                </div>
+                <div>
+                    <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 2 1.5 4.5L22 8l-4.5 1.5L16 14l-1.5-4.5L10 8l4.5-1.5ZM3 5h4M3 12h5M3 17h12M3 21h9M19 17v4M17 19h4"/></svg>
+                    <h3>Local AI</h3>
+                    <p>Summarize and polish your text before recording.</p>
+                </div>
+                <div>
+                    <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="15" rx="3"/><path d="M12 2v4M8 11v2M16 11v2M8 17h8M1 11v5M23 11v5"/></svg>
+                    <h3>Automation</h3>
+                    <p>Generate audio with agents or scripts using the <a href="./automation.md">automation guide</a>.</p>
+                </div>
             </div>
         </section>
 
         <footer role="contentinfo">
-            <p>Need help? <a href="https://discord.vdo.ninja" target="_blank" rel="noopener">TTS support on Discord</a> in the VDO.Ninja community.</p>
             <p>Built with <span aria-label="love">❤️</span> by <a href="https://github.com/steveseguin" target="_blank" rel="noopener">Steve Seguin</a></p>
-            <p>Open source and free forever | <a href="https://github.com/steveseguin/tts.rocks" target="_blank" rel="noopener">GitHub</a> | <a href="https://vdo.ninja" rel="noopener">VDO.Ninja</a> | <a href="https://caption.ninja" rel="noopener">Caption.Ninja</a></p>
+            <p>Open source and free forever | <a href="https://github.com/steveseguin/tts.rocks" target="_blank" rel="noopener">GitHub</a> | <a href="https://vdo.ninja" rel="noopener">VDO.Ninja</a> | <a href="https://caption.ninja" rel="noopener">Caption.Ninja</a> | <a href="https://discord.vdo.ninja" target="_blank" rel="noopener">Discord Support</a></p>
         </footer>
     </div>
 
