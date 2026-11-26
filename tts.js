@@ -4,6 +4,22 @@
 // Create global TTS namespace
 window.TTS = {};
 
+TTS.openAISpeechRetirementMessage = function(endpoint, model) {
+    const retiredModels = ['tts-1', 'tts-1-hd', 'gpt-4o-mini-tts',
+        'gpt-4o-mini-tts-2025-03-20', 'gpt-4o-mini-tts-2025-12-15'];
+    if (Date.now() < Date.UTC(2027, 0, 6) || !retiredModels.includes(model)) return '';
+
+    let url;
+    try {
+        url = new URL(endpoint || 'https://api.openai.com/v1/audio/speech', document.baseURI);
+    } catch (_) {
+        return ''; // Leave invalid and custom endpoint handling to the existing request path.
+    }
+    if (url.origin !== 'https://api.openai.com' || url.pathname !== '/v1/audio/speech') return '';
+
+    return 'OpenAI retired this speech model on January 6, 2027. In TTS.Rocks Studio, choose Kokoro or Kitten 0.8 for local English speech without an API key. For overlays, set ttsprovider=kokoro and remove the OpenAI parameters.';
+};
+
 // Determine asset base (directory containing this script) so relative resources resolve
 (function(){
   try {
@@ -2270,6 +2286,12 @@ TTS.openAITTS = function(text) {
     try {
         TTS.premiumQueueActive = true;
         const url = TTS.openAISettings.endpoint;
+        const retirement = TTS.openAISpeechRetirementMessage(url, TTS.openAISettings.model);
+        if (retirement) {
+            console.error(retirement);
+            TTS.finishedAudio();
+            return;
+        }
         
         // API key is optional for custom endpoints, required for OpenAI's official API
         const apiKey = TTS.openAISettings.apiKey || TTS.OpenAIAPIKey;
