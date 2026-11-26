@@ -484,7 +484,7 @@ class TTSApp {
             espeak: 'Small multilingual speech synthesizer. Runs locally.',
             browser: 'Uses voices installed in your browser or operating system. Audio download is unavailable.',
             elevenlabs: 'Sends text to ElevenLabs using your API key.',
-            openai: 'Sends text to OpenAI using your API key.',
+            openai: 'OpenAI retires these speech models on January 6, 2027. For local English speech without an API key, select Kokoro or Kitten 0.8 above. Your engine and voice are not switched automatically.',
             google: 'Sends text to Google Cloud using your API key.'
         };
         document.getElementById('engineDescription').textContent = descriptions[engine] || '';
@@ -1332,6 +1332,11 @@ class TTSApp {
     }
 
     async generateWithAPI(engine, text) {
+        if (engine === 'openai') {
+            const retirement = window.TTS.openAISpeechRetirementMessage(
+                'https://api.openai.com/v1/audio/speech', document.getElementById('openaiModel').value);
+            if (retirement) throw new Error(retirement);
+        }
         const key = this.apiKeyInput.value.trim();
         if (!key) throw new Error(`API key required for ${engine}`);
         const voice = this.voiceSelect.value;

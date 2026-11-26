@@ -99,7 +99,9 @@ MusicGen uses **CC BY-NC 4.0 (non-commercial)** model weights. Review the [model
 
 ## Cloud voices and translation
 
-For ElevenLabs, OpenAI or Google Cloud, enter your own API key. Requests go directly from your browser to that provider. Keys are saved in this browser's local storage; do not use a shared browser profile for private keys. Provider charges and account limits apply.
+**OpenAI speech model retirement:** OpenAI [retires TTS-1, TTS-1 HD and GPT-4o mini TTS on January 6, 2027](https://developers.openai.com/api/docs/deprecations). Its recommended replacement uses a different Realtime API workflow, not this Speech API integration. To keep generating English speech without an API key, choose **Kokoro** or **Kitten 0.8** in Studio. For overlays using the official OpenAI endpoint, set `ttsprovider=kokoro` and remove OpenAI key, model, and voice parameters. The local voices sound different and require an initial download; existing engine and voice settings are not migrated automatically.
+
+For ElevenLabs, Google Cloud, or OpenAI before retirement, enter your own API key. Requests go directly from your browser to that provider. Keys are saved in this browser's local storage; do not use a shared browser profile for private keys. Provider charges and account limits apply.
 
 **Load my available voices** retrieves current ElevenLabs or Google voices, including voices available to your account. For GPT-4o mini TTS, add a direction such as "warm, calm narration" in the Voice tab. Older OpenAI models use their own supported voice list.
 
